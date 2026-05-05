@@ -72,7 +72,6 @@ A text artifact used as evidence for building a persona profile.
   "metadata": {
     "scene": "example",
     "language": "en",
-    "curated_by": "team"
   }
 }
 ```

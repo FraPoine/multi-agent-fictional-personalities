@@ -12,7 +12,13 @@ Can human raters identify which fictional character generated a message produced
 
 ## Primary hypothesis
 
-Persona-seeded agent messages will be attributed to the correct character at above-chance accuracy in a blind multiple-choice task.
+Persona-seeded LLM agents based on 4 fictional characters will be identifiable by blind human raters at above-chance accuracy.
+
+Since the study uses 4 personas, chance accuracy is:
+
+1 / 4 = 25%
+
+The primary outcome is rater identification accuracy.
 
 ## Primary outcome
 

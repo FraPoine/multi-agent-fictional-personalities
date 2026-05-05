@@ -1,18 +1,17 @@
 # Sprint 1 Plan — Setup, Design, and Documentation
 
-## Sprint goal
+# Sprint 1 Goal
 
-The goal of Sprint 1 is to define the project clearly before implementation begins.
+For the solo-team version, Sprint 1 focuses on locking the experimental setup:
 
-By the end of the sprint, the team should know:
+1. pick one corpus source;
+2. select 4 personas;
+3. collect initial text examples for each persona;
+4. decide a feasible rater pool of around 10 people;
+5. pre-register the primary hypothesis;
+6. define the chance baseline and evaluation metric.
 
-- what system will be built;
-- which characters and data strategy will be used;
-- what the system must do;
-- how the architecture is structured;
-- how quality will be evaluated;
-- what each team member owns;
-- what Sprint 2 will implement.
+The project intentionally drops H2 and H3 from the main scope. The first study focuses only on whether persona-seeded agents are identifiable above chance by blind raters.
 
 ## Sprint outputs
 
@@ -201,28 +200,26 @@ Each issue should be assigned to one person and attached to the Sprint 1 milesto
 | Day | Focus | Output |
 |---|---|---|
 | 1 | Finalize idea | One-sentence pitch, scope, project profile |
-| 2 | Dataset and characters | Initial character set and corpus plan |
-| 3 | Functional spec | `docs/functional_spec.md` |
-| 4 | Data model and architecture | `docs/data_model.md`, `docs/architecture.md` |
-| 5 | Evaluation plan | `docs/evaluation_plan.md` |
-| 6 | Mockups and repo | `mockups/ui_mockups.md`, folders |
-| 7 | Cleanup | sprint note, issue updates, meeting slide |
+| 1 | Dataset and characters | Initial character set and corpus plan |
+| 1 | Functional spec | `docs/functional_spec.md` |
+| 1 | Data model and architecture | `docs/data_model.md`, `docs/architecture.md` |
+| 1 | Evaluation plan | `docs/evaluation_plan.md` |
+| 2 | Mockups and repo | `mockups/ui_mockups.md`, folders |
+| 3 | Cleanup | sprint note, issue updates, meeting slide |
 
 ## Definition of Done
 
 Sprint 1 is complete when:
 
-- [ ] proposal is written;
-- [ ] functional specification is written;
-- [ ] data model is written;
-- [ ] architecture is written;
-- [ ] evaluation plan is written;
-- [ ] mockups are prepared;
-- [ ] repository structure exists;
-- [ ] GitHub milestone exists;
-- [ ] each team member has one assigned issue;
-- [ ] each team member has a sprint-end markdown note;
-- [ ] Sprint 2 implementation task is clearly defined.
+- [ ] Choose the corpus source
+- [ ] Select 4 personas / characters
+- [ ] Collect initial text for each of the 4 personas
+- [ ] Document the corpus source and inclusion criteria
+- [ ] Decide the rater pool, target N = 10
+- [ ] Pre-register the primary hypothesis
+- [ ] Define chance baseline: 1/4 = 25%
+- [ ] Drop H2 and H3 from the main scope
+- [ ] Keep only individual recognizability as the primary study
 
 ## Sprint 2 target
 
