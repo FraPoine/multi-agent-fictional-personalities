@@ -1,0 +1,33 @@
+project:
+  name: multi_agent_fictional_personalities
+
+model:
+  provider: placeholder
+  name: placeholder-model
+  temperature: 0.7
+  max_output_tokens: 300
+
+characters:
+  initial_set:
+    - naruto_uzumaki
+    - sasuke_uchiha
+    - sakura_haruno
+    - kakashi_hatake
+
+simulation:
+  turn_policy: round_robin
+  turn_count: 12
+  seed: 42
+
+evaluation:
+  characters_per_trial: 4
+  trials_per_character: 5
+  collect_confidence: true
+  confidence_scale_min: 1
+  confidence_scale_max: 5
+
+logging:
+  output_dir: logs/
+  format: jsonl
+  record_prompt_hash: true
+  record_config_hash: true
