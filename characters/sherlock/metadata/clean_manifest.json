@@ -1,0 +1,110 @@
+[
+  {
+    "source_file": "raw/108_the_return_of_sherlock_holmes.txt",
+    "output_file": "clean/108_the_return_of_sherlock_holmes.txt",
+    "raw_chars": 693018,
+    "clean_chars": 608779,
+    "raw_sha256": "5b942916456ad5a3ecc13592de58c24c0600304358b0c0fa23e3ec4e71f13ebf",
+    "clean_sha256": "f85f521216065b656d9f94e28aad32349ce04b6913d69420ff11a4b2b9341b8d",
+    "estimated_words": 114128,
+    "estimated_quote_count": 2426,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/1661_the_adventures_of_sherlock_holmes.txt",
+    "output_file": "clean/1661_the_adventures_of_sherlock_holmes.txt",
+    "raw_chars": 581602,
+    "clean_chars": 561759,
+    "raw_sha256": "c832610530b422dfc8fb9e63409932d8eeb13146f1faf66dfc49c8e2262ae89d",
+    "clean_sha256": "6803633863b93d4cf7b71294ebbf7e80f99f3be73bec1a18e7754645de456094",
+    "estimated_words": 105955,
+    "estimated_quote_count": 2544,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/2097_the_sign_of_the_four.txt",
+    "output_file": "clean/2097_the_sign_of_the_four.txt",
+    "raw_chars": 251395,
+    "clean_chars": 232032,
+    "raw_sha256": "b3b0b3b5f565acfce61d5a9c07125af6da97caa9e05c203bb71a03d08970b0fe",
+    "clean_sha256": "a45dbabf70c5c8dc5cc34b4f9f6d546bff0ab6c874f9466a61370d56a83cecaf",
+    "estimated_words": 43892,
+    "estimated_quote_count": 848,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/2350_his_last_bow.txt",
+    "output_file": "clean/2350_his_last_bow.txt",
+    "raw_chars": 343142,
+    "clean_chars": 323762,
+    "raw_sha256": "a0f40d8f362d1bca783bb393e8fb281934344848586949c67134fda5bff282ec",
+    "clean_sha256": "7d618a87d17f27644ffe363bdc0313e6cb3e9322a9ef244321fd348dc7b112c3",
+    "estimated_words": 60068,
+    "estimated_quote_count": 1402,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/244_a_study_in_scarlet.txt",
+    "output_file": "clean/244_a_study_in_scarlet.txt",
+    "raw_chars": 258734,
+    "clean_chars": 239293,
+    "raw_sha256": "f81aee572cec4834c833552e2ed0d0fdf16e2636c4fbd8ba3d4f146d635aafbc",
+    "clean_sha256": "e354f1c97de9c05c26022ca95b73a84f7047d2e01171d431f30e934f46e34a9e",
+    "estimated_words": 44159,
+    "estimated_quote_count": 849,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/2852_the_hound_of_the_baskervilles.txt",
+    "output_file": "clean/2852_the_hound_of_the_baskervilles.txt",
+    "raw_chars": 373475,
+    "clean_chars": 318398,
+    "raw_sha256": "87a2e78a712247f1b4682b97604ae33dee469c012303ab22024b75406d4760ab",
+    "clean_sha256": "760731fedcfad71089eb5e9fd403caa623ac7cfc71847209463c59c5f76ee18a",
+    "estimated_words": 60043,
+    "estimated_quote_count": 1385,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/3289_the_valley_of_fear.txt",
+    "output_file": "clean/3289_the_valley_of_fear.txt",
+    "raw_chars": 332901,
+    "clean_chars": 312989,
+    "raw_sha256": "1f386d2bc1e50364d98945438060620a0caba379c4ec373fb36d9715882ffdd4",
+    "clean_sha256": "b6dea664414b81d303b8d18c4f93cf7fd8e31f6f390fe6b8205e7db498c79634",
+    "estimated_words": 59190,
+    "estimated_quote_count": 1569,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/69700_the_case-book_of_sherlock_holmes.txt",
+    "output_file": "clean/69700_the_case-book_of_sherlock_holmes.txt",
+    "raw_chars": 473159,
+    "clean_chars": 448992,
+    "raw_sha256": "d59aa9a14ab085e103317e2c80f212bb5ba746b9054816208c0ee923f49680a7",
+    "clean_sha256": "93adae355cfe125fb205c1fb4508bf822edeea7a1942d81a8c0f6dc586032c19",
+    "estimated_words": 84389,
+    "estimated_quote_count": 2118,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "raw/834_the_memoirs_of_sherlock_holmes.txt",
+    "output_file": "clean/834_the_memoirs_of_sherlock_holmes.txt",
+    "raw_chars": 588896,
+    "clean_chars": 514821,
+    "raw_sha256": "7b2aaea84f0243db5f50df0d193f279b348cda6ae80812775d62634f8d3c55f3",
+    "clean_sha256": "b16aeff43bc09225ac040137819a75b36ed08eab73a878e5afa2114634f06d3e",
+    "estimated_words": 96938,
+    "estimated_quote_count": 2032,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  }
+]
