@@ -1,0 +1,36 @@
+sherlock_holmes_sources:
+  - title: "A Study in Scarlet"
+    gutenberg_id: 244
+    url: "https://www.gutenberg.org/ebooks/244.txt.utf-8"
+
+  - title: "The Sign of the Four"
+    gutenberg_id: 2097
+    url: "https://www.gutenberg.org/ebooks/2097.txt.utf-8"
+
+  - title: "The Adventures of Sherlock Holmes"
+    gutenberg_id: 1661
+    url: "https://www.gutenberg.org/ebooks/1661.txt.utf-8"
+
+  - title: "The Memoirs of Sherlock Holmes"
+    gutenberg_id: 834
+    url: "https://www.gutenberg.org/ebooks/834.txt.utf-8"
+
+  - title: "The Hound of the Baskervilles"
+    gutenberg_id: 2852
+    url: "https://www.gutenberg.org/ebooks/2852.txt.utf-8"
+
+  - title: "The Return of Sherlock Holmes"
+    gutenberg_id: 108
+    url: "https://www.gutenberg.org/ebooks/108.txt.utf-8"
+
+  - title: "The Valley of Fear"
+    gutenberg_id: 3289
+    url: "https://www.gutenberg.org/ebooks/3289.txt.utf-8"
+
+  - title: "His Last Bow"
+    gutenberg_id: 2350
+    url: "https://www.gutenberg.org/ebooks/2350.txt.utf-8"
+
+  - title: "The Case-Book of Sherlock Holmes"
+    gutenberg_id: 69700
+    url: "https://www.gutenberg.org/ebooks/69700.txt.utf-8"

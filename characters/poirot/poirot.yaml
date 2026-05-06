@@ -1,0 +1,45 @@
+poirot_sources:
+  - title: "The Mysterious Affair at Styles"
+    gutenberg_id: 863
+    url: "https://www.gutenberg.org/ebooks/863.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "Poirot Investigates"
+    gutenberg_id: 61262
+    url: "https://www.gutenberg.org/ebooks/61262.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Murder on the Links"
+    gutenberg_id: 58866
+    url: "https://www.gutenberg.org/ebooks/58866.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Murder of Roger Ackroyd"
+    gutenberg_id: 69087
+    url: "https://www.gutenberg.org/ebooks/69087.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Big Four"
+    gutenberg_id: 70114
+    url: "https://www.gutenberg.org/ebooks/70114.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Mystery of the Blue Train"
+    gutenberg_id: 72824
+    url: "https://www.gutenberg.org/ebooks/72824.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Missing Will"
+    gutenberg_id: 67173
+    url: "https://www.gutenberg.org/ebooks/67173.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Hunter's Lodge Case"
+    gutenberg_id: 67160
+    url: "https://www.gutenberg.org/ebooks/67160.txt.utf-8"
+    note: "Public domain in the USA"
+
+  - title: "The Plymouth Express Affair"
+    gutenberg_id: 66446
+    url: "https://www.gutenberg.org/ebooks/66446.txt.utf-8"
+    note: "Public domain in the USA"
