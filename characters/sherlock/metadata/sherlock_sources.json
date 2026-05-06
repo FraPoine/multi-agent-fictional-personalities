@@ -1,0 +1,83 @@
+[
+  {
+    "title": "A Study in Scarlet",
+    "id": 244,
+    "url": "https://www.gutenberg.org/ebooks/244.txt.utf-8",
+    "local_path": "raw/244_a_study_in_scarlet.txt",
+    "sha256": "31e93a5ad562f50dcf009aee68d6284180d0d838437c236bbaa99ad3c369f64f",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Sign of the Four",
+    "id": 2097,
+    "url": "https://www.gutenberg.org/ebooks/2097.txt.utf-8",
+    "local_path": "raw/2097_the_sign_of_the_four.txt",
+    "sha256": "e840334735fcf5af81cbd6213c89650602a2ef667f94426dc7e6dc700cd0a776",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Adventures of Sherlock Holmes",
+    "id": 1661,
+    "url": "https://www.gutenberg.org/ebooks/1661.txt.utf-8",
+    "local_path": "raw/1661_the_adventures_of_sherlock_holmes.txt",
+    "sha256": "09037f29eab877783671b8291fec2595c56e61912c5378faa422d6cd8aa97c97",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Memoirs of Sherlock Holmes",
+    "id": 834,
+    "url": "https://www.gutenberg.org/ebooks/834.txt.utf-8",
+    "local_path": "raw/834_the_memoirs_of_sherlock_holmes.txt",
+    "sha256": "d5bc69775624307a3515713c0ece889664df455591ad15665295c54673e47688",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Hound of the Baskervilles",
+    "id": 2852,
+    "url": "https://www.gutenberg.org/ebooks/2852.txt.utf-8",
+    "local_path": "raw/2852_the_hound_of_the_baskervilles.txt",
+    "sha256": "21a90b85670b7d1ce62027b1407ee839d9f29f33384f7a63f07dc1629b65a920",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Return of Sherlock Holmes",
+    "id": 108,
+    "url": "https://www.gutenberg.org/ebooks/108.txt.utf-8",
+    "local_path": "raw/108_the_return_of_sherlock_holmes.txt",
+    "sha256": "d9d92307187f2c750eb1d8eaf48af65ba8b1e2109727f1c2fe44c4ba2ef6e305",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Valley of Fear",
+    "id": 3289,
+    "url": "https://www.gutenberg.org/ebooks/3289.txt.utf-8",
+    "local_path": "raw/3289_the_valley_of_fear.txt",
+    "sha256": "abe84f82ff3617c299c9421e10fdc1bdfa1339b361fdb1daa3d4ade3a4ececc8",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "His Last Bow",
+    "id": 2350,
+    "url": "https://www.gutenberg.org/ebooks/2350.txt.utf-8",
+    "local_path": "raw/2350_his_last_bow.txt",
+    "sha256": "cf6c019f414cde86b3143ecab07c286d899dcccd7921a0fcf41438d41fb6e406",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Case-Book of Sherlock Holmes",
+    "id": 69700,
+    "url": "https://www.gutenberg.org/ebooks/69700.txt.utf-8",
+    "local_path": "raw/69700_the_case-book_of_sherlock_holmes.txt",
+    "sha256": "0465d9cd95574347fdff5a63d2480bcefedf21f581feb0f454298b9b6ae637e7",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  }
+]
