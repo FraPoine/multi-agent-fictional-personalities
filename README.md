@@ -96,7 +96,7 @@ raw text -> persona JSON -> agent reply -> short transcript -> evaluation sample
 ```
 
 ## Figma mockups 
-[figma][https://www.figma.com/make/2dvBnDB3qcD9HVgimdZJm4/Multi-Agent-Personality-Simulator-Mockup?t=LYCAJGAbSbMaS37n-1&preview-route=%2Fevaluation]
+[figma](https://www.figma.com/make/2dvBnDB3qcD9HVgimdZJm4/Multi-Agent-Personality-Simulator-Mockup?t=LYCAJGAbSbMaS37n-1&preview-route=%2Fevaluation)
 
 ## Canva presentation
-[canva][https://canva.link/em2uvuw22kubcak]
+[canva](https://canva.link/em2uvuw22kubcak)
