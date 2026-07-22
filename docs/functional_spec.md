@@ -6,6 +6,8 @@ This document describes what the system should do from the point of view of its 
 
 The system supports the creation, simulation, and evaluation of persona-seeded fictional-character agents.
 
+This is an individual Track B project. The first interface is a CLI. The initial MVB exposes Sherlock Holmes and Hercule Poirot; L and Professor Layton are later extensions.
+
 ## User types
 
 ### 1. Project user
@@ -292,6 +294,10 @@ The project should keep separate modules for:
 
 Prompts must live in the `prompts/` directory, not inside long source-code strings.
 
+## Configuration and provider
+
+Configuration uses YAML and structured inputs/outputs use Pydantic schemas. OpenAI is the initial provider, but the exact model must be configurable and not hard-coded. API keys and other secrets must be loaded from environment variables.
+
 ## Error handling
 
 The system should:
@@ -302,7 +308,7 @@ The system should:
 
 ## Usability
 
-The first UI can be minimal. It should support:
+The first interface is a CLI. It should eventually support:
 - choosing characters;
 - running a simulation;
 - viewing a transcript;
@@ -311,3 +317,7 @@ The first UI can be minimal. It should support:
 ## Security and ethics
 
 The project should avoid private personal data unless explicit consent and course approval are obtained. The first version uses fictional characters to reduce privacy risk.
+
+## Memory and scheduling
+
+Agents use explicit per-run conversation history as working memory and no persistent memory. Multi-agent simulation uses deterministic round-robin turn taking in the first implementation.

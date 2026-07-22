@@ -6,6 +6,8 @@ This document describes the conceptual architecture, main components, data flow,
 
 The architecture is intentionally simple for Sprint 1. It should be updated whenever the implementation diverges from this design.
 
+The first delivery interface is a CLI. OpenAI is the initial provider, selected behind a configurable model boundary; the model name comes from YAML/environment configuration and is never hard-coded. Pydantic schemas validate structured boundaries and JSONL is the execution-log format.
+
 ## High-level architecture
 
 ```txt
@@ -75,7 +77,7 @@ Load and validate character-specific text examples.
 
 ### Owner
 
-Dataset/persona team member.
+Francesco (individual Track B project).
 
 ## 2. Persona extractor
 
@@ -202,12 +204,9 @@ Convert generated messages into blind evaluation trials.
 
 Show anonymized messages and collect rater guesses.
 
-### Initial implementation options
+### Initial implementation
 
-- Google Form;
-- simple Streamlit page;
-- simple web page;
-- command-line dry run for development.
+A CLI dry run is implemented first. A human-facing form or page may be added for the final evaluation.
 
 ## 8. Analyzer
 
@@ -329,8 +328,8 @@ project:
   name: multi_agent_fictional_personalities
 
 model:
-  provider: placeholder
-  name: placeholder-model
+  provider: openai
+  name: ${OPENAI_MODEL}
   temperature: 0.7
   max_output_tokens: 300
 
@@ -386,22 +385,18 @@ logs/runs/{run_id}/
 └── transcript.md
 ```
 
-## Smoke test path
+## Planned smoke test path
 
 The smoke test should run the smallest possible pipeline:
 
 ```txt
-2 toy characters
+Sherlock Holmes and Hercule Poirot
 ↓
-2 tiny corpora
+2 processed corpora
 ↓
 2 persona profiles
 ↓
-4-turn chat
-↓
-2 evaluation trials
-↓
-accuracy computation on fake responses
+1 saved agent response
 ```
 
 Target command:
@@ -422,15 +417,15 @@ Reason:
 Tradeoff:
 - results do not generalize directly to real human personalities.
 
-## ADR-002 — Start with 4 characters
+## ADR-002 — Stage two then four characters
 
 Reason:
-- chance baseline is simple;
-- small enough for manual inspection;
-- feasible within the project timeline.
+- Sherlock and Poirot keep the first pipeline small;
+- L and Professor Layton extend the final experiment to four characters;
+- the final four-way chance baseline is 25%.
 
 Tradeoff:
-- less variety and less statistical power than an 8-character setup.
+- the two-character development pilot has a 50% chance baseline and cannot be interpreted as the final experiment.
 
 ## ADR-003 — Use one model in the first version
 
@@ -449,3 +444,15 @@ Reason:
 
 Tradeoff:
 - less natural than free-form conversation.
+
+## ADR-005 — No persistent memory
+
+Reason:
+- explicit per-run history is reproducible and avoids cross-run leakage.
+
+Tradeoff:
+- agents cannot retain information between runs.
+
+## Planned package structure
+
+Implementation will use `src/persona_extraction/`, `src/agent_runtime/`, `src/simulation/`, `src/evaluation/`, and `src/logging/`, with executable CLI entry points under `scripts/`. These directories are planned and should be created only as their Sprint 2 or later implementations are added.

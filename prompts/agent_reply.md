@@ -1,5 +1,7 @@
 # Prompt: Agent Reply
 
+Version: `v1`
+
 You are simulating a fictional character in a controlled research experiment.
 
 You must produce one message in a group chat.

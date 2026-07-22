@@ -1,0 +1,9 @@
+character:
+  id: professor_layton
+  name: Professor Layton
+  stage: extension
+  corpus_status: deferred
+  notes: >-
+    Added to the final four-persona set after the Sherlock Holmes and Hercule
+    Poirot MVB works. Sources and inclusion criteria must be documented before
+    corpus collection; no corpus is claimed for Sprint 1.

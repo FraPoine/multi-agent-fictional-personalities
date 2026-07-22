@@ -10,7 +10,7 @@ We build a system that extracts structured persona profiles from fictional chara
 
 ## Project profile
 
-**Mixed project.**
+**Individual Track B, mixed project.**
 
 The project combines:
 - a **system-building contribution**, because we implement persona extraction, agent simulation, logging, and an evaluation interface;
@@ -24,12 +24,7 @@ Can persona-seeded LLM agents generate messages that human raters can attribute 
 
 Persona-seeded LLM agents will be identifiable above chance in a blind multiple-choice attribution task.
 
-For example:
-- with 4 characters, chance accuracy is 25%;
-- with 6 characters, chance accuracy is 16.7%;
-- with 8 characters, chance accuracy is 12.5%.
-
-The first version will use 4 characters to reduce scope and make the evaluation feasible.
+The final experiment uses four characters, so chance accuracy is 25%. A two-character Sherlock/Poirot development pilot has a separate 50% chance baseline and is a pipeline check, not the final experiment.
 
 ## Secondary questions
 
@@ -45,20 +40,16 @@ LLM systems increasingly use personas, roles, simulated users, and multi-agent s
 
 This project treats the LLM agents as the object of study. The goal is not to make claims about fictional characters as real people. The goal is to measure whether the model, when conditioned on a persona profile, behaves in a way that is distinguishable and reproducible.
 
-## Initial character set
+## Character set and staged scope
 
-The Minimum Viable Build will start with 4 characters from the same fictional universe.
+The final character set is:
 
-Candidate set:
+1. Sherlock Holmes
+2. Hercule Poirot
+3. L
+4. Professor Layton
 
-1. Naruto Uzumaki
-2. Sasuke Uchiha
-3. Sakura Haruno
-4. Kakashi Hatake
-
-This set is useful because the characters share a narrative world but have different speech styles, motivations, and interaction patterns.
-
-If data collection becomes difficult, the team may replace this set with another compact group of fictional characters with easily available dialogue examples.
+The initial MVB and Sprint 2 vertical slice use only Sherlock Holmes and Hercule Poirot. L and Professor Layton are added after that pipeline works. The detectives come from different fictional settings, which makes corpus provenance and differences in writing context potential confounds to document during evaluation.
 
 ## Dataset strategy
 
@@ -70,16 +61,11 @@ For each character, we will collect a small corpus of text evidence, such as:
 
 The first version will not require a large dataset. The goal is to build the pipeline and validate the evaluation method before scaling.
 
-The target for Sprint 2 is:
-
-- 2 characters;
-- 5–10 example passages per character;
-- one toy conversation;
-- one dry-run evaluation sample.
+The target for Sprint 2 is a processed corpus-to-persona-to-one-response pipeline for Sherlock and Poirot. Corpus size will be determined through documented curation rather than an unsupported quota.
 
 The target for the full project is:
 
-- 4–6 characters;
+- exactly 4 characters;
 - enough text evidence to extract a stable persona profile;
 - multiple generated conversations;
 - a small rater study.
@@ -113,7 +99,7 @@ The system has five stages:
 
 By the end of the project, the repository should contain:
 
-- a runnable system with UI or CLI;
+- a runnable CLI system;
 - persona JSON artifacts;
 - generated transcripts;
 - structured logs;
@@ -133,10 +119,12 @@ Sprint 1 outputs:
 - `docs/data_model.md`
 - `docs/evaluation_plan.md`
 - `docs/architecture.md`
-- `docs/sprint_plan.md`
+- `docs/sprint_1_plan.md`
+- `docs/sprint_2_plan.md`
+- `docs/roadmap.md`
 - `mockups/ui_mockups.md`
 - repository structure
-- GitHub milestone and issues
+- Sprint planning and GitHub setup records
 
 ## Out of scope for the first version
 
@@ -147,7 +135,7 @@ The first version will not include:
 - complex memory systems;
 - many LLM models;
 - automatic web scraping without manual validation;
-- advanced UI polish;
+- advanced interface polish;
 - open-ended public deployment;
 - claims that the model understands or authentically represents the fictional character.
 
@@ -182,11 +170,11 @@ Mitigation:
 
 ### Risk 4: Over-scoping
 
-Trying to support too many characters, models, and UI features may prevent completion.
+Trying to support too many characters, models, and interface features may prevent completion.
 
 Mitigation:
-- start with 4 characters;
-- use one model;
+- start the implementation with Sherlock and Poirot;
+- use OpenAI initially with the exact model configurable;
 - use one extraction method;
 - prioritize the end-to-end pipeline over polish.
 
@@ -194,8 +182,14 @@ Mitigation:
 
 The project succeeds if it produces a working, reproducible pipeline and a defensible evaluation, even if the primary hypothesis is not supported.
 
-A null result is still valuable if the team can show that:
+A null result is still valuable if the project can show that:
 - the pipeline ran correctly;
 - the evaluation was pre-specified;
 - uncertainty was reported;
 - limitations were explained honestly.
+
+## Implementation constraints and schedule
+
+The initial provider is OpenAI, but no model name is hard-coded. Configuration is YAML, structured data is validated with Pydantic, prompts are versioned under `prompts/`, and secrets come from environment variables. The system uses per-run conversation history without persistent agent memory and deterministic round-robin simulation. The first interface is a CLI and execution records use JSONL.
+
+The basic working-version target is August 7, 2026. The final course deadline is in September; no exact September date is currently documented.

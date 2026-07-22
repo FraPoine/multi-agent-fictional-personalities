@@ -6,6 +6,8 @@ This document defines how the project will measure whether persona-seeded LLM ag
 
 The evaluation is designed before the main experiment to avoid changing metrics after seeing results.
 
+The final experiment evaluates Sherlock Holmes, Hercule Poirot, L, and Professor Layton. The initial Sherlock/Poirot pilot is a development check for the pipeline and must be reported separately.
+
 ## Primary research question
 
 Can human raters identify which fictional character generated a message produced by a persona-seeded LLM agent?
@@ -83,16 +85,16 @@ Raters answer:
 
 They choose exactly one character.
 
-## Candidate characters for the first version
+## Candidate characters
 
-Initial MVB candidate set:
+Final experiment:
 
-1. Naruto Uzumaki
-2. Sasuke Uchiha
-3. Sakura Haruno
-4. Kakashi Hatake
+1. Sherlock Holmes
+2. Hercule Poirot
+3. L
+4. Professor Layton
 
-This set may change if corpus collection becomes difficult.
+The initial development pilot includes only Sherlock Holmes and Hercule Poirot. Its chance accuracy is 1 / 2 = 50%; it is not evidence for the final four-persona hypothesis.
 
 ## Trial construction
 
@@ -108,12 +110,13 @@ Rules:
 
 ## Sample size plan
 
-For the first pilot:
+For the development pilot:
 
-- 4 characters;
+- 2 characters (Sherlock Holmes and Hercule Poirot);
 - 2–3 messages per character;
 - 1–3 raters;
-- goal: test whether the pipeline works.
+- 50% chance baseline;
+- goal: test whether the pipeline and evaluation materials work, not draw final conclusions.
 
 For the main small study:
 
@@ -121,13 +124,6 @@ For the main small study:
 - 5–10 messages per character;
 - 5–10 raters if feasible;
 - goal: estimate whether accuracy is clearly above 25%.
-
-For an expanded version:
-
-- 6–8 characters;
-- more trials per character;
-- more raters;
-- confidence intervals and per-character breakdowns.
 
 ## Metrics
 
@@ -193,6 +189,8 @@ For 4 characters:
 H0: accuracy = 0.25
 H1: accuracy > 0.25
 ```
+
+For the two-character development pilot only, the null baseline is 0.50. Pilot and final results must not be pooled.
 
 The analysis will report:
 
@@ -292,7 +290,7 @@ The report should avoid claiming that the system captures real personality, cons
 
 ## Pre-registration statement
 
-Before running the main evaluation, the team will record:
+Before running the main evaluation, Francesco will record:
 
 - character set;
 - number of trials;

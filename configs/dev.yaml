@@ -2,17 +2,27 @@ project:
   name: multi_agent_fictional_personalities
 
 model:
-  provider: placeholder
-  name: placeholder-model
+  provider: openai
+  # Set this to an OpenAI model available to the development environment.
+  name: ${OPENAI_MODEL}
   temperature: 0.7
   max_output_tokens: 300
 
+prompts:
+  extract_persona:
+    path: prompts/extract_persona.md
+    version: v1
+  agent_reply:
+    path: prompts/agent_reply.md
+    version: v1
+
 characters:
   initial_set:
-    - naruto_uzumaki
-    - sasuke_uchiha
-    - sakura_haruno
-    - kakashi_hatake
+    - sherlock_holmes
+    - hercule_poirot
+  extension_set:
+    - l
+    - professor_layton
 
 simulation:
   turn_policy: round_robin
@@ -20,7 +30,8 @@ simulation:
   seed: 42
 
 evaluation:
-  characters_per_trial: 4
+  # The two-character value is for development only; final trials use 4 (25% chance).
+  characters_per_trial: 2
   trials_per_character: 5
   collect_confidence: true
   confidence_scale_min: 1

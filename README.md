@@ -8,11 +8,17 @@ The project is not about proving that an LLM "is" a character. It studies whethe
 
 ## Project profile
 
-**Profile:** Mixed project.
+**Profile:** Individual Track B, mixed project.
 
 The project has both:
 - a build component: an interactive system for persona extraction, chat simulation, logging, and evaluation;
 - a study component: a controlled evaluation of persona recognizability and agent behavior.
+
+## Scope and schedule
+
+The final experiment uses Sherlock Holmes, Hercule Poirot, L, and Professor Layton. The initial Minimum Viable Build (MVB) uses only Sherlock and Poirot; L and Professor Layton are later extensions after the first end-to-end pipeline works.
+
+The first interface is a CLI. OpenAI is the initial LLM provider, while the exact model is supplied through YAML configuration and an environment variable rather than hard-coded. Agents retain conversation history only within a run; there is no persistent memory. Multi-agent turns will use deterministic round-robin scheduling and runs will produce JSONL logs.
 
 ## Minimum Viable Build
 
@@ -28,14 +34,7 @@ The first working version will support:
 
 ## Initial scope
 
-The Sprint 1 scope is intentionally narrow:
-
-- 4 characters for the first end-to-end version;
-- one LLM model;
-- one persona extraction method;
-- one simulation mode;
-- one evaluation protocol;
-- one simple UI or CLI-first prototype.
+The first vertical slice is intentionally narrow: Sherlock Holmes and Hercule Poirot, one configurable OpenAI model, versioned prompts, Pydantic validation, and a CLI command that saves one persona and one generated response. The four-persona experiment follows later.
 
 ## Repository structure
 
@@ -49,24 +48,32 @@ project-root/
 │   ├── data_model.md
 │   ├── evaluation_plan.md
 │   ├── architecture.md
-│   └── sprint_plan.md
+│   ├── sprint_1_plan.md
+│   ├── sprint_2_plan.md
+│   └── roadmap.md
 ├── notes/
-│   └── sprint-1-yourname.md
+│   ├── sprint-1-francesco.md
+│   └── github-sprint-setup.md
 ├── prompts/
 │   ├── extract_persona.md
 │   ├── agent_reply.md
 │   └── style_neutralize.md
-├── data/
+├── characters/
+│   ├── sherlock/
+│   ├── poirot/
+│   ├── l/
+│   └── layton/
+├── data/                         # created as implementation needs it
 │   ├── raw/
 │   ├── processed/
 │   └── personas/
-├── src/
+├── src/                          # planned for Sprint 2+
 │   ├── persona_extraction/
 │   ├── agent_runtime/
 │   ├── simulation/
 │   ├── evaluation/
 │   └── logging/
-├── scripts/
+├── scripts/                      # planned for Sprint 2+
 │   └── smoke_test.sh
 ├── mockups/
 │   └── ui_mockups.md
@@ -74,26 +81,32 @@ project-root/
     └── dev.yaml
 ```
 
-## Expected Sprint 1 outputs
+## Sprint status
 
 - `docs/proposal.md`
 - `docs/functional_spec.md`
 - `docs/data_model.md`
 - `docs/evaluation_plan.md`
 - `docs/architecture.md`
-- `docs/sprint_plan.md`
+- `docs/sprint_1_plan.md`
+- `docs/sprint_2_plan.md`
+- `docs/roadmap.md`
 - `mockups/ui_mockups.md`
 - initial repository structure
-- Sprint 1 GitHub milestone and issues
-- one sprint-end markdown note per team member
+- `notes/sprint-1-francesco.md`
+- initial Sherlock corpus download and cleaning, plus partial evidence extraction
 
-## Next step after Sprint 1
+Sprint 1 established the specification and architecture but did not implement a working runtime. Corpus completion and the first end-to-end pipeline belong to Sprint 2.
 
-Sprint 2 should implement the minimum end-to-end pipeline on 2 characters:
+## Next step: Sprint 2
+
+Sprint 2 should implement the minimum end-to-end pipeline for Sherlock Holmes and Hercule Poirot:
 
 ```txt
-raw text -> persona JSON -> agent reply -> short transcript -> evaluation sample -> simple metric
+processed Sherlock/Poirot corpus -> validated persona JSON -> one saved agent response
 ```
+
+See the [Sprint 2 plan](docs/sprint_2_plan.md) and [roadmap](docs/roadmap.md).
 
 ## Figma mockups 
 [figma](https://www.figma.com/make/2dvBnDB3qcD9HVgimdZJm4/Multi-Agent-Personality-Simulator-Mockup?t=LYCAJGAbSbMaS37n-1&preview-route=%2Fevaluation)

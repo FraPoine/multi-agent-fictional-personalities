@@ -8,6 +8,16 @@ Multi-Agent Fictional Personalities
 
 This repository contains a multi-agent LLM system for simulating fictional characters and evaluating whether generated agent behavior remains recognizable to human raters.
 
+This is an individual Track B project with both a system-building component and a behavioral-evaluation component. The initial provider is OpenAI, with the exact model selected through configuration rather than source code. The first interface is a CLI.
+
+## Scope and schedule
+
+- Final character set: Sherlock Holmes, Hercule Poirot, L, and Professor Layton.
+- Initial Minimum Viable Build (MVB): Sherlock Holmes and Hercule Poirot only.
+- L and Professor Layton are extensions after the initial pipeline works.
+- Basic working-version target: August 7, 2026.
+- Final course deadline: September 2026
+
 ## High-level architecture
 
 The system has five main stages:
@@ -41,6 +51,8 @@ The system has five main stages:
 - Keep prompts under `prompts/`.
 - Do not hard-code long prompts inside Python functions.
 - Use config files for models, seeds, character sets, and experimental conditions.
+- Use YAML configuration files and Pydantic schemas.
+- Load secrets from environment variables; never commit API keys.
 - Every run should produce a structured log.
 - Errors should fail loudly unless they are explicitly handled and logged.
 
@@ -64,3 +76,5 @@ bash scripts/smoke_test.sh
 ```
 
 That command should run a toy end-to-end pipeline and write logs to a documented location.
+
+The first implementation milestone is narrower: a CLI command generates a validated persona JSON from a processed Sherlock Holmes or Hercule Poirot corpus and uses it to produce one saved agent response.

@@ -33,12 +33,12 @@ A fictional character selected for simulation and evaluation.
 
 ```json
 {
-  "character_id": "naruto_uzumaki",
-  "name": "Naruto Uzumaki",
-  "fictional_universe": "Naruto",
-  "description": "Energetic ninja who wants recognition and values friendship.",
-  "tags": ["energetic", "optimistic", "stubborn", "loyal"],
-  "corpus_ids": ["corpus_naruto_001", "corpus_naruto_002"],
+  "character_id": "sherlock_holmes",
+  "name": "Sherlock Holmes",
+  "fictional_universe": "Sherlock Holmes canon",
+  "description": "Consulting detective known for observation and deductive reasoning.",
+  "tags": ["observant", "analytical", "direct"],
+  "corpus_ids": ["corpus_sherlock_001", "corpus_sherlock_002"],
   "notes": "Initial MVB character."
 }
 ```
@@ -64,14 +64,14 @@ A text artifact used as evidence for building a persona profile.
 
 ```json
 {
-  "document_id": "corpus_naruto_001",
-  "character_id": "naruto_uzumaki",
+  "document_id": "corpus_sherlock_001",
+  "character_id": "sherlock_holmes",
   "source_type": "dialogue_excerpt",
   "source_reference": "manual_curation_v1",
-  "text": "I never go back on my word. That's my ninja way!",
+  "text": "A manually selected public-domain corpus excerpt goes here.",
   "metadata": {
     "scene": "example",
-    "language": "en",
+    "language": "en"
   }
 }
 ```
@@ -95,42 +95,38 @@ A structured representation of a character used to condition an LLM agent.
 
 ```json
 {
-  "persona_id": "persona_naruto_uzumaki_v1",
-  "character_id": "naruto_uzumaki",
+  "persona_id": "persona_sherlock_holmes_v1",
+  "character_id": "sherlock_holmes",
   "version": "v1",
   "created_at": "2026-05-05T00:00:00Z",
   "created_by": "extract_persona_prompt_v1",
-  "model": "model_name_here",
-  "source_document_ids": ["corpus_naruto_001", "corpus_naruto_002"],
+  "model": "configured_model_name",
+  "source_document_ids": ["corpus_sherlock_001", "corpus_sherlock_002"],
   "style": {
-    "tone": "energetic and direct",
+    "tone": "analytical and direct",
     "sentence_length": "short to medium",
     "formality": "informal",
-    "emotion_level": "high"
+    "emotion_level": "restrained"
   },
   "values": [
-    "friendship",
-    "recognition",
-    "persistence"
+    "reasoning",
+    "evidence",
+    "solving difficult cases"
   ],
   "motivations": [
-    "being accepted",
-    "protecting friends",
-    "proving himself"
+    "resolving mysteries",
+    "testing hypotheses"
   ],
   "speech_patterns": [
-    "uses direct emotional statements",
-    "often expresses determination",
-    "uses simple vocabulary"
+    "states observations precisely",
+    "explains deductions in ordered steps"
   ],
   "interaction_rules": [
-    "respond with optimism unless the situation is threatening",
-    "challenge people who give up",
-    "avoid overly formal language"
+    "ask for evidence when claims are unsupported",
+    "separate observation from inference"
   ],
   "example_utterances": [
-    "I am not giving up.",
-    "We can still do this together."
+    "A short corpus-grounded example would be inserted here after curation."
   ],
   "limitations": [
     "Profile is based on a small curated corpus.",
@@ -159,9 +155,9 @@ Agents may be created dynamically from config files.
 
 ```json
 {
-  "agent_id": "agent_naruto_run_001",
-  "persona_id": "persona_naruto_uzumaki_v1",
-  "model": "model_name_here",
+  "agent_id": "agent_sherlock_run_001",
+  "persona_id": "persona_sherlock_holmes_v1",
+  "model": "configured_model_name",
   "temperature": 0.7,
   "max_output_tokens": 300,
   "tools_enabled": [],
@@ -192,17 +188,15 @@ One complete simulated multi-agent conversation.
 {
   "run_id": "run_001",
   "created_at": "2026-05-05T00:00:00Z",
-  "topic": "The team must decide who should lead a dangerous mission.",
+  "topic": "The participants must decide how to investigate a difficult case.",
   "agent_ids": [
-    "agent_naruto_run_001",
-    "agent_sasuke_run_001",
-    "agent_sakura_run_001",
-    "agent_kakashi_run_001"
+    "agent_sherlock_run_001",
+    "agent_poirot_run_001"
   ],
   "turn_count": 12,
   "seed": 42,
   "config_path": "configs/dev.yaml",
-  "config_hash": "hash_here",
+  "config_hash": "computed_config_hash",
   "status": "completed"
 }
 ```
@@ -229,12 +223,12 @@ One generated message in a simulated conversation.
   "message_id": "msg_001",
   "run_id": "run_001",
   "turn_index": 1,
-  "speaker_agent_id": "agent_naruto_run_001",
-  "speaker_character_id": "naruto_uzumaki",
-  "text": "We cannot just stand here. If someone needs to go, I will go first.",
+  "speaker_agent_id": "agent_sherlock_run_001",
+  "speaker_character_id": "sherlock_holmes",
+  "text": "A generated response is stored here at runtime.",
   "prompt_id": "agent_reply_v1",
-  "prompt_hash": "hash_here",
-  "model": "model_name_here",
+  "prompt_hash": "computed_prompt_hash",
+  "model": "configured_model_name",
   "input_tokens": 500,
   "output_tokens": 35,
   "timestamp": "2026-05-05T00:00:00Z",
@@ -265,14 +259,14 @@ One anonymized item shown to a rater.
   "trial_id": "trial_001",
   "message_id": "msg_001",
   "condition": "persona_seeded",
-  "display_text": "We cannot just stand here. If someone needs to go, I will go first.",
+  "display_text": "An anonymized generated response is stored here.",
   "candidate_character_ids": [
-    "naruto_uzumaki",
-    "sasuke_uchiha",
-    "sakura_haruno",
-    "kakashi_hatake"
+    "sherlock_holmes",
+    "hercule_poirot",
+    "l",
+    "professor_layton"
   ],
-  "correct_character_id": "naruto_uzumaki",
+  "correct_character_id": "sherlock_holmes",
   "source_run_id": "run_001"
 }
 ```
@@ -299,7 +293,7 @@ One human answer to one evaluation trial.
   "response_id": "response_001",
   "trial_id": "trial_001",
   "rater_id": "anon_001",
-  "selected_character_id": "naruto_uzumaki",
+  "selected_character_id": "sherlock_holmes",
   "confidence": 4,
   "timestamp": "2026-05-05T00:00:00Z",
   "response_time_seconds": 18.4
@@ -330,10 +324,10 @@ A structured log entry for observability and replay.
   "timestamp": "2026-05-05T00:00:00Z",
   "step_type": "agent_reply",
   "seed": 42,
-  "config_hash": "hash_here",
-  "model": "model_name_here",
+  "config_hash": "computed_config_hash",
+  "model": "configured_model_name",
   "inputs": {
-    "agent_id": "agent_naruto_run_001",
+    "agent_id": "agent_sherlock_run_001",
     "history_length": 3
   },
   "outputs": {

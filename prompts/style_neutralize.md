@@ -1,5 +1,7 @@
 # Prompt: Style Neutralization
 
+Version: `v1`
+
 Rewrite the following message in a neutral style while preserving its basic meaning.
 
 The goal is to remove obvious stylistic cues that may reveal the fictional character.

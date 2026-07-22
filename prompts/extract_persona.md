@@ -1,5 +1,7 @@
 # Prompt: Extract Persona
 
+Version: `v1`
+
 You are given text examples associated with a fictional character.
 
 Your task is to extract a structured persona profile that can be used to condition an LLM agent.
