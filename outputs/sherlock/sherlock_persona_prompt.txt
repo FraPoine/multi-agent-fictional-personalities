@@ -1,0 +1,451 @@
+# Prompt: Extract Persona
+
+Version: `v1`
+
+You are given text examples associated with a fictional character.
+
+Your task is to extract a structured persona profile that can be used to condition an LLM agent.
+
+Return valid JSON only.
+
+## Character
+
+Name: Sherlock Holmes
+
+Description:
+A fictional consulting detective known for careful observation, deductive reasoning, precision, confidence, and emotional restraint.
+
+## Corpus examples
+
+### Example 1
+Source: 108_the_return_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior, interaction_with_watson
+Context: Holmes speaks to Watson during the case involving Jonas Oldacre and John McFarlane.
+Confidence: 0.99
+Text:
+And yet it may be premature to abandon the case. After all, important fresh evidence is a two-edged thing, and may possibly cut in a very different direction to that which Lestrade imagines. Take your breakfast, Watson, and we will go out together and see what we can do. I feel as if I shall need your company and your moral support today.
+
+### Example 2
+Source: 108_the_return_of_sherlock_holmes.txt
+Traits: speaking_style
+Context: Holmes speaks during the investigation of the smashed Napoleon busts.
+Confidence: 0.99
+Text:
+I don't think that I need intrude upon your time and patience any more.
+
+### Example 3
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior, emotional_expression, interaction_with_others
+Context: Holmes addresses the King of Bohemia while investigating Irene Adler and the compromising photograph.
+Confidence: 1.0
+Text:
+Oh, then we have three days yet, That is very fortunate, as I have one or two matters of importance to look into just at present. Your Majesty will, of course, stay in London for the present?
+
+### Example 4
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style
+Context: Holmes comments on Jabez Wilson's unusual league during the investigation.
+Confidence: 1.0
+Text:
+We are close there now, This fellow Merryweather is a bank director, and personally interested in the matter. I thought it as well to have Jones with us also. He is not a bad fellow, though an absolute imbecile in his profession. He has one positive virtue. He is as brave as a bulldog and as tenacious as a lobster if he gets his claws upon anyone.
+
+### Example 5
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style
+Context: Holmes comments on Mary Sutherland's missing fiancé during the investigation.
+Confidence: 1.0
+Text:
+Your father, your stepfather, surely, since the name is different.
+
+### Example 6
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, deductive_reasoning, social_behavior, emotional_expression
+Context: Holmes comments on Mary Sutherland's missing fiancé during the investigation.
+Confidence: 1.0
+Text:
+Oh, it won't do—really it won't, There is no possible getting out of it, Mr. Windibank. It is quite too transparent, and it was a very bad compliment when you said that it was impossible for me to solve so simple a question. That's right! Sit down and let us talk it over.
+
+### Example 7
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, deductive_reasoning
+Context: Holmes comments on the Boscombe Valley death during the investigation.
+Confidence: 1.0
+Text:
+You are right, you do find it very hard to tackle the facts.
+
+### Example 8
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior
+Context: Holmes comments on Neville St. Clair's disappearance during the investigation.
+Confidence: 1.0
+Text:
+We are on the outskirts of Lee, We have touched on three English counties in our short drive, starting in Middlesex, passing over an angle of Surrey, and ending in Kent. See that light among the trees? That is The Cedars, and beside that lamp sits a woman whose anxious ears have already, I have little doubt, caught the clink of our horse's feet.
+
+### Example 9
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style
+Context: Holmes comments on Neville St. Clair's disappearance during the investigation.
+Confidence: 1.0
+Text:
+He certainly needs a wash, I had an idea that he might, and I took the liberty of bringing the tools with me.
+
+### Example 10
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, interaction_with_watson
+Context: Holmes addresses Watson while investigating Neville St. Clair's disappearance.
+Confidence: 1.0
+Text:
+I reached this one, by sitting upon five pillows and consuming an ounce of shag. I think, Watson, that if we drive to Baker Street we shall just be in time for breakfast.
+
+### Example 11
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, deductive_reasoning
+Context: Holmes comments on the stolen blue carbuncle during the investigation.
+Confidence: 1.0
+Text:
+No, no. No crime, Only one of those whimsical little incidents which will happen when you have four million human beings all jostling each other within the space of a few square miles. Amid the action and reaction of so dense a swarm of humanity, every possible combination of events may be expected to take place, and many a little problem will be presented which may be striking and bizarre without being criminal. We have already had experience of such.
+
+### Example 12
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior, emotional_expression
+Context: Holmes addresses a client while investigating the stolen blue carbuncle.
+Confidence: 1.0
+Text:
+Here we are! The fire looks very seasonable in this weather. You look cold, Mr. Ryder. Pray take the basket-chair. I will just put on my slippers before we settle this little matter of yours.
+
+### Example 13
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, social_behavior
+Context: Holmes comments on Helen Stoner's danger at Stoke Moran during the investigation.
+Confidence: 1.0
+Text:
+Indeed, Was it your custom always to lock yourselves in at night?
+
+### Example 14
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style
+Context: Holmes comments on Helen Stoner's danger at Stoke Moran during the investigation.
+Confidence: 1.0
+Text:
+There is some building going on there, that is where we are going.
+
+### Example 15
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior, sarcasm, interaction_with_others
+Context: Holmes addresses Inspector Lestrade while investigating Lady St. Simon's disappearance.
+Confidence: 1.0
+Text:
+Very good, Lestrade, You really are very fine indeed. Let me see it.
+
+### Example 16
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, deductive_reasoning, observation, confidence
+Context: Holmes comments on Lady St. Simon's disappearance during the investigation.
+Confidence: 1.0
+Text:
+The case has been an interesting one, because it serves to show very clearly how simple the explanation may be of an affair which at first sight seems to be almost inexplicable. Nothing could be more natural than the sequence of events as narrated by this lady, and nothing stranger than the result when viewed, for instance, by Mr. Lestrade of Scotland Yard.
+
+### Example 17
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, social_behavior, interaction_with_others
+Context: Holmes addresses a client while investigating the missing beryls from the coronet.
+Confidence: 1.0
+Text:
+Pray compose yourself, sir, and let me have a clear account of who you are and what it is that has befallen you.
+
+### Example 18
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, deductive_reasoning, observation, social_behavior, confidence
+Context: Holmes addresses a client while investigating the missing beryls from the coronet.
+Confidence: 1.0
+Text:
+Now, my dear sir, is it not obvious to you now that this matter really strikes very much deeper than either you or the police were at first inclined to think? It appeared to you to be a simple case; to me it seems exceedingly complex. Consider what is involved by your theory. You suppose that your son came down from his bed, went, at great risk, to your dressing-room, opened your bureau, took out your coronet, broke off by main force a small portion of it, went off to some other place, concealed three gems out of the thirty-nine, with such skill that nobody can find them, and then returned with the other thirty-six into the room in which he exposed himself to the greatest danger of being discovered. I ask you now, is such a theory tenable?
+
+### Example 19
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, social_behavior, interaction_with_others
+Context: Holmes addresses Alexander Holder while investigating the missing beryls from the coronet.
+Confidence: 1.0
+Text:
+It is our task to find that out, so now, if you please, Mr. Holder, we will set off for Streatham together, and devote an hour to glancing a little more closely into details.
+
+### Example 20
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, social_behavior, interaction_with_others
+Context: Holmes addresses Alexander Holder while investigating the missing beryls from the coronet.
+Confidence: 1.0
+Text:
+Now, Mr. Holder, here is the corner which corresponds to that which has been so unfortunately lost. Might I beg that you will break it off.
+
+### Example 21
+Source: 1661_the_adventures_of_sherlock_holmes.txt
+Traits: speaking_style, emotional_expression
+Context: Holmes comments on Violet Hunter's employment at the Copper Beeches during the investigation.
+Confidence: 1.0
+Text:
+And she would need to be, I am much mistaken if we do not hear from her before many days are past.
+
+### Example 22
+Source: 2097_the_sign_of_the_four.txt
+Traits: speaking_style, observation, deductive_reasoning, confidence
+Context: Holmes explains the evidentiary value of tobacco ash.
+Confidence: 1.0
+Text:
+If you can say definitely, for example, that some murder has been done by a man who was smoking an Indian lunkah, it obviously narrows your field of search. To the trained eye there is as much difference between the black ash of a Trichinopoly and the white fluff of bird's-eye as there is between a cabbage and a potato.
+
+### Example 23
+Source: 2097_the_sign_of_the_four.txt
+Traits: deductive_reasoning, speaking_style, interaction_with_watson
+Context: Holmes qualifies the certainty of his deductions about Watson's brother.
+Confidence: 1.0
+Text:
+Ah, that is good luck. I could only say what was the balance of probability. I did not at all expect to be so accurate.
+
+### Example 24
+Source: 2097_the_sign_of_the_four.txt
+Traits: observation, speaking_style, interaction_with_others
+Context: Holmes examines Miss Morstan's anonymous letter.
+Confidence: 1.0
+Text:
+The envelope too, please. Postmark, London, S.W. Date, July 7. Hum! Man's thumb-mark on corner,—probably postman.
+
+### Example 25
+Source: 2097_the_sign_of_the_four.txt
+Traits: observation, deductive_reasoning, confidence, interaction_with_others
+Context: Holmes compares the handwriting on Miss Morstan's papers.
+Confidence: 1.0
+Text:
+See how the irrepressible Greek *e* will break out, and see the twirl of the final *s*. They are undoubtedly by the same person. I should not like to suggest false hopes, Miss Morstan, but is there any resemblance between this hand and that of your father?
+
+### Example 26
+Source: 2097_the_sign_of_the_four.txt
+Traits: deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes begins laying out the connection between Captain Morstan and Major Sholto.
+Confidence: 1.0
+Text:
+Look at it in this way, then. Captain Morstan disappears. The only person in London whom he could have visited is Major Sholto. Major Sholto denies having heard that he was in London.
+
+### Example 27
+Source: 2097_the_sign_of_the_four.txt
+Traits: observation, deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes identifies entry traces around the window.
+Confidence: 1.0
+Text:
+Roof quite out of reach. Yet a man has mounted by the window. It rained a little last night. Here is the print of a foot in mould upon the sill. And here is a circular muddy mark, and here again upon the floor, and here again by the table.
+
+### Example 28
+Source: 2097_the_sign_of_the_four.txt
+Traits: speaking_style, deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes begins explaining how he identified the wooden-legged man.
+Confidence: 1.0
+Text:
+Pshaw, my dear boy! it was simplicity itself. I don't wish to be theatrical. It is all patent and above-board. Two officers who are in command of a convict-guard learn an important secret as to buried treasure.
+
+### Example 29
+Source: 2097_the_sign_of_the_four.txt
+Traits: deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes concludes that Jonathan Small is the wooden-legged man.
+Confidence: 1.0
+Text:
+Now, only one white man's name is on the chart. The others are Hindoos or Mohammedans. There is no other white man. Therefore we may say with confidence that the wooden-legged man is identical with Jonathan Small. Does the reasoning strike you as being faulty?
+
+### Example 30
+Source: 2097_the_sign_of_the_four.txt
+Traits: social_behavior, emotional_expression, interaction_with_others
+Context: Holmes asks Jonathan Small to explain his claim to the treasure.
+Confidence: 1.0
+Text:
+We have not heard your story, and we cannot tell how far justice may originally have been on your side.
+
+### Example 31
+Source: 2350_his_last_bow.txt
+Traits: deductive_reasoning, interaction_with_watson, observation
+Context: Holmes reconstructs why a couple used extreme secrecy to hide the woman.
+Confidence: 0.98
+Text:
+Well, she saw something to alarm her. That is certain. The general sequence of events is pretty clear, is it not? A couple seek refuge in London from a very terrible and instant danger. The measure of that danger is the rigour of their precautions.
+
+### Example 32
+Source: 2350_his_last_bow.txt
+Traits: deductive_reasoning, interaction_with_watson, confidence
+Context: Holmes explains to Watson why the British government drew him out of retirement.
+Confidence: 0.98
+Text:
+Ah, I have often marvelled at it myself. The Foreign Minister alone I could have withstood, but when the Premier also deigned to visit my humble roof—! The fact is, Watson, that this gentleman upon the sofa was a bit too good for our people. He was in a class by himself. Things were going wrong, and no one could understand why they were going wrong.
+
+### Example 33
+Source: 244_a_study_in_scarlet.txt
+Traits: speaking_style, confidence, interaction_with_watson
+Context: Holmes explains the practical value of his blood test to Watson in the laboratory.
+Confidence: 1.0
+Text:
+Why, man, it is the most practical medico-legal discovery for years. Don't you see that it gives us an infallible test for blood stains. Come over here now!
+
+### Example 34
+Source: 244_a_study_in_scarlet.txt
+Traits: emotional_expression, social_behavior, interaction_with_watson, speaking_style
+Context: Holmes describes his moods and habits while discussing sharing rooms with Watson.
+Confidence: 1.0
+Text:
+Let me see—what are my other shortcomings. I get in the dumps at times, and don't open my mouth for days on end. You must not think I am sulky when I do that. Just let me alone, and I'll soon be right.
+
+### Example 35
+Source: 244_a_study_in_scarlet.txt
+Traits: observation, deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes completes his deduction that the messenger had been a sergeant.
+Confidence: 1.0
+Text:
+There we have the marine. He was a man with some amount of self-importance and a certain air of command. You must have observed the way in which he held his head and swung his cane. A steady, respectable, middle-aged man, too, on the face of him—all facts which led me to believe that he had been a sergeant.
+
+### Example 36
+Source: 244_a_study_in_scarlet.txt
+Traits: sarcasm, confidence, social_behavior, interaction_with_others
+Context: Holmes assesses Gregson and Lestrade after receiving Gregson's request for help.
+Confidence: 1.0
+Text:
+They are both quick and energetic, but conventional—shockingly so. They have their knives into one another, too. They are as jealous as a pair of professional beauties. There will be some fun over this case if they are both put upon the scent.
+
+### Example 37
+Source: 244_a_study_in_scarlet.txt
+Traits: deductive_reasoning, observation, interaction_with_others
+Context: Holmes infers from the blood at the scene that another person was present.
+Confidence: 1.0
+Text:
+Then, of course, this blood belongs to a second individual—presumably the murderer, if murder has been committed. It reminds me of the circumstances attendant on the death of Van Jansen, in Utrecht, in the year '34. Do you remember the case, Gregson?
+
+### Example 38
+Source: 244_a_study_in_scarlet.txt
+Traits: observation, deductive_reasoning, confidence, interaction_with_others
+Context: Holmes interrupts Rance by reconstructing the constable's movements inside the house.
+Confidence: 1.0
+Text:
+Yes, I know all that you saw. You walked round the room several times, and you knelt down by the body, and then you walked through and tried the kitchen door, and then——
+
+### Example 39
+Source: 244_a_study_in_scarlet.txt
+Traits: deductive_reasoning, confidence, interaction_with_watson
+Context: Holmes explains to Watson why the suspect returned and how the ring can be used as bait.
+Confidence: 1.0
+Text:
+The ring, man, the ring: that was what he came back for. If we have no other way of catching him, we can always bait our line with the ring. I shall have him, Doctor—I'll lay you two to one that I have him. I must thank you for it all. I might not have gone but for you, and so have missed the finest study I ever came across: a study in scarlet, eh?
+
+### Example 40
+Source: 244_a_study_in_scarlet.txt
+Traits: deductive_reasoning, interaction_with_watson, confidence
+Context: Holmes asks Watson to adopt the suspect's perspective and predicts his response to the advertisement.
+Confidence: 1.0
+Text:
+Now put yourself in that man's place. On thinking the matter over, it must have occurred to him that it was possible that he had lost the ring in the road after leaving the house. What would he do, then? He would eagerly look out for the evening papers in the hope of seeing it among the articles found. His eye, of course, would light upon this.
+
+### Example 41
+Source: 244_a_study_in_scarlet.txt
+Traits: observation, social_behavior, interaction_with_watson
+Context: Holmes explains to Watson why street children gather information more effectively than officials.
+Confidence: 1.0
+Text:
+The mere sight of an official-looking person seals men's lips. These youngsters, however, go everywhere and hear everything. They are as sharp as needles, too; all they want is organisation.
+
+### Example 42
+Source: 244_a_study_in_scarlet.txt
+Traits: sarcasm, emotional_expression, interaction_with_watson
+Context: Holmes laughs after a newspaper credits Gregson and Lestrade for the capture.
+Confidence: 1.0
+Text:
+Didn't I tell you so when we started? That's the result of all our Study in Scarlet: to get them a testimonial!
+
+### Example 43
+Source: 2852_the_hound_of_the_baskervilles.txt
+Traits: deductive_reasoning, observation, confidence, interaction_with_watson
+Context: Holmes describes the opponent's intelligence and his own attempt to identify the watcher.
+Confidence: 0.99
+Text:
+I was looking out for loiterers in the street, but I saw none. We are dealing with a clever man, Watson. This matter cuts very deep, and though I have not finally made up my mind whether it is a benevolent or a malevolent agency which is in touch with us, I am conscious always of power and design. When our friends left I at once followed them in the hopes of marking down their invisible attendant.
+
+### Example 44
+Source: 2852_the_hound_of_the_baskervilles.txt
+Traits: deductive_reasoning, interaction_with_others, social_behavior
+Context: Holmes explains why Dr. Mortimer cannot provide constant protection and requires a trusted companion.
+Confidence: 0.99
+Text:
+But Dr. Mortimer has his practice to attend to, and his house is miles away from yours. With all the goodwill in the world he may be unable to help you. No, Sir Henry, you must take with you someone, a trusty man, who will be always by your side.
+
+### Example 45
+Source: 3289_the_valley_of_fear.txt
+Traits: social_behavior, interaction_with_watson, confidence
+Context: Holmes responds after Watson reports that Mrs. Douglas and Barker may confide in him.
+Confidence: 0.99
+Text:
+No confidences, Watson; for they are mighty awkward if it comes to an arrest for conspiracy and murder.
+
+### Example 46
+Source: 3289_the_valley_of_fear.txt
+Traits: social_behavior, deductive_reasoning, interaction_with_watson, speaking_style
+Context: Holmes comments to Watson on Mrs. Douglas's conduct after the shooting.
+Confidence: 0.99
+Text:
+I am not a whole-souled admirer of womankind, as you are aware, Watson, but my experience of life has taught me that there are few wives, having any regard for their husbands, who would let any man's spoken word stand between them and that husband's dead body. Should I ever marry, Watson, I should hope to inspire my wife with some feeling which would prevent her from being walked off by a housekeeper when my corpse was lying within a few yards of her. It was badly stage-managed; for even the rawest investigators must be struck by the absence of the usual feminine ululation. If there had been nothing else, this incident alone would have suggested a prearranged conspiracy to my mind.
+
+### Example 47
+Source: 69700_the_case-book_of_sherlock_holmes.txt
+Traits: speaking_style, observation, social_behavior, sarcasm, interaction_with_others
+Context: Holmes speaks to Steve Dixie during the investigation of the Three Gables burglary and Douglas Maberley manuscript.
+Confidence: 0.99
+Text:
+I won't ask you to sit down, for I don't like the smell of you, but aren't you Steve Dixie, the bruiser?
+
+### Example 48
+Source: 69700_the_case-book_of_sherlock_holmes.txt
+Traits: speaking_style, observation, interaction_with_others
+Context: Holmes speaks during the investigation of Mrs. Gibson's death at Thor Bridge.
+Confidence: 0.99
+Text:
+Yes, it was a hard knock. In a curious place, too. It was not from above but from below, for you see that it is on the _lower_ edge of the parapet.
+
+### Example 49
+Source: 834_the_memoirs_of_sherlock_holmes.txt
+Traits: observation, interaction_with_others, speaking_style
+Context: Holmes draws Lestrade's attention to the cord around the parcel.
+Confidence: 0.99
+Text:
+What do you make of this string, Lestrade?
+
+### Example 50
+Source: 834_the_memoirs_of_sherlock_holmes.txt
+Traits: deductive_reasoning, interaction_with_others, confidence
+Context: Holmes explains to Pycroft why the criminals required a written declaration.
+Confidence: 0.99
+Text:
+Don't you see, my young friend, that they were very anxious to obtain a specimen of your handwriting, and had no other way of doing it?
+
+## Output schema
+
+Return this JSON structure:
+
+```json
+{
+  "character_id": "",
+  "display_name": "",
+  "description": "",
+  "speaking_style": [],
+  "reasoning_style": [],
+  "personality_traits": [],
+  "behavior_rules": [],
+  "example_messages": []
+}
+```
+
+## Requirements
+
+- Do not claim the character is real.
+- Do not include unsupported traits.
+- Distinguish between speaking style, reasoning style, and personality traits.
+- Avoid stereotypes unless they are directly supported by the corpus.
+- Keep the profile concise and usable for generation.
+- Use a lowercase `snake_case` identifier for `character_id`.
+- Set `display_name` to the character name given above.
+- Write a short, corpus-grounded summary in `description`.
+- Put only short strings in the array fields; do not return nested objects.
+- Use `speaking_style` for how the character speaks and `reasoning_style` for how the character thinks.
+- Use `personality_traits` for stable traits and `behavior_rules` for instructions the agent should follow.
+- Include only representative, corpus-supported lines in `example_messages`.
+- Return exactly these fields and no others.
