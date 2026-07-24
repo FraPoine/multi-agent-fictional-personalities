@@ -1,0 +1,83 @@
+[
+  {
+    "title": "The Mysterious Affair at Styles",
+    "id": 863,
+    "url": "https://www.gutenberg.org/cache/epub/863/pg863.txt",
+    "local_path": "raw/863_the_mysterious_affair_at_styles.txt",
+    "sha256": "1faa63bb31d418523417dda0227d29f78e71aec474db5a18021e41fab1dc2d57",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "Poirot Investigates",
+    "id": 61262,
+    "url": "https://www.gutenberg.org/cache/epub/61262/pg61262.txt",
+    "local_path": "raw/61262_poirot_investigates.txt",
+    "sha256": "add51ead1f97673e686af8e55c31379ff392a64264ffa0578c24e9644b2d2292",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Murder on the Links",
+    "id": 58866,
+    "url": "https://www.gutenberg.org/cache/epub/58866/pg58866.txt",
+    "local_path": "raw/58866_the_murder_on_the_links.txt",
+    "sha256": "4849190e3fb10be2a3ca47adb48f2564d176ac1e291a71d3f28ca2a8513514fc",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Murder of Roger Ackroyd",
+    "id": 69087,
+    "url": "https://www.gutenberg.org/cache/epub/69087/pg69087.txt",
+    "local_path": "raw/69087_the_murder_of_roger_ackroyd.txt",
+    "sha256": "b84511b131a1b60f5d53c507760062c05237f77afe7febf4f5507bc0c01f299a",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Big Four",
+    "id": 70114,
+    "url": "https://www.gutenberg.org/cache/epub/70114/pg70114.txt",
+    "local_path": "raw/70114_the_big_four.txt",
+    "sha256": "376333703ce1dc33095095ffe1ae21b5add4bdd4c37e7b5406ee8583d986209c",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Mystery of the Blue Train",
+    "id": 72824,
+    "url": "https://www.gutenberg.org/cache/epub/72824/pg72824.txt",
+    "local_path": "raw/72824_the_mystery_of_the_blue_train.txt",
+    "sha256": "721b9cd9ef1b311467de1e0111277dbedbc3bfe84695232a08b3909f265cc16d",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Missing Will",
+    "id": 67173,
+    "url": "https://www.gutenberg.org/cache/epub/67173/pg67173.txt",
+    "local_path": "raw/67173_the_missing_will.txt",
+    "sha256": "96c03362f0e397affbef0c2a718a23494507895ae39c28f74278c284839c216d",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Hunter's Lodge Case",
+    "id": 67160,
+    "url": "https://www.gutenberg.org/cache/epub/67160/pg67160.txt",
+    "local_path": "raw/67160_the_hunter_s_lodge_case.txt",
+    "sha256": "390cb3642dce90f982ce385fe9884f8d8d80f6862ae69b22b43eda72c67ed2ec",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  },
+  {
+    "title": "The Plymouth Express Affair",
+    "id": 66446,
+    "url": "https://www.gutenberg.org/cache/epub/66446/pg66446.txt",
+    "local_path": "raw/66446_the_plymouth_express_affair.txt",
+    "sha256": "6f3abc3e0f94d24b3126c49a299730ad20c369fddf0c7750b4d50b92c2fb7d5f",
+    "source": "Project Gutenberg",
+    "format": "Plain Text UTF-8"
+  }
+]

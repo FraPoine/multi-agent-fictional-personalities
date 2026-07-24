@@ -1,0 +1,110 @@
+[
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/58866_the_murder_on_the_links.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/58866_the_murder_on_the_links.txt",
+    "raw_chars": 382507,
+    "clean_chars": 362767,
+    "raw_sha256": "6b54a30ae4cef144291522479647be82bb4152b079f5b51fca7ec10a4a3b7edd",
+    "clean_sha256": "4b29f72751117ad3df48f67b9a5e294402cf6622c63b3f34422a807ffa8dd32f",
+    "estimated_words": 66132,
+    "estimated_quote_count": 2257,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/61262_poirot_investigates.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/61262_poirot_investigates.txt",
+    "raw_chars": 316143,
+    "clean_chars": 296388,
+    "raw_sha256": "d3dd3d06fe1b3ec4bc57c724e101c0f4538323f688f51b7d6f5c33522e7e14dc",
+    "clean_sha256": "7dc2c0ec3f872f45f25730e70737f93a07d59039ea240c503ae067a0b34eef16",
+    "estimated_words": 53985,
+    "estimated_quote_count": 1737,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/66446_the_plymouth_express_affair.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/66446_the_plymouth_express_affair.txt",
+    "raw_chars": 47139,
+    "clean_chars": 26918,
+    "raw_sha256": "78cf1e16334d694e9e5609fb3fe7d527db2c03f534c7c3317ae398879dc55ab0",
+    "clean_sha256": "5785b04e8063a5fcea3537617c763946a7a0f830d242ec8675a7a726d10ff929",
+    "estimated_words": 4956,
+    "estimated_quote_count": 178,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/67160_the_hunter_s_lodge_case.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/67160_the_hunter_s_lodge_case.txt",
+    "raw_chars": 43785,
+    "clean_chars": 23732,
+    "raw_sha256": "9ea7611b10a7fc7db63b9566f695c1fee03c1e0b471ed9af4f1b0712eddd2aea",
+    "clean_sha256": "c9091d319e352b5cda5aa0f277442a9bae2501dbae150c09e4689b798d717897",
+    "estimated_words": 4453,
+    "estimated_quote_count": 108,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/67173_the_missing_will.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/67173_the_missing_will.txt",
+    "raw_chars": 37647,
+    "clean_chars": 17847,
+    "raw_sha256": "30bbeaf59c8a3d399fc51f0d128d643f46d50f38471bc8e437ec30331dae065f",
+    "clean_sha256": "437be869296978aef6830fd3cea3eed2957a5af0a20245f1b0879e6c8d9f6b99",
+    "estimated_words": 3296,
+    "estimated_quote_count": 79,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/69087_the_murder_of_roger_ackroyd.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/69087_the_murder_of_roger_ackroyd.txt",
+    "raw_chars": 421781,
+    "clean_chars": 395064,
+    "raw_sha256": "40801f841a5b3c0667754eae8ac5590bef0a44fa5ef38b4a1febc14c403d22b9",
+    "clean_sha256": "63a9c41fbbc3798688f3253fb8897e085f64d3829ff87e0766aee87bc2522c57",
+    "estimated_words": 72942,
+    "estimated_quote_count": 2816,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/70114_the_big_four.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/70114_the_big_four.txt",
+    "raw_chars": 330152,
+    "clean_chars": 308553,
+    "raw_sha256": "613300a3855a3b891fd707f037729419328e3632b156adb61e7a6f721f707f9c",
+    "clean_sha256": "8f9ac1410e10525b1a6f0babb40e041dc7a47095ff9e715f6ceae7e1a5bdc15b",
+    "estimated_words": 57006,
+    "estimated_quote_count": 1593,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/72824_the_mystery_of_the_blue_train.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/72824_the_mystery_of_the_blue_train.txt",
+    "raw_chars": 418021,
+    "clean_chars": 396144,
+    "raw_sha256": "e7f89cecabcf25c9b588a4fa7daa4398a90ee3a39d9394d5f2338e98a06aa84d",
+    "clean_sha256": "eebdae87a5ab9b56c3ad799756204cf283977a3f25777d52adc6a4a149b1b31a",
+    "estimated_words": 71888,
+    "estimated_quote_count": 3086,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  },
+  {
+    "source_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/raw/863_the_mysterious_affair_at_styles.txt",
+    "output_file": "/home/fede/Desktop/UniTN/desygn_large_scale_ai_system/project/multi-agent-fictional-personalities/characters/poirot/clean/863_the_mysterious_affair_at_styles.txt",
+    "raw_chars": 340225,
+    "clean_chars": 320615,
+    "raw_sha256": "25a1dbefea6a51c6e1fb015e7a2bed3d7c43af74823ea92df5ec358e9bea07a3",
+    "clean_sha256": "9fd8378a2e96b6106ab2e248cfa5a9af5d4ed0415fd8b80c14ce5cbff1069586",
+    "estimated_words": 58235,
+    "estimated_quote_count": 2217,
+    "gutenberg_start_found": true,
+    "gutenberg_end_found": true
+  }
+]
