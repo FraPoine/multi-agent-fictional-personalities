@@ -1,0 +1,96 @@
+You are given a cleaned public-domain Sherlock Holmes book.
+
+Your task is to extract passages that are directly spoken by Sherlock Holmes and produce a corpus that will later be used to create an LLM persona.
+
+## Extraction rules
+
+Extract only passages that are directly spoken by Sherlock Holmes.
+
+Include passages that reveal at least one of these aspects:
+
+* speaking style;
+* vocabulary and formality;
+* deductive reasoning;
+* observation methods;
+* interaction with Watson;
+* interaction with clients, suspects, or police;
+* sarcasm, confidence, impatience, or emotional restraint;
+* recurring expressions or conversational habits.
+
+Exclude:
+
+* narration;
+* descriptions of Sherlock Holmes;
+* thoughts reported by the narrator;
+* dialogue spoken by Watson or other characters;
+* passages whose speaker cannot be identified confidently;
+* chapter titles, footnotes, headers, and editorial material;
+* duplicate or nearly identical passages;
+* very short dialogue fragments with no useful stylistic information.
+
+Do not paraphrase, rewrite, modernize, correct, or summarize the dialogue.
+
+Preserve the exact wording of the source text.
+
+## Passage length
+
+Each extracted passage should normally contain between 1 and 5 consecutive sentences.
+
+Keep consecutive sentences together when they form a single deduction, explanation, or response.
+
+Do not combine dialogue taken from different parts of the book.
+
+## Confidence
+
+Assign a confidence value between 0 and 1 representing how certain you are that Sherlock Holmes is the speaker.
+
+Return only passages with confidence greater than or equal to 0.85.
+
+When the speaker attribution is uncertain, omit the passage.
+
+## Context
+
+For each passage, provide a short factual context describing:
+
+* who Sherlock is speaking to, when identifiable;
+* what situation or investigation is being discussed.
+
+The context must not introduce information unsupported by the text.
+
+## Output format
+
+Return JSONL only.
+
+Each line must be a complete and valid JSON object using exactly this structure:
+
+{"id":"sherlock_<sequential_number>","character_id":"sherlock_holmes","source":"<exact uploaded filename>","text":"<exact passage spoken by Sherlock Holmes>","context":"<short factual context>","traits":["<one or more relevant categories>"],"confidence":0.00}
+
+## Field requirements
+
+* `id`: use sequential identifiers such as `sherlock_0001`, `sherlock_0002`, and so on.
+* `character_id`: always use `sherlock_holmes`.
+* `source`: use the exact filename of the uploaded book.
+* `text`: include the exact original passage without paraphrasing.
+* `context`: use one short sentence.
+* `traits`: include one or more values selected only from:
+
+  * `speaking_style`
+  * `deductive_reasoning`
+  * `observation`
+  * `social_behavior`
+  * `sarcasm`
+  * `confidence`
+  * `emotional_expression`
+  * `interaction_with_watson`
+  * `interaction_with_others`
+* `confidence`: use a number between `0.85` and `1.0`.
+
+## Output constraints
+
+* Return one JSON object per line.
+* Do not wrap the output in a JSON array.
+* Do not use Markdown code fences.
+* Do not include introductions, explanations, summaries, or comments.
+* Escape quotation marks and newline characters correctly so that every line remains valid JSON.
+* Ensure that each JSON object can be parsed independently.
+* Prefer quality and reliable speaker attribution over extracting every possible passage.

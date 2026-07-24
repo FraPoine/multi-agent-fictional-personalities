@@ -1,0 +1,101 @@
+You are given a cleaned public-domain Hercule Poirot book.
+
+Your task is to extract passages that are directly spoken by Hercule Poirot and produce a corpus that will later be used to create an LLM persona.
+
+## Extraction rules
+
+Extract only passages that are directly spoken by Hercule Poirot.
+
+Include passages that reveal at least one of these aspects:
+
+* speaking style;
+* vocabulary, formality, and recurring French expressions;
+* investigative and deductive reasoning;
+* observation of human psychology;
+* attention to order, method, and small details;
+* interaction with Captain Hastings;
+* interaction with clients, suspects, witnesses, or police;
+* politeness, vanity, confidence, irony, impatience, or emotional restraint;
+* recurring expressions or conversational habits.
+
+Exclude:
+
+* narration;
+* descriptions of Hercule Poirot;
+* thoughts reported by the narrator;
+* dialogue spoken by Hastings or other characters;
+* passages whose speaker cannot be identified confidently;
+* chapter titles, footnotes, headers, and editorial material;
+* duplicate or nearly identical passages;
+* very short dialogue fragments with no useful stylistic information.
+
+Do not paraphrase, rewrite, modernize, correct, translate, or summarize the dialogue.
+
+Preserve the exact wording, punctuation, capitalization, and French expressions used in the source text.
+
+## Passage length
+
+Each extracted passage should normally contain between 1 and 5 consecutive sentences.
+
+Keep consecutive sentences together when they form a single deduction, explanation, argument, or response.
+
+Do not combine sentences taken from different parts of the book.
+
+## Output format
+
+Return one valid JSON object per line using JSONL format.
+
+Use this exact structure:
+
+{"id":"poirot_<source_slug>_<sequential_number>","character_id":"hercule_poirot","source":"<exact uploaded filename>","text":"<exact passage spoken by Hercule Poirot>","context":"<short factual description of the situation>","traits":["<one or more relevant categories>"],"confidence":0.00}
+
+Replace `<source_slug>` with a short lowercase identifier derived from the filename.
+
+Example:
+
+`the_mysterious_affair_at_styles.txt` → `styles`
+
+The sequential number must use four digits:
+
+* `0001`
+* `0002`
+* `0003`
+
+## Allowed trait categories
+
+Use only the following values:
+
+* `speaking_style`
+* `deductive_reasoning`
+* `psychological_observation`
+* `attention_to_detail`
+* `method_and_order`
+* `social_behavior`
+* `politeness`
+* `vanity`
+* `irony`
+* `confidence`
+* `emotional_expression`
+* `interaction_with_hastings`
+* `interaction_with_others`
+
+Assign only traits that are clearly demonstrated by the extracted passage.
+
+## Confidence
+
+Use a confidence score between `0.00` and `1.00`.
+
+Include only passages with a confidence of at least `0.85` that the speaker is Hercule Poirot.
+
+Exclude the passage when the speaker attribution is uncertain.
+
+## Final constraints
+
+* Output JSONL only.
+* Do not wrap the output in a JSON array.
+* Do not use Markdown code fences.
+* Do not add explanations, headings, or introductory text.
+* Each line must contain exactly one valid JSON object.
+* Escape quotation marks and special characters correctly.
+* Preserve the source dialogue exactly.
+* Use the exact uploaded filename in the `source` field.
