@@ -108,6 +108,52 @@ processed Sherlock/Poirot corpus -> validated persona JSON -> one saved agent re
 
 See the [Sprint 2 plan](docs/sprint_2_plan.md) and [roadmap](docs/roadmap.md).
 
+## Development
+
+Create and activate a virtual environment from the repository root:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Install the dependencies used by the current scripts and tests:
+
+```bash
+python -m pip install openai python-dotenv jinja2 pydantic pytest
+```
+
+Configure the OpenAI credentials and model either in the shell:
+
+```bash
+export OPENAI_API_KEY="your-api-key"
+export OPENAI_MODEL="your-model-name"
+```
+
+or in a repository-root `.env` file:
+
+```dotenv
+OPENAI_API_KEY=your-api-key
+OPENAI_MODEL=your-model-name
+```
+
+The `.env` file is ignored by Git. With the environment activated, the
+currently available development scripts are:
+
+```bash
+# Send a small request to verify the OpenAI connection.
+python test_key.py
+
+# Prepare the Poirot persona-extraction prompt from the processed corpus.
+python prepare_persona_prompt.py
+
+# Validate the existing Poirot persona JSON and build its agent system prompt.
+python build_agent_prompt.py
+```
+
+These are separate development steps. A complete end-to-end CLI pipeline is
+not implemented yet.
+
 ## Figma mockups 
 [figma](https://www.figma.com/make/2dvBnDB3qcD9HVgimdZJm4/Multi-Agent-Personality-Simulator-Mockup?t=LYCAJGAbSbMaS37n-1&preview-route=%2Fevaluation)
 

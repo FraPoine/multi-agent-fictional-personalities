@@ -8,15 +8,21 @@ Sprint 2 uses Sherlock Holmes and Hercule Poirot only. L and Professor Layton re
 
 ## Checklist
 
-- [ ] Define the persona JSON schema.
-- [ ] Load processed character corpora.
-- [ ] Load the persona-extraction prompt from a versioned file.
+- [x] Define the persona JSON schema.
+- [x] Load the processed Poirot character corpus.
+- [x] Load the persona-extraction prompt from a versioned file.
 - [ ] Call the configured OpenAI model.
 - [ ] Validate the model output.
 - [ ] Save the persona JSON.
 - [ ] Generate one response using the persona.
 - [ ] Save basic execution metadata.
-- [ ] Add a development command to the README.
+- [x] Add development commands to the README.
+
+The current scripts can prepare a Poirot extraction prompt and validate an
+existing Sherlock or Poirot persona before rendering a system prompt. The
+generated persona files currently in the repository are not evidence of an
+automated extraction pipeline: the OpenAI extraction call and complete CLI
+pipeline remain unimplemented.
 
 ## Definition of Done
 

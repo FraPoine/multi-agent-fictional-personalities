@@ -2,6 +2,9 @@ import json
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from pydantic import ValidationError
+
+from src.models.persona import Persona
 
 
 # This script is stored in the repository root, so its direct parent is the
@@ -26,19 +29,7 @@ OUTPUT_PATH = (
 )
 
 
-REQUIRED_FIELDS = {
-    "character_id",
-    "display_name",
-    "description",
-    "speaking_style",
-    "reasoning_style",
-    "personality_traits",
-    "behavior_rules",
-    "example_messages",
-}
-
-
-def load_persona(path: Path) -> dict:
+def load_persona(path: Path) -> Persona:
     """Load and validate the persona JSON."""
 
     if not path.exists():
@@ -47,7 +38,7 @@ def load_persona(path: Path) -> dict:
         )
 
     try:
-        persona = json.loads(
+        persona_data = json.loads(
             path.read_text(encoding="utf-8")
         )
     except json.JSONDecodeError as error:
@@ -55,14 +46,12 @@ def load_persona(path: Path) -> dict:
             f"Invalid persona JSON: {error}"
         ) from error
 
-    missing_fields = REQUIRED_FIELDS - persona.keys()
-
-    if missing_fields:
+    try:
+        return Persona.model_validate(persona_data)
+    except ValidationError as error:
         raise ValueError(
-            f"Missing persona fields: {sorted(missing_fields)}"
-        )
-
-    return persona
+            f"Invalid persona data in {path}: {error}"
+        ) from error
 
 
 def create_environment() -> Environment:
@@ -77,13 +66,13 @@ def create_environment() -> Environment:
     )
 
 
-def build_system_prompt(persona: dict) -> str:
+def build_system_prompt(persona: Persona) -> str:
     """Render the system prompt using the persona data."""
 
     environment = create_environment()
     template = environment.get_template(TEMPLATE_FILENAME)
 
-    return template.render(**persona).strip() + "\n"
+    return template.render(**persona.model_dump()).strip() + "\n"
 
 
 def main() -> None:
@@ -100,7 +89,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"Character: {persona['display_name']}")
+    print(f"Character: {persona.display_name}")
     print(f"System prompt saved to: {OUTPUT_PATH}")
 
 

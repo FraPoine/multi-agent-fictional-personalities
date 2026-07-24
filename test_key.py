@@ -16,14 +16,12 @@ from openai import (
 PROJECT_ROOT = Path(__file__).resolve().parent
 ENV_PATH = PROJECT_ROOT / ".env"
 
-MODEL_NAME = "gpt-5-mini"
-
-
 def main() -> None:
     # Carica OPENAI_API_KEY dal file .env
     load_dotenv(ENV_PATH)
 
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
+    model_name = os.getenv("OPENAI_MODEL", "").strip()
 
     if not api_key:
         raise RuntimeError(
@@ -33,20 +31,28 @@ def main() -> None:
             "lo script."
         )
 
-    print("Chiave trovata nel file .env.")
+    if not model_name:
+        raise RuntimeError(
+            "OPENAI_MODEL non configurato. "
+            "Aggiungi una riga OPENAI_MODEL=<nome_modello> nel file .env "
+            "oppure esporta OPENAI_MODEL nell'ambiente prima di eseguire "
+            "lo script."
+        )
+
+    print("Chiave API configurata.")
     print("Invio di una richiesta di test...")
 
     client = OpenAI(api_key=api_key)
 
     try:
         response = client.responses.create(
-            model=MODEL_NAME,
+            model=model_name,
             input="Reply with exactly: API key works",
             max_output_tokens=30,
         )
 
         print("\nTest riuscito!")
-        print(f"Modello: {MODEL_NAME}")
+        print(f"Modello: {model_name}")
         print(f"Risposta: {response.output_text}")
 
     except AuthenticationError:
