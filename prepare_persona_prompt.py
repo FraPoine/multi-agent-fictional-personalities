@@ -12,7 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 CORPUS_PATH = (
     PROJECT_ROOT
     / "characters"
-    / "sherlock"
+    / "poirot"
     / "corpus"
     / "persona_corpus.jsonl"
 )
@@ -23,10 +23,10 @@ PROMPT_TEMPLATE_PATH = (
     / "extract_persona.md"
 )
 
-OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "sherlock"
+OUTPUT_DIRECTORY = PROJECT_ROOT / "outputs" / "poirot"
 
 OUTPUT_PROMPT_PATH = (
-    OUTPUT_DIRECTORY / "sherlock_persona_prompt.txt"
+    OUTPUT_DIRECTORY / "poirot_persona_prompt.txt"
 )
 
 OUTPUT_EXAMPLES_PATH = (
@@ -35,11 +35,12 @@ OUTPUT_EXAMPLES_PATH = (
 
 
 # Character
-CHARACTER_NAME = "Sherlock Holmes"
+CHARACTER_NAME = "Hercule Poirot"
 
 CHARACTER_DESCRIPTION = (
-    "A fictional consulting detective known for careful observation, "
-    "deductive reasoning, precision, confidence, and emotional restraint."
+    "A fictional Belgian private detective known for psychological insight, "
+    "method and order, attention to detail, politeness, confidence, vanity, "
+    "and frequent French expressions."
 )
 
 

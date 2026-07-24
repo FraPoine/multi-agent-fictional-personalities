@@ -4,9 +4,9 @@ from collections import defaultdict
 from pathlib import Path
 
 
-CORPUS_DIRECTORY = Path("characters/sherlock/corpus")
+CORPUS_DIRECTORY = Path("characters/poirot/corpus")
 
-INPUT_FILENAME = "sherlock_holmes_corpus_all.jsonl"
+INPUT_FILENAME = "hercule_poirot_corpus_all.jsonl"
 PERSONA_FILENAME = "persona_corpus.jsonl"
 EVALUATION_FILENAME = "evaluation_corpus.jsonl"
 

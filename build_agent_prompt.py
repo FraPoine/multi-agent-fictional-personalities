@@ -11,8 +11,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 PERSONA_PATH = (
     PROJECT_ROOT
     / "outputs"
-    / "sherlock"
-    / "sherlock_persona_generated.json"
+    / "poirot"
+    / "poirot_persona_generated.json"
 )
 
 TEMPLATE_DIRECTORY = PROJECT_ROOT / "prompts"
@@ -21,8 +21,8 @@ TEMPLATE_FILENAME = "agent_system_prompt.j2"
 OUTPUT_PATH = (
     PROJECT_ROOT
     / "outputs"
-    / "sherlock"
-    / "sherlock_system_prompt.txt"
+    / "poirot"
+    / "poirot_system_prompt.txt"
 )
 
 

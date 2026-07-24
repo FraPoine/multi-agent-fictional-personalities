@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 
-CORPUS_DIRECTORY = Path("characters/sherlock/corpus")
-CORPUS_FILENAME = "sherlock_holmes_corpus_all.jsonl"
+CORPUS_DIRECTORY = Path("characters/poirot/corpus")
+CORPUS_FILENAME = "hercule_poirot_corpus_all.jsonl"
 CORPUS_PATH = CORPUS_DIRECTORY / CORPUS_FILENAME
 
 
@@ -29,4 +29,4 @@ def load_corpus(path: Path) -> list[dict]:
 
 if __name__ == "__main__":
     corpus = load_corpus(CORPUS_PATH)
-    print(f"Loaded {len(corpus)} Sherlock passages.")
+    print(f"Loaded {len(corpus)} Hercule Poirot passages.")

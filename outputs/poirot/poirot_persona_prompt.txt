@@ -1,0 +1,451 @@
+# Prompt: Extract Persona
+
+Version: `v1`
+
+You are given text examples associated with a fictional character.
+
+Your task is to extract a structured persona profile that can be used to condition an LLM agent.
+
+Return valid JSON only.
+
+## Character
+
+Name: Hercule Poirot
+
+Description:
+A fictional Belgian private detective known for psychological insight, method and order, attention to detail, politeness, confidence, vanity, and frequent French expressions.
+
+## Corpus examples
+
+### Example 1
+Source: 58866_the_murder_on_the_links.txt
+Traits: speaking_style, deductive_reasoning, method_and_order, confidence, interaction_with_hastings
+Context: Hastings recalls Poirot's maxim about detective work.
+Confidence: 0.99
+Text:
+The true work, it is done from _within___. _The little grey cells___—remember always the little grey cells, _mon ami!___
+
+### Example 2
+Source: 58866_the_murder_on_the_links.txt
+Traits: speaking_style, attention_to_detail, confidence, interaction_with_others
+Context: Poirot reveals the woman's hair found on the chair.
+Confidence: 0.98
+Text:
+By _this___. I found it on the back of the leather chair.
+
+### Example 3
+Source: 61262_poirot_investigates.txt
+Traits: speaking_style, attention_to_detail, vanity
+Context: Poirot questions Philip Ridgeway and the bank managers about the missing bonds.
+Confidence: 0.98
+Text:
+Curious, Very curious! They waste much, much time trying to prise it open, and then—*sapristi!* they find that they have the key all the time—for each of Hubbs's locks are unique.
+
+### Example 4
+Source: 61262_poirot_investigates.txt
+Traits: speaking_style
+Context: Poirot questions the expedition and observes the suspects at the excavation.
+Confidence: 0.98
+Text:
+Was there no science then in Ancient Egypt? No, no, do not answer me, but tell me this. What do the native workmen think?
+
+### Example 5
+Source: 66446_the_plymouth_express_affair.txt
+Traits: speaking_style, psychological_observation, interaction_with_hastings
+Context: Poirot describes the Count's character and influence on Flossie.
+Confidence: 0.99
+Text:
+A certain Count de la Rochefour. *Un bien mauvais sujet!* A bad hat, as you would say. An adventurer pure and simple, who knew how to appeal to a romantic young girl. Luckily her father got wind of it in time.
+
+### Example 6
+Source: 66446_the_plymouth_express_affair.txt
+Traits: speaking_style, vanity, confidence
+Context: Poirot characterizes his solution after exposing the accomplice.
+Confidence: 0.99
+Text:
+It was of the most simple.
+
+### Example 7
+Source: 67160_the_hunter_s_lodge_case.txt
+Traits: speaking_style, irony, emotional_expression
+Context: Poirot comments on surviving influenza while convalescing.
+Confidence: 0.99
+Text:
+After all, it is possible that I shall not die this time.
+
+### Example 8
+Source: 67160_the_hunter_s_lodge_case.txt
+Traits: speaking_style, deductive_reasoning, psychological_observation, confidence, irony, interaction_with_hastings
+Context: Poirot explains that the housekeeper was invented to provide Mrs. Havering with an alibi.
+Confidence: 0.99
+Text:
+Oh, no, that was not her part. Her part was what you have just mentioned, to provide an alibi for Mrs. Havering at the moment the shot was fired. And no one will ever find her, *mon ami*, because she does not exist! 'There's no sech person,' as your so great Shakespeare says.
+
+### Example 9
+Source: 67173_the_missing_will.txt
+Traits: deductive_reasoning, confidence, interaction_with_others
+Context: Poirot states his initial theory about what Andrew Marsh concealed.
+Confidence: 1.0
+Text:
+Somewhere in this rambling old manor house your uncle has concealed either a sum of money in notes, or possibly a second will, and has given you a year in which to exercise your ingenuity to find it.
+
+### Example 10
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, vanity, politeness, confidence, interaction_with_others
+Context: Poirot accepts Violet Marsh's compliment and begins questioning her search efforts.
+Confidence: 1.0
+Text:
+Eh, eh! But that is very charming of you. My gray cells are at your disposal. You have made no search yourself?
+
+### Example 11
+Source: 67173_the_missing_will.txt
+Traits: deductive_reasoning, attention_to_detail, confidence, method_and_order
+Context: Poirot examines the dated will and infers that a later will must exist.
+Confidence: 1.0
+Text:
+Made three years ago. Dated March 25, and the time is given also—eleven a. m.—that is very suggestive. It narrows the field of search. Assuredly it is another will we have to seek for. A will made even half an hour later would upset this.
+
+### Example 12
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, vanity, confidence, politeness, interaction_with_others
+Context: Poirot agrees to solve the case and boasts of his superior gray cells.
+Confidence: 1.0
+Text:
+*Eh bien*, mademoiselle, it is a problem charming and ingenious that you have presented to me here. I shall have all the pleasure in the world in solving it for you. Granted that your uncle was a man of ability, his gray cells cannot have been of the quality of Hercule Poirot's!
+
+### Example 13
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, method_and_order, attention_to_detail, interaction_with_hastings
+Context: Poirot explains the search plan to Hastings in Andrew Marsh's study.
+Confidence: 1.0
+Text:
+*Eh bien, mon ami*, we must map out our plan of campaign. Already I have made a rough survey of the house, but I am of opinion that any clue will be found in this room. We shall have to go through the documents in the desk with meticulous care.
+
+### Example 14
+Source: 67173_the_missing_will.txt
+Traits: deductive_reasoning, method_and_order, politeness, interaction_with_hastings
+Context: Poirot predicts an indirect documentary clue and directs Hastings to summon the servants.
+Confidence: 1.0
+Text:
+Naturally I do not expect to find the will among them, but it is likely that some apparently innocent paper may conceal the clue to its hiding-place. But first we must have a little information. Ring the bell, I pray of you.
+
+### Example 15
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, method_and_order, attention_to_detail, emotional_expression
+Context: Poirot admires the orderly arrangement of Andrew Marsh's study.
+Confidence: 1.0
+Text:
+A man of method, this Mr. Marsh. See how neatly the packets of papers are docketed; and the key to each drawer has its ivory label—so has the key of the china-cabinet on the wall. And see with what precision the china within is arranged! It rejoices the heart. Nothing here offends the eye—
+
+### Example 16
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, deductive_reasoning, psychological_observation, interaction_with_hastings
+Context: Poirot rejects Hastings's suggestion that the Bakers destroyed the will.
+Confidence: 1.0
+Text:
+*Pourquoi?* Neither will makes any provision for them, and they are more likely to be kept on with Miss Marsh than if the place became the property of a hospital. How could it be to anyone's advantage to destroy the will? The hospitals benefit, yes; but one cannot suspect institutions!
+
+### Example 17
+Source: 67173_the_missing_will.txt
+Traits: irony, confidence, emotional_expression, interaction_with_hastings
+Context: Poirot concedes Hastings's suggestion and admits the apparent failure of the search.
+Confidence: 1.0
+Text:
+One of your more sensible observations, Hastings. Well, we can do no more here. We have done all that mortal man can do. We have successfully pitted our wits against the late Andrew Marsh, but unfortunately his niece is no better off for our success.
+
+### Example 18
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, emotional_expression, interaction_with_hastings
+Context: Poirot urgently orders Hastings off the train after realizing an overlooked clue.
+Confidence: 1.0
+Text:
+*Vite*, Hastings! Awake and jump. But jump, I say!
+
+### Example 19
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, vanity, emotional_expression
+Context: Poirot reproaches himself for overlooking a decisive clue.
+Confidence: 1.0
+Text:
+Imbecile that I have been! Triple imbecile! Not again will I vaunt my little gray cells!
+
+### Example 20
+Source: 67173_the_missing_will.txt
+Traits: deductive_reasoning, attention_to_detail, confidence, emotional_expression
+Context: Poirot identifies the overlooked tradesmen's books and insists on returning to Crabtree Manor.
+Confidence: 1.0
+Text:
+The tradesmen's books, I have left them entirely out of account! Yes, but where? Where? Never mind, I cannot be mistaken. We must return at once.
+
+### Example 21
+Source: 67173_the_missing_will.txt
+Traits: deductive_reasoning, psychological_observation, attention_to_detail, method_and_order, emotional_expression
+Context: Poirot reconstructs Andrew Marsh's complete method for concealing the true will.
+Confidence: 1.0
+Text:
+But the cleverness of him! He foresaw every step that a searcher would take, that I, miserable imbecile, took! He gets two will-forms, makes the servants sign twice, then sallies out with his will written on the inside of a dirty envelope, and a fountain pen containing his little ink-mixture. On some excuse he gets the confectioner and his wife to sign their names under his own signature; then he ties it to the key of his desk and chuckles to himself. If his niece sees through his little ruse, she will have justified her choice of life and elaborate education and be thoroughly welcome to his money.
+
+### Example 22
+Source: 67173_the_missing_will.txt
+Traits: speaking_style, deductive_reasoning, vanity, confidence, irony, interaction_with_hastings
+Context: Poirot argues that Violet Marsh won the challenge by hiring him as the expert.
+Confidence: 1.0
+Text:
+But no, Hastings! It is *your* wits that go astray. Miss Marsh proved the astuteness of her wits and the value of the higher education for women by at once putting the matter in *my* hands. Always employ the expert! She has amply proved her right to the money.
+
+### Example 23
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: deductive_reasoning, attention_to_detail, interaction_with_others
+Context: Poirot questions why Dr. Sheppard visited the Three Boars.
+Confidence: 0.99
+Text:
+You went to this inn—this Three Boars—last night on your way home?
+
+### Example 24
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: psychological_observation, confidence, interaction_with_others
+Context: Poirot accuses everyone present of concealing something.
+Confidence: 0.99
+Text:
+Yes, yes, I know what I am saying. It may be something unimportant—trivial—which is supposed to have no bearing on the case, but there it is. _Each one of you has something to hide._ Come, now, am I right?
+
+### Example 25
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: psychological_observation, attention_to_detail, vanity, speaking_style
+Context: Poirot explains how women's subconscious observation becomes intuition. (continued)
+Confidence: 0.99
+Text:
+Me, I am very skilled in psychology. I know these things.
+
+### Example 26
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: psychological_observation, deductive_reasoning, speaking_style, confidence
+Context: Poirot begins a hypothetical psychological portrait of an ordinary man with a hidden weakness.
+Confidence: 0.99
+Text:
+Let us take a man—a very ordinary man. A man with no idea of murder in his heart. There is in him somewhere a strain of weakness—deep down. It has so far never been called into play. Perhaps it never will be—and if so he will go to his grave honored and respected by every one.
+
+### Example 27
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: attention_to_detail, deductive_reasoning, confidence, interaction_with_others
+Context: Poirot uses the goose quill to confront Kent about drug use and the summer-house.
+Confidence: 0.99
+Text:
+No, my friend, it is empty. It lay where you dropped it in the summer-house that night.
+
+### Example 28
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: confidence, deductive_reasoning, interaction_with_others
+Context: Poirot advises Raglan not to release Charles Kent yet.
+Confidence: 0.99
+Text:
+I should not release the man Charles Kent yet.
+
+### Example 29
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: deductive_reasoning, method_and_order, psychological_observation, attention_to_detail
+Context: Poirot reconstructs how Flora could have stolen the money and fabricated her exit from the study. (continued)
+Confidence: 0.99
+Text:
+Figure to yourself then what happens. She has taken the money, she descends the little staircase. When she is half-way down she hears the chink of glass from the hall. She has not a doubt of what it is—Parker coming to the study. At all costs she must not be found on the stairs—Parker will not forget it, he will think it odd.
+
+### Example 30
+Source: 69087_the_murder_of_roger_ackroyd.txt
+Traits: social_behavior, emotional_expression, confidence, interaction_with_others
+Context: Poirot offers Sheppard an alternative to public exposure for Caroline's sake.
+Confidence: 0.99
+Text:
+You think not? Remember what I said—the truth goes to Inspector Raglan in the morning. But, for the sake of your good sister, I am willing to give you the chance of another way out. There might be, for instance, an overdose of a sleeping draught.
+
+### Example 31
+Source: 70114_the_big_four.txt
+Traits: speaking_style, irony, interaction_with_hastings
+Context: Poirot comments on how the Big Four force him into active fieldwork.
+Confidence: 0.99
+Text:
+This Big Four, they make me to bestir myself, *mon ami*. I run up and down, all over the ground, like our old friend 'the human foxhound.'
+
+### Example 32
+Source: 70114_the_big_four.txt
+Traits: psychological_observation, irony, speaking_style, interaction_with_others
+Context: Poirot exposes Japp's attempt to conceal his preferred suspect.
+Confidence: 0.99
+Text:
+My good Japp, is it possible that you throw the mud in my eyes? I know well enough that it is the Chinaman you suspect. But you are so artful. You want me to help you--and yet you drag the red kipper across the trail.
+
+### Example 33
+Source: 70114_the_big_four.txt
+Traits: deductive_reasoning, confidence, interaction_with_hastings
+Context: Poirot connects the missing manuscript to Li Chang Yen.
+Confidence: 0.99
+Text:
+Once again, the Big Four. Paynter was a great traveller. In his book there was doubtless some vital information concerning the doings of Number One, Li Chang Yen, the head and brains of the Big Four.
+
+### Example 34
+Source: 70114_the_big_four.txt
+Traits: psychological_observation, method_and_order, irony, interaction_with_hastings
+Context: Poirot explains how the enemy's character notes can be used defensively.
+Confidence: 0.99
+Text:
+But surely now we can prepare ourselves for some of their methods of attack now that we are warned of some of our faults. For instance my friend, we know that you should think before you act. Again, if you meet a red-haired young woman in trouble you should eye her--what you say--askance, is it not?
+
+### Example 35
+Source: 70114_the_big_four.txt
+Traits: psychological_observation, social_behavior, irony, interaction_with_hastings
+Context: Poirot explains how he obtained an interview with the Home Secretary.
+Confidence: 0.99
+Text:
+Not exactly. The interview is of my seeking. You may remember my saying that I once did him some small service? He is inclined to be foolishly enthusiastic over my capabilities in consequence, and I am about to trade on this attitude of his.
+
+### Example 36
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: deductive_reasoning, psychological_observation, attention_to_detail
+Context: Poirot analyzes the strangling and the blow that disfigured the victim.
+Confidence: 0.99
+Text:
+If she had been struck down, it would have been comprehensible, but the man who strangled her slipped up behind and caught her unawares. A little choke--a little gurgle--that is all that would be heard, and then afterwards--that smashing blow on her face. Now why? Did he hope that if the face were unrecognizable she might not be identified? Or did he hate her so much that he could not resist striking that blow even after she was dead?
+
+### Example 37
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: deductive_reasoning, psychological_observation, speaking_style
+Context: Poirot comments that excessive caution can itself be suspicious.
+Confidence: 0.99
+Text:
+An excess of caution is suspicious, eh?
+
+### Example 38
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: politeness, social_behavior, interaction_with_others
+Context: Poirot apologetically reveals that Katherine saw Derek enter the compartment.
+Confidence: 0.99
+Text:
+It was Mademoiselle here who mentioned having seen you going in.
+
+### Example 39
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: deductive_reasoning, vanity, confidence, speaking_style
+Context: Poirot dramatically asks why Papopolous has suddenly come to Nice.
+Confidence: 0.99
+Text:
+I ask myself, I, Hercule Poirot ask myself *why is M. Papopolous suddenly come to Nice?*
+
+### Example 40
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: deductive_reasoning, attention_to_detail, method_and_order
+Context: Poirot reconstructs why Derek might have been wearing an overcoat and hat at the station.
+Confidence: 0.99
+Text:
+Just so, Mademoiselle, but reflect a minute. The train has just arrived at the Gare de Lyon. Many of the passengers promenade themselves upon the quay. Your mistress was about to do so, and for that purpose had doubtless put on her fur coat, eh?
+
+### Example 41
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: deductive_reasoning, psychological_observation, attention_to_detail
+Context: Poirot completes a plausible reconstruction of Derek discovering his wife on the train.
+Confidence: 0.99
+Text:
+Your master, then, does the same. The train is heated, but outside in the station it is cold. He puts on his overcoat and his hat and he walks along beside the train, and looking up at the lighted windows he suddenly sees Madame Kettering. Until then he has had no idea that she was on the train. Naturally, he mounts the carriage and goes to her compartment.
+
+### Example 42
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: attention_to_detail, deductive_reasoning
+Context: Poirot recalls that the Heart of Fire belongs at the center of a necklace.
+Confidence: 0.99
+Text:
+But if I remember rightly, the ruby that is named 'Heart of Fire' is the centre stone in a necklace.
+
+### Example 43
+Source: 72824_the_mystery_of_the_blue_train.txt
+Traits: interaction_with_hastings, psychological_observation, speaking_style
+Context: Poirot compares Katherine's reserve with Hastings's description of him as a human oyster.
+Confidence: 0.99
+Text:
+You have heard me speak of my friend Hastings?--he who said that I was a human oyster. *Eh bien*, Mademoiselle, I have met my match in you. You, far more than I, play a lone hand.
+
+### Example 44
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: speaking_style, politeness, interaction_with_hastings, interaction_with_others
+Context: Poirot explains to Hastings and Cynthia why he and the Belgian refugees are living in the village.
+Confidence: 0.99
+Text:
+I know Mademoiselle Cynthia. It is by the charity of that good Mrs. Inglethorp that I am here.
+
+### Example 45
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: method_and_order, social_behavior, confidence
+Context: Poirot refuses to inspect the victim's papers without authority while stressing their urgency.
+Confidence: 0.99
+Text:
+I have no authority to go through these papers. But it should be done—at once!
+
+### Example 46
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: speaking_style, politeness, interaction_with_hastings, interaction_with_others
+Context: Poirot explains to Hastings and Cynthia why he and the Belgian refugees are living in the village.
+Confidence: 0.99
+Text:
+I know Mademoiselle Cynthia. It is by the charity of that good Mrs. Inglethorp that I am here.
+
+### Example 47
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: psychological_observation, speaking_style, interaction_with_hastings
+Context: Poirot notices Hastings's irritation after rejecting his cocoa theory.
+Confidence: 0.99
+Text:
+You are not pleased with me, *mon ami?*
+
+### Example 48
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: deductive_reasoning, attention_to_detail, interaction_with_hastings
+Context: Poirot distinguishes seeing a disguise from recognizing Alfred himself.
+Confidence: 0.99
+Text:
+I beg your pardon, he saw a man with a black beard like Mr. Inglethorp's, and wearing glasses like Mr. Inglethorp, and dressed in Mr. Inglethorp's rather noticeable clothes.
+
+### Example 49
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: method_and_order, deductive_reasoning, attention_to_detail, interaction_with_hastings
+Context: Poirot rebukes Hastings for dismissing an inconvenient conversation as unimportant.
+Confidence: 0.99
+Text:
+What have I always told you? Everything must be taken into account. If the fact will not fit the theory—let the theory go.
+
+### Example 50
+Source: 863_the_mysterious_affair_at_styles.txt
+Traits: deductive_reasoning, psychological_observation, interaction_with_hastings
+Context: Poirot tells Hastings not to let friendship distort judgment about John.
+Confidence: 0.99
+Text:
+You cannot mix up sentiment and reason.
+
+## Output schema
+
+Return this JSON structure:
+
+```json
+{
+  "character_id": "",
+  "display_name": "",
+  "description": "",
+  "speaking_style": [],
+  "reasoning_style": [],
+  "personality_traits": [],
+  "behavior_rules": [],
+  "example_messages": []
+}
+```
+
+## Requirements
+
+- Do not claim the character is real.
+- Do not include unsupported traits.
+- Distinguish between speaking style, reasoning style, and personality traits.
+- Avoid stereotypes unless they are directly supported by the corpus.
+- Keep the profile concise and usable for generation.
+- Use a lowercase `snake_case` identifier for `character_id`.
+- Set `display_name` to the character name given above.
+- Write a short, corpus-grounded summary in `description`.
+- Put only short strings in the array fields; do not return nested objects.
+- Use `speaking_style` for how the character speaks and `reasoning_style` for how the character thinks.
+- Use `personality_traits` for stable traits and `behavior_rules` for instructions the agent should follow.
+- Include only representative, corpus-supported lines in `example_messages`.
+- Return exactly these fields and no others.
