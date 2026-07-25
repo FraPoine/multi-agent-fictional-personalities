@@ -2,7 +2,8 @@ import json
 from pathlib import Path
 
 
-CORPUS_DIRECTORY = Path("characters/poirot/corpus")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+CORPUS_DIRECTORY = PROJECT_ROOT / "characters" / "poirot" / "corpus"
 CORPUS_FILENAME = "hercule_poirot_corpus_all.jsonl"
 CORPUS_PATH = CORPUS_DIRECTORY / CORPUS_FILENAME
 

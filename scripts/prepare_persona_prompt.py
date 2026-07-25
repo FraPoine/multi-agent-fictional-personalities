@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 # Paths
-# This script lives in the repository root, so its parent directory is the
-# project root. Using parents[1] incorrectly selected the directory above it.
-PROJECT_ROOT = Path(__file__).resolve().parent
+# This script lives under scripts/, so its parent directory's parent is the
+# project root.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 CORPUS_PATH = (
     PROJECT_ROOT

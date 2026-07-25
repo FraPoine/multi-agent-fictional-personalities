@@ -455,4 +455,11 @@ Tradeoff:
 
 ## Planned package structure
 
-Implementation will use `src/persona_extraction/`, `src/agent_runtime/`, `src/simulation/`, `src/evaluation/`, and `src/logging/`, with executable CLI entry points under `scripts/`. These directories are planned and should be created only as their Sprint 2 or later implementations are added.
+Implementation will use subpackages such as
+`src/multi_agent_personalities/persona_extraction/`,
+`src/multi_agent_personalities/agent_runtime/`,
+`src/multi_agent_personalities/simulation/`,
+`src/multi_agent_personalities/evaluation/`, and
+`src/multi_agent_personalities/logging/`, with executable CLI entry points
+under `scripts/`. These directories are planned and should be created only as
+their Sprint 2 or later implementations are added.

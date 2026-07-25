@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from src.models.persona import Persona
+from multi_agent_personalities.models.persona import Persona
 
 
 @pytest.fixture

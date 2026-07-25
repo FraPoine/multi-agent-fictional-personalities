@@ -53,32 +53,42 @@ project-root/
 │   └── roadmap.md
 ├── notes/
 │   ├── sprint-1-francesco.md
+│   ├── sprint-2-francesco.md
 │   └── github-sprint-setup.md
+├── configs/
+│   └── dev.yaml
 ├── prompts/
 │   ├── extract_persona.md
 │   ├── agent_reply.md
+│   ├── agent_system_prompt.j2
 │   └── style_neutralize.md
 ├── characters/
 │   ├── sherlock/
 │   ├── poirot/
 │   ├── l/
 │   └── layton/
-├── data/                         # created as implementation needs it
-│   ├── raw/
-│   ├── processed/
-│   └── personas/
-├── src/                          # planned for Sprint 2+
-│   ├── persona_extraction/
-│   ├── agent_runtime/
-│   ├── simulation/
-│   ├── evaluation/
-│   └── logging/
-├── scripts/                      # planned for Sprint 2+
-│   └── smoke_test.sh
+├── outputs/
+│   ├── sherlock/
+│   └── poirot/
+├── scripts/
+│   ├── prepare_persona_prompt.py
+│   ├── build_agent_prompt.py
+│   ├── test_openai_connection.py
+│   ├── load_corpus.py
+│   └── split_corpus.py
+├── src/
+│   └── multi_agent_personalities/
+│       ├── __init__.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   └── persona.py
+│       └── llm/
+│           ├── __init__.py
+│           └── base.py
+├── tests/
+│   └── test_persona.py
 ├── mockups/
 │   └── ui_mockups.md
-└── configs/
-    └── dev.yaml
 ```
 
 ## Sprint status
@@ -123,6 +133,12 @@ Install the dependencies used by the current scripts and tests:
 python -m pip install openai python-dotenv jinja2 pydantic pytest
 ```
 
+Make the `src` layout importable in the current shell:
+
+```bash
+export PYTHONPATH="$PWD/src"
+```
+
 Configure the OpenAI credentials and model either in the shell:
 
 ```bash
@@ -141,18 +157,29 @@ The `.env` file is ignored by Git. With the environment activated, the
 currently available development scripts are:
 
 ```bash
+# Load and count the processed Poirot corpus.
+python scripts/load_corpus.py
+
+# Deterministically split the processed Poirot corpus.
+# This overwrites the existing persona/evaluation JSONL split files.
+python scripts/split_corpus.py
+
 # Send a small request to verify the OpenAI connection.
-python test_key.py
+python scripts/test_openai_connection.py
 
 # Prepare the Poirot persona-extraction prompt from the processed corpus.
-python prepare_persona_prompt.py
+python scripts/prepare_persona_prompt.py
 
 # Validate the existing Poirot persona JSON and build its agent system prompt.
-python build_agent_prompt.py
+python scripts/build_agent_prompt.py
+
+# Run the unit tests.
+python -m pytest
 ```
 
 These are separate development steps. A complete end-to-end CLI pipeline is
-not implemented yet.
+not implemented yet, and the current scripts do not constitute the complete
+Sprint 2 pipeline.
 
 ## Figma mockups 
 [figma](https://www.figma.com/make/2dvBnDB3qcD9HVgimdZJm4/Multi-Agent-Personality-Simulator-Mockup?t=LYCAJGAbSbMaS37n-1&preview-route=%2Fevaluation)

@@ -12,11 +12,11 @@
 
 ## Currently working
 
-- `prepare_persona_prompt.py` selects Poirot corpus examples and writes a
+- `scripts/prepare_persona_prompt.py` selects Poirot corpus examples and writes a
   compiled extraction prompt.
-- `build_agent_prompt.py` validates the existing Poirot persona JSON and writes
+- `scripts/build_agent_prompt.py` validates the existing Poirot persona JSON and writes
   its system prompt.
-- `test_key.py` tests an OpenAI connection when the API key and model are
+- `scripts/test_openai_connection.py` tests an OpenAI connection when the API key and model are
   configured.
 
 ## Incomplete

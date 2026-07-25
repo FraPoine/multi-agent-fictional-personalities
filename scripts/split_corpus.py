@@ -4,7 +4,8 @@ from collections import defaultdict
 from pathlib import Path
 
 
-CORPUS_DIRECTORY = Path("characters/poirot/corpus")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+CORPUS_DIRECTORY = PROJECT_ROOT / "characters" / "poirot" / "corpus"
 
 INPUT_FILENAME = "hercule_poirot_corpus_all.jsonl"
 PERSONA_FILENAME = "persona_corpus.jsonl"

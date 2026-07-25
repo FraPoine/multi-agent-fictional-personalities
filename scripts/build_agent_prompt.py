@@ -4,12 +4,12 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from pydantic import ValidationError
 
-from src.models.persona import Persona
+from multi_agent_personalities.models.persona import Persona
 
 
-# This script is stored in the repository root, so its direct parent is the
-# project root. parents[1] would incorrectly select the directory above it.
-PROJECT_ROOT = Path(__file__).resolve().parent
+# This script lives under scripts/, so its parent directory's parent is the
+# project root.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 PERSONA_PATH = (
     PROJECT_ROOT

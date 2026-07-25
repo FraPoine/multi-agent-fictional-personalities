@@ -11,10 +11,11 @@ from openai import (
 )
 
 
-# test_key.py is located in the repository root. Its direct parent is therefore
-# the project root; parents[1] would incorrectly select the directory above it.
-PROJECT_ROOT = Path(__file__).resolve().parent
+# This script lives under scripts/, so its parent directory's parent is the
+# project root.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 ENV_PATH = PROJECT_ROOT / ".env"
+
 
 def main() -> None:
     # Carica OPENAI_API_KEY dal file .env
