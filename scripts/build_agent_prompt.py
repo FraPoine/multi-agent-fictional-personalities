@@ -1,9 +1,9 @@
 import json
 from pathlib import Path
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined
 from pydantic import ValidationError
 
+from multi_agent_personalities.agent_runtime import build_system_prompt
 from multi_agent_personalities.models.persona import Persona
 
 
@@ -54,30 +54,13 @@ def load_persona(path: Path) -> Persona:
         ) from error
 
 
-def create_environment() -> Environment:
-    """Create the Jinja2 environment."""
-
-    return Environment(
-        loader=FileSystemLoader(str(TEMPLATE_DIRECTORY)),
-        undefined=StrictUndefined,
-        autoescape=False,
-        trim_blocks=True,
-        lstrip_blocks=True,
-    )
-
-
-def build_system_prompt(persona: Persona) -> str:
-    """Render the system prompt using the persona data."""
-
-    environment = create_environment()
-    template = environment.get_template(TEMPLATE_FILENAME)
-
-    return template.render(**persona.model_dump()).strip() + "\n"
-
-
 def main() -> None:
     persona = load_persona(PERSONA_PATH)
-    system_prompt = build_system_prompt(persona)
+    system_prompt = build_system_prompt(
+        persona,
+        TEMPLATE_DIRECTORY,
+        TEMPLATE_FILENAME,
+    )
 
     OUTPUT_PATH.parent.mkdir(
         parents=True,
