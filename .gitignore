@@ -10,6 +10,7 @@ __pycache__/
 .ruff_cache/
 logs/
 data/personas/
+outputs/*/runs/
 *.tmp
 *.swp
 .DS_Store
