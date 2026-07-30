@@ -120,7 +120,11 @@ Wrap LLM calls and produce one in-character reply at a time.
 
 ### Notes
 
-The runtime should not know about evaluation. It only generates messages.
+The public `generate_reply` runtime function generates exactly one validated
+`Message`. The caller passes the selected persona, topic, ordered history, run
+and turn identifiers, and an `LLMProvider`. History is explicit per call: the
+runtime stores no persistent state or memory between runs. Speaker selection
+and turn scheduling remain responsibilities of the simulation engine.
 
 ## 4. Simulation engine
 
