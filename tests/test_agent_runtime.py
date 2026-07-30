@@ -163,6 +163,26 @@ def test_non_empty_history_is_not_mutated(sherlock: Persona) -> None:
     assert history == original
 
 
+def test_complete_history_is_accepted_for_later_turn(
+    sherlock: Persona,
+) -> None:
+    provider = SpyProvider()
+    history = [
+        make_message(turn_index=0, speaker_name="Sherlock Holmes", text="Facts."),
+        make_message(turn_index=1, speaker_name="Hercule Poirot", text="Order."),
+    ]
+
+    message = call_runtime(
+        sherlock,
+        provider,
+        history=history,
+        turn_index=2,
+    )
+
+    assert message.turn_index == 2
+    assert len(provider.calls) == 1
+
+
 @pytest.mark.parametrize(
     ("overrides", "error"),
     [
@@ -200,21 +220,56 @@ def test_history_from_another_run_is_rejected(sherlock: Persona) -> None:
         call_runtime(sherlock, provider, history=history, turn_index=1)
 
 
-@pytest.mark.parametrize("history_turn", [2, 3])
-def test_non_previous_history_turn_is_rejected(
-    sherlock: Persona,
-    history_turn: int,
-) -> None:
+def test_out_of_order_history_is_rejected(sherlock: Persona) -> None:
     provider = SpyProvider()
     history = [
         make_message(
-            turn_index=history_turn,
+            turn_index=1,
             speaker_name="Hercule Poirot",
             text="Order.",
-        )
+        ),
+        make_message(
+            turn_index=0,
+            speaker_name="Sherlock Holmes",
+            text="Facts.",
+        ),
     ]
 
-    with pytest.raises(ValueError, match="strictly before"):
+    with pytest.raises(ValueError, match="chronological order"):
+        call_runtime(sherlock, provider, history=history, turn_index=2)
+
+
+def test_history_with_missing_middle_turn_is_rejected(
+    sherlock: Persona,
+) -> None:
+    provider = SpyProvider()
+    history = [
+        make_message(turn_index=0, speaker_name="Sherlock Holmes", text="Facts."),
+        make_message(turn_index=2, speaker_name="Hercule Poirot", text="Order."),
+    ]
+
+    with pytest.raises(ValueError, match="every previous turn"):
+        call_runtime(sherlock, provider, history=history, turn_index=3)
+
+
+def test_incomplete_history_is_rejected(sherlock: Persona) -> None:
+    provider = SpyProvider()
+    history = [
+        make_message(turn_index=0, speaker_name="Sherlock Holmes", text="Facts.")
+    ]
+
+    with pytest.raises(ValueError, match="every previous turn"):
+        call_runtime(sherlock, provider, history=history, turn_index=2)
+
+
+def test_future_history_turn_is_rejected(sherlock: Persona) -> None:
+    provider = SpyProvider()
+    history = [
+        make_message(turn_index=0, speaker_name="Sherlock Holmes", text="Facts."),
+        make_message(turn_index=2, speaker_name="Hercule Poirot", text="Order."),
+    ]
+
+    with pytest.raises(ValueError, match="chronological order"):
         call_runtime(sherlock, provider, history=history, turn_index=2)
 
 

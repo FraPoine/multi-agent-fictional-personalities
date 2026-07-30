@@ -72,7 +72,32 @@ class ConversationRun(BaseModel):
         if len(turn_indexes) != len(set(turn_indexes)):
             raise ValueError("message turn_index values must not be duplicated")
 
+        if any(
+            not 0 <= turn_index < self.turn_count
+            for turn_index in turn_indexes
+        ):
+            raise ValueError(
+                "message turn_index values must be between zero and "
+                "turn_count - 1"
+            )
+
+        if any(
+            message.speaker_character_id not in self.character_ids
+            for message in self.messages
+        ):
+            raise ValueError(
+                "all message speakers must be conversation participants"
+            )
+
         if len(self.messages) > self.turn_count:
             raise ValueError("number of messages must not exceed turn_count")
+
+        if (
+            self.status == "completed"
+            and len(self.messages) != self.turn_count
+        ):
+            raise ValueError(
+                "completed conversations must contain turn_count messages"
+            )
 
         return self

@@ -115,6 +115,36 @@ def test_more_messages_than_turn_count_are_rejected(
         ConversationRun.model_validate(valid_conversation)
 
 
+def test_message_turn_index_at_turn_count_is_rejected(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["status"] = "running"
+    valid_conversation["messages"] = [make_message(2)]
+
+    with pytest.raises(ValidationError, match="turn_count - 1"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_message_from_non_participant_is_rejected(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["messages"][0] = make_message(
+        speaker="professor_layton"
+    )
+
+    with pytest.raises(ValidationError, match="conversation participants"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_incomplete_completed_conversation_is_rejected(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["messages"] = [make_message()]
+
+    with pytest.raises(ValidationError, match="completed conversations"):
+        ConversationRun.model_validate(valid_conversation)
+
+
 def test_incomplete_running_conversation_is_accepted(
     valid_conversation: dict,
 ) -> None:
@@ -124,3 +154,23 @@ def test_incomplete_running_conversation_is_accepted(
     conversation = ConversationRun.model_validate(valid_conversation)
 
     assert len(conversation.messages) == 1
+
+
+def test_incomplete_failed_conversation_is_accepted(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["status"] = "failed"
+    valid_conversation["messages"] = [make_message()]
+
+    conversation = ConversationRun.model_validate(valid_conversation)
+
+    assert len(conversation.messages) == 1
+
+
+def test_valid_completed_conversation_remains_accepted(
+    valid_conversation: dict,
+) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+
+    assert conversation.status == "completed"
+    assert len(conversation.messages) == conversation.turn_count

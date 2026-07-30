@@ -29,20 +29,22 @@ def _validate_history(
     run_id: str,
     turn_index: int,
 ) -> None:
-    """Validate that history can precede the requested conversation turn."""
-    seen_turn_indexes: set[int] = set()
+    """Require every previous turn exactly once in chronological order."""
     for message in history:
         if message.run_id != run_id:
             raise ValueError(
                 "history messages must belong to the requested run_id"
             )
-        if message.turn_index >= turn_index:
-            raise ValueError(
-                "history turn indexes must be strictly before turn_index"
-            )
-        if message.turn_index in seen_turn_indexes:
-            raise ValueError("history contains duplicate turn indexes")
-        seen_turn_indexes.add(message.turn_index)
+
+    actual_indexes = [message.turn_index for message in history]
+    if len(actual_indexes) != len(set(actual_indexes)):
+        raise ValueError("history contains duplicate turn indexes")
+
+    expected_indexes = list(range(turn_index))
+    if actual_indexes != expected_indexes:
+        raise ValueError(
+            "history must contain every previous turn in chronological order"
+        )
 
 
 def _format_history(history: Sequence[Message]) -> str:
