@@ -187,17 +187,18 @@ One complete simulated multi-agent conversation.
 ```json
 {
   "run_id": "run_001",
-  "created_at": "2026-05-05T00:00:00Z",
   "topic": "The participants must decide how to investigate a difficult case.",
-  "agent_ids": [
-    "agent_sherlock_run_001",
-    "agent_poirot_run_001"
+  "character_ids": [
+    "sherlock_holmes",
+    "hercule_poirot"
   ],
   "turn_count": 12,
   "seed": 42,
-  "config_path": "configs/dev.yaml",
-  "config_hash": "computed_config_hash",
-  "status": "completed"
+  "provider": "openai",
+  "model": "configured_model_name",
+  "created_at": "2026-05-05T00:00:00Z",
+  "status": "completed",
+  "messages": []
 }
 ```
 
@@ -222,15 +223,12 @@ One generated message in a simulated conversation.
 {
   "message_id": "msg_001",
   "run_id": "run_001",
-  "turn_index": 1,
-  "speaker_agent_id": "agent_sherlock_run_001",
+  "turn_index": 0,
   "speaker_character_id": "sherlock_holmes",
+  "speaker_name": "Sherlock Holmes",
   "text": "A generated response is stored here at runtime.",
-  "prompt_id": "agent_reply_v1",
-  "prompt_hash": "computed_prompt_hash",
+  "provider": "openai",
   "model": "configured_model_name",
-  "input_tokens": 500,
-  "output_tokens": 35,
   "timestamp": "2026-05-05T00:00:00Z",
   "error": null
 }
