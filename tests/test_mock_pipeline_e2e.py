@@ -20,9 +20,19 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE_DIRECTORY = PROJECT_ROOT / "tests" / "fixtures"
 
 
+@pytest.mark.parametrize(
+    ("character", "character_id", "display_name"),
+    [
+        ("poirot", "hercule_poirot", "Hercule Poirot"),
+        ("sherlock", "sherlock_holmes", "Sherlock Holmes"),
+    ],
+)
 def test_mock_pipeline_runs_end_to_end_without_openai(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
+    character: str,
+    character_id: str,
+    display_name: str,
 ) -> None:
     """Exercise the public pipeline with only deterministic local responses."""
 
@@ -49,11 +59,11 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
 
     user_message = "Which clue should we examine first?"
     run_directory = run_pipeline(
-        character="poirot",
+        character=character,
         provider_name="mock",
         user_message=user_message,
         output_root=tmp_path / "generated",
-        paths=default_pipeline_paths(PROJECT_ROOT),
+        paths=default_pipeline_paths(PROJECT_ROOT, character),
         timestamp=datetime(
             2026,
             7,
@@ -76,8 +86,8 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
     persona = Persona.model_validate_json(
         (run_directory / "persona.json").read_text(encoding="utf-8")
     )
-    assert persona.character_id == "hercule_poirot"
-    assert persona.display_name == "Hercule Poirot"
+    assert persona.character_id == character_id
+    assert persona.display_name == display_name
 
     system_prompt = (
         run_directory / "system_prompt.txt"
@@ -88,7 +98,7 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
 
     response = (run_directory / "response.txt").read_text(encoding="utf-8")
     expected_response = (
-        FIXTURE_DIRECTORY / "poirot_agent_response.txt"
+        FIXTURE_DIRECTORY / f"{character}_agent_response.txt"
     ).read_text(encoding="utf-8")
     assert response.strip()
     assert response == expected_response
@@ -98,6 +108,12 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
     )
     assert metadata["provider"] == "mock"
     assert metadata["is_synthetic"] is True
-    assert metadata["character"] == "poirot"
+    assert metadata["character"] == character
     assert metadata["model"] == "mock"
     assert metadata["user_message"] == user_message
+    assert metadata["persona_path"] == "persona.json"
+    assert metadata["system_prompt_path"] == "system_prompt.txt"
+    assert metadata["response_path"] == "response.txt"
+    saved_timestamp = datetime.fromisoformat(metadata["timestamp_utc"])
+    assert saved_timestamp.tzinfo is not None
+    assert saved_timestamp.utcoffset() == timezone.utc.utcoffset(None)

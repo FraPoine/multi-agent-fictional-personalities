@@ -4,6 +4,7 @@ import json
 import random
 from collections import defaultdict
 from pathlib import Path
+from typing import Sequence
 
 
 MIN_CONFIDENCE = 0.85
@@ -14,7 +15,7 @@ RANDOM_SEED = 42
 
 
 def load_jsonl(path: Path) -> list[dict]:
-    """Load and validate a processed persona corpus."""
+    """Load and validate one processed persona corpus file."""
 
     if not path.is_file():
         raise FileNotFoundError(f"Persona corpus file not found: {path}")
@@ -49,6 +50,26 @@ def load_jsonl(path: Path) -> list[dict]:
             if record.get("confidence", 1.0) >= MIN_CONFIDENCE:
                 records.append(record)
 
+    return records
+
+
+def load_corpora(paths: Path | Sequence[Path]) -> list[dict]:
+    """Load one or more JSONL corpora in deterministic path order."""
+
+    resolved_paths = (paths,) if isinstance(paths, Path) else tuple(paths)
+    if not resolved_paths:
+        raise ValueError("At least one persona corpus path is required")
+
+    records: list[dict] = []
+    seen_ids: set[str] = set()
+    for path in sorted(resolved_paths, key=lambda item: str(item)):
+        for record in load_jsonl(path):
+            if record["id"] in seen_ids:
+                raise ValueError(
+                    f"Duplicate corpus record id across files: {record['id']}"
+                )
+            records.append(record)
+            seen_ids.add(record["id"])
     return records
 
 
@@ -186,14 +207,14 @@ def build_prompt(
 
 def prepare_persona_prompt(
     *,
-    corpus_path: Path,
+    corpus_path: Path | Sequence[Path],
     prompt_template_path: Path,
     character_name: str,
     character_description: str,
 ) -> tuple[str, list[dict]]:
     """Load the corpus and template and return a compiled prompt."""
 
-    records = load_jsonl(corpus_path)
+    records = load_corpora(corpus_path)
     if not records:
         raise ValueError(f"The persona corpus is empty: {corpus_path}")
     if not prompt_template_path.is_file():

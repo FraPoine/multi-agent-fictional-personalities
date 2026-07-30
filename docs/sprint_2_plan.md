@@ -9,7 +9,7 @@ Sprint 2 uses Sherlock Holmes and Hercule Poirot only. L and Professor Layton re
 ## Checklist
 
 - [x] Define the persona JSON schema.
-- [x] Load the processed Poirot character corpus.
+- [x] Load the processed Poirot and Sherlock character corpora.
 - [x] Load the persona-extraction prompt from a versioned file.
 - [ ] Call the configured OpenAI model.
 - [x] Validate mock provider output.
@@ -19,12 +19,12 @@ Sprint 2 uses Sherlock Holmes and Hercule Poirot only. L and Professor Layton re
 - [x] Provide one unified mock CLI command.
 - [x] Add development commands to the README.
 
-The unified Poirot command now prepares the extraction prompt, validates a
-deterministic mock persona, renders the system prompt, obtains the configured
-mock agent reply, and saves all four run artifacts. This completes the local
-synthetic development pipeline only. The fixtures are not evidence of real
-model behavior, and the OpenAI extraction and reply calls remain unimplemented
-and unverified.
+The unified character-independent command now supports Poirot and Sherlock. It
+prepares the extraction prompt, validates a deterministic mock persona, renders
+the system prompt, obtains the configured mock agent reply, and saves all four
+run artifacts. This completes the local synthetic development pipeline only.
+The fixtures are not evidence of real model behavior, and the OpenAI extraction
+and reply calls remain unimplemented and unverified.
 
 ## Definition of Done
 

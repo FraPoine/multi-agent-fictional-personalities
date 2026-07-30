@@ -75,6 +75,37 @@ def test_rejects_unsupported_provider(tmp_path: Path) -> None:
         )
 
 
+def test_rejects_unsupported_character(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="Unsupported character"):
+        default_pipeline_paths(PROJECT_ROOT, "moriarty")
+
+
+def test_rejects_empty_user_message(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="User message cannot be empty"):
+        run_pipeline(
+            character="poirot",
+            provider_name="mock",
+            user_message=" \t ",
+            output_root=tmp_path,
+            paths=default_pipeline_paths(PROJECT_ROOT),
+        )
+
+
+def test_rejects_missing_fixture(tmp_path: Path) -> None:
+    paths = replace(
+        default_pipeline_paths(PROJECT_ROOT),
+        agent_response_fixture=tmp_path / "missing.txt",
+    )
+    with pytest.raises(FileNotFoundError, match="Mock agent response"):
+        run_pipeline(
+            character="poirot",
+            provider_name="mock",
+            user_message="Investigate this.",
+            output_root=tmp_path / "outputs",
+            paths=paths,
+        )
+
+
 def test_rejects_invalid_mock_persona_response(tmp_path: Path) -> None:
     invalid_persona = tmp_path / "invalid_persona.json"
     invalid_persona.write_text(
