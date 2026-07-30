@@ -107,17 +107,29 @@ project-root/
 - `notes/sprint-1-francesco.md`
 - initial Sherlock corpus download and cleaning, plus partial evidence extraction
 
-Sprint 1 established the specification and architecture but did not implement a working runtime. Corpus completion and the first end-to-end pipeline belong to Sprint 2.
+Sprint 1 established the specification and architecture. Sprint 2 completed a
+deterministic local pipeline for Sherlock Holmes and Hercule Poirot: it loads
+processed corpora, builds versioned prompts, validates synthetic personas,
+generates deterministic mock responses, and saves persona, prompt, response,
+and metadata artifacts in isolated run directories. Unit and network-free
+end-to-end tests cover this flow.
 
-## Next step: Sprint 2
+## Next step: Sprint 3
 
-Sprint 2 should implement the minimum end-to-end pipeline for Sherlock Holmes and Hercule Poirot:
+Sprint 3 extends the completed local vertical slice into:
 
 ```txt
-processed Sherlock/Poirot corpus -> validated persona JSON -> one saved agent response
+Sherlock persona + Poirot persona
+→ round-robin conversation
+→ conversation history
+→ transcript
+→ structured JSONL logs
 ```
 
-See the [Sprint 2 plan](docs/sprint_2_plan.md) and [roadmap](docs/roadmap.md).
+Sprint 3 will also implement the OpenAI provider and defer live verification
+until credentials become available. OpenAI-backed execution does not currently
+work. See the completed [Sprint 2 plan](docs/sprint_2_plan.md) and the
+[roadmap](docs/roadmap.md).
 
 ## Development
 

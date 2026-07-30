@@ -8,11 +8,17 @@ Architecture, specification, evaluation design, repository structure, and initia
 
 ## Sprint 2
 
-Minimal corpus-to-persona-to-response pipeline for Sherlock Holmes and Hercule Poirot.
+Completed deterministic mock pipeline from processed corpus to validated
+persona to one saved synthetic response for Sherlock Holmes and Hercule
+Poirot.
 
 ## Sprint 3
 
-Multi-agent round-robin conversation with transcript and JSONL logging.
+- OpenAI provider implementation and deferred live verification.
+- Multi-agent round-robin simulation.
+- Explicit per-run conversation history.
+- Transcript generation.
+- Structured JSONL message and execution logs.
 
 ## Sprint 4
 

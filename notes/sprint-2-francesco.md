@@ -16,28 +16,29 @@
 - Added end-to-end tests that prohibit network access and write only to
   temporary test directories.
 
-## Currently working
+## What the sprint produced
 
-- `scripts/prepare_persona_prompt.py` selects Poirot corpus examples and writes a
-  compiled extraction prompt.
-- `scripts/build_agent_prompt.py` validates the existing Poirot persona JSON and writes
-  its system prompt.
-- `scripts/run_pipeline.py` runs the complete synthetic Poirot or Sherlock
-  development flow with the mock provider and creates an isolated run
-  directory.
-- `scripts/test_openai_connection.py` tests an OpenAI connection when the API key and model are
-  configured.
+- A shared pipeline for Sherlock Holmes and Hercule Poirot.
+- Strict persona validation with Pydantic.
+- Versioned extraction, reply, and system-prompt templates.
+- Deterministic mock persona and response providers.
+- An isolated run directory for every pipeline invocation.
+- Saved `persona.json`, `system_prompt.txt`, `response.txt`, and
+  `metadata.json` artifacts.
+- Unit tests and network-free end-to-end tests.
 
-## Incomplete
+## Limitations
 
-- The OpenAI persona-extraction call is not integrated.
-- Real OpenAI persona generation and saving are not implemented or verified.
-- Real OpenAI agent response generation is not implemented or verified.
-- The mock CLI supports both initial characters; OpenAI-backed execution is
-  still unavailable.
+The saved personas and replies are synthetic development fixtures. No claim
+about real character fidelity or OpenAI behavior can yet be made. The external
+provider path remains unimplemented and unverified until credentials are
+available.
 
-## Next main task
+## Moved to Sprint 3
 
-After credentials are available, design and verify the real OpenAI provider
-path without treating the successful synthetic mock pipeline as evidence that
-the external model path works.
+- Implementation of `OpenAIProvider`.
+- Live persona extraction.
+- Live agent responses.
+- Live end-to-end verification when credentials are available.
+- Multi-agent round-robin conversation.
+- Transcript and structured JSONL logging.

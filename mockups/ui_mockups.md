@@ -27,7 +27,9 @@ Saved response:    logs/runs/<run_id>/response.json
 Saved metadata:    logs/runs/<run_id>/steps.jsonl
 ```
 
-The Sprint 2 command will load the extraction and reply templates from versioned files in `prompts/`. The OpenAI model comes from configuration; the CLI must not print the API key.
+The Sprint 2 command loads the extraction and reply templates from versioned
+files in `prompts/`. The future OpenAI model comes from configuration; the CLI
+must not print the API key.
 
 ## Later multi-agent simulation
 
