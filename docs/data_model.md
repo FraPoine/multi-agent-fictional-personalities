@@ -174,7 +174,11 @@ Agents may be created dynamically from config files.
 
 ### Definition
 
-One complete simulated multi-agent conversation.
+An immutable, validated snapshot of a multi-agent conversation. Its participant
+and message collections are tuples in memory, while JSON serialization still
+uses arrays. Messages must form the chronological turn-index prefix
+`0..len(messages)-1`. Mutable simulation history is maintained separately and
+used to construct new snapshots.
 
 ### Storage
 
@@ -206,6 +210,19 @@ One complete simulated multi-agent conversation.
 
 - A `ConversationRun` contains many `Message` objects.
 - A `ConversationRun` is created from a config and a character set.
+
+## Single-agent run artifacts
+
+The Sprint 2 pipeline persists its validated persona and reply through the
+canonical writer at:
+
+`outputs/{character-slug}/runs/{run-id}/`
+
+Each directory contains `persona.json`, `system_prompt.txt`, `response.txt`,
+and `metadata.json`. Metadata uses `run_id`, `created_at`, `character_id`,
+`character_slug`, `task_name`, `provider`, `model`, `is_synthetic`,
+`user_message`, and the three artifact filename fields. Agent response data is
+derived from the validated `Message` returned by `generate_reply()`.
 
 ## 6. Message
 

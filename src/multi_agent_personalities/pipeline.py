@@ -1,16 +1,18 @@
 """Orchestration for the deterministic multi-character mock pipeline."""
 
-import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
-from multi_agent_personalities.agent_runtime import build_system_prompt
+from multi_agent_personalities.agent_runtime import (
+    build_system_prompt,
+    generate_reply,
+)
+from multi_agent_personalities.artifacts import save_single_agent_run
 from multi_agent_personalities.llm import MockProvider
 from multi_agent_personalities.persona_extraction import (
     extract_persona,
     prepare_persona_prompt,
-    save_persona,
 )
 
 
@@ -123,25 +125,6 @@ def _require_fixture(path: Path, description: str) -> None:
         raise FileNotFoundError(f"{description} fixture not found: {path}")
 
 
-def _new_run_directory(
-    output_root: Path,
-    character: str,
-    timestamp: datetime,
-) -> tuple[str, Path]:
-    run_id = timestamp.strftime("%Y%m%dT%H%M%S.%fZ")
-    run_directory = output_root / character / "runs" / run_id
-    run_directory.mkdir(parents=True, exist_ok=False)
-    return run_id, run_directory
-
-
-def _build_agent_prompt(system_prompt: str, user_message: str) -> str:
-    return (
-        f"{system_prompt.rstrip()}\n\n"
-        "## User message\n\n"
-        f"{user_message.strip()}\n"
-    )
-
-
 def run_pipeline(
     *,
     character: str,
@@ -190,43 +173,32 @@ def run_pipeline(
     if created_at.tzinfo is None or created_at.utcoffset() is None:
         raise ValueError("timestamp must be timezone-aware")
     created_at_utc = created_at.astimezone(timezone.utc)
-    run_id, run_directory = _new_run_directory(
-        output_root,
-        character,
-        created_at_utc,
-    )
+    run_id = created_at_utc.strftime("%Y%m%dT%H%M%S.%fZ")
 
-    persona_path = save_persona(persona, run_directory / "persona.json")
     system_prompt = build_system_prompt(
         persona,
         paths.system_prompt_directory,
     )
-    agent_prompt = _build_agent_prompt(system_prompt, user_message)
-    response = mock_provider.generate(
-        agent_prompt,
-        task_name="agent_reply",
+    response = generate_reply(
+        persona=persona,
+        history=[],
+        topic=user_message,
+        run_id=run_id,
+        turn_index=0,
+        provider=mock_provider,
+        provider_name=provider_name,
+        model_name="mock",
+        timestamp=created_at_utc,
     )
 
-    system_prompt_path = run_directory / "system_prompt.txt"
-    response_path = run_directory / "response.txt"
-    metadata_path = run_directory / "metadata.json"
-    system_prompt_path.write_text(system_prompt, encoding="utf-8")
-    response_path.write_text(response, encoding="utf-8")
-
-    metadata = {
-        "run_id": run_id,
-        "timestamp_utc": created_at_utc.isoformat(),
-        "character": character,
-        "provider": provider_name,
-        "model": "mock",
-        "is_synthetic": True,
-        "user_message": user_message,
-        "persona_path": persona_path.name,
-        "system_prompt_path": system_prompt_path.name,
-        "response_path": response_path.name,
-    }
-    metadata_path.write_text(
-        json.dumps(metadata, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
+    return save_single_agent_run(
+        output_root=output_root,
+        character_slug=character,
+        run_id=run_id,
+        created_at=created_at_utc,
+        persona=persona,
+        system_prompt=system_prompt,
+        response=response,
+        user_message=user_message,
+        is_synthetic=True,
     )
-    return run_directory

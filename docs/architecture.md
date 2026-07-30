@@ -125,6 +125,8 @@ The public `generate_reply` runtime function generates exactly one validated
 and turn identifiers, and an `LLMProvider`. History is explicit per call: the
 runtime stores no persistent state or memory between runs. Speaker selection
 and turn scheduling remain responsibilities of the simulation engine.
+The Sprint 2 single-response pipeline also uses this public runtime, so all
+agent replies pass through the same validation and message-construction path.
 
 ## 4. Simulation engine
 
@@ -147,6 +149,10 @@ Coordinate multiple agents in a turn-based group chat.
 - list of `Message` records
 - transcript
 - logs
+
+`ConversationRun` is an immutable validated snapshot, not simulation state.
+The simulation engine will maintain a separate mutable local history and create
+new snapshots when needed.
 
 ### Turn-taking policy
 
@@ -185,6 +191,10 @@ Initial format:
 ```txt
 JSONL
 ```
+
+The implemented single-agent pipeline uses one canonical artifact writer. It
+stores each run under `outputs/{character-slug}/runs/{run-id}/` with
+`persona.json`, `system_prompt.txt`, `response.txt`, and `metadata.json`.
 
 ## 6. Evaluation builder
 

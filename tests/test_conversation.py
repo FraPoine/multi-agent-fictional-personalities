@@ -6,6 +6,7 @@ import pytest
 from pydantic import ValidationError
 
 from multi_agent_personalities.models.conversation import ConversationRun
+from multi_agent_personalities.models.message import Message
 
 
 def make_message(
@@ -49,7 +50,40 @@ def valid_conversation() -> dict:
 def test_valid_conversation_is_accepted(valid_conversation: dict) -> None:
     conversation = ConversationRun.model_validate(valid_conversation)
 
-    assert conversation.character_ids == ["sherlock_holmes", "hercule_poirot"]
+    assert conversation.character_ids == (
+        "sherlock_holmes",
+        "hercule_poirot",
+    )
+    assert isinstance(conversation.messages, tuple)
+    assert all(isinstance(message, Message) for message in conversation.messages)
+
+
+def test_fields_cannot_be_reassigned(valid_conversation: dict) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+
+    with pytest.raises(ValidationError):
+        conversation.status = "failed"
+    with pytest.raises(ValidationError):
+        conversation.messages = ()
+
+
+def test_message_and_character_collections_cannot_be_mutated(
+    valid_conversation: dict,
+) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+
+    with pytest.raises(AttributeError):
+        conversation.messages.append(make_message(2))  # type: ignore[attr-defined]
+    with pytest.raises(TypeError):
+        conversation.character_ids[0] = "l"  # type: ignore[index]
+
+
+def test_serialization_uses_json_arrays(valid_conversation: dict) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+    serialized = conversation.model_dump(mode="json")
+
+    assert isinstance(serialized["character_ids"], list)
+    assert isinstance(serialized["messages"], list)
 
 
 def test_only_one_character_is_rejected(valid_conversation: dict) -> None:
@@ -103,6 +137,32 @@ def test_duplicate_message_turn_indexes_are_rejected(
     valid_conversation["messages"][1]["turn_index"] = 0
 
     with pytest.raises(ValidationError):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_reversed_messages_are_rejected(valid_conversation: dict) -> None:
+    valid_conversation["messages"].reverse()
+
+    with pytest.raises(ValidationError, match="chronological sequence"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_missing_middle_turn_is_rejected(valid_conversation: dict) -> None:
+    valid_conversation["turn_count"] = 3
+    valid_conversation["status"] = "running"
+    valid_conversation["messages"] = [make_message(0), make_message(2)]
+
+    with pytest.raises(ValidationError, match="chronological sequence"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_first_message_at_turn_one_is_rejected(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["status"] = "running"
+    valid_conversation["messages"] = [make_message(1)]
+
+    with pytest.raises(ValidationError, match="chronological sequence"):
         ConversationRun.model_validate(valid_conversation)
 
 

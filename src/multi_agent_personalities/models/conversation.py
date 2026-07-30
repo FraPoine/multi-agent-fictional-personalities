@@ -23,24 +23,27 @@ NonEmptyStr = Annotated[
 
 
 class ConversationRun(BaseModel):
-    """One execution of a multi-agent conversation."""
+    """An immutable, validated snapshot of a multi-agent conversation."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", frozen=True)
 
     run_id: NonEmptyStr
     topic: NonEmptyStr
-    character_ids: list[NonEmptyStr] = Field(min_length=2)
+    character_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
     turn_count: int
     seed: int
     provider: NonEmptyStr
     model: StrictStr | None = None
     created_at: datetime
     status: Literal["running", "completed", "failed"]
-    messages: list[Message] = Field(default_factory=list)
+    messages: tuple[Message, ...] = ()
 
     @field_validator("character_ids")
     @classmethod
-    def validate_unique_character_ids(cls, value: list[str]) -> list[str]:
+    def validate_unique_character_ids(
+        cls,
+        value: tuple[str, ...],
+    ) -> tuple[str, ...]:
         """Reject ambiguous participant lists."""
         if len(value) != len(set(value)):
             raise ValueError("character_ids must not contain duplicates")
@@ -69,9 +72,6 @@ class ConversationRun(BaseModel):
             raise ValueError("all messages must belong to the conversation run_id")
 
         turn_indexes = [message.turn_index for message in self.messages]
-        if len(turn_indexes) != len(set(turn_indexes)):
-            raise ValueError("message turn_index values must not be duplicated")
-
         if any(
             not 0 <= turn_index < self.turn_count
             for turn_index in turn_indexes
@@ -79,6 +79,13 @@ class ConversationRun(BaseModel):
             raise ValueError(
                 "message turn_index values must be between zero and "
                 "turn_count - 1"
+            )
+
+        expected_indexes = list(range(len(self.messages)))
+        if turn_indexes != expected_indexes:
+            raise ValueError(
+                "messages must contain a chronological sequence starting "
+                "from turn zero"
             )
 
         if any(

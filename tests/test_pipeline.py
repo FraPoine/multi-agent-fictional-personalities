@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import multi_agent_personalities.pipeline as pipeline_module
 from multi_agent_personalities.models.persona import Persona
 from multi_agent_personalities.pipeline import (
     default_pipeline_paths,
@@ -62,6 +63,37 @@ def test_mock_pipeline_writes_valid_synthetic_run(
     assert (
         run_directory / "response.txt"
     ).read_text(encoding="utf-8") == expected_response
+
+
+def test_pipeline_uses_shared_writer(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+    real_writer = pipeline_module.save_single_agent_run
+
+    def tracking_writer(**kwargs: object) -> Path:
+        calls.append(kwargs)
+        return real_writer(**kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(
+        pipeline_module,
+        "save_single_agent_run",
+        tracking_writer,
+    )
+    run_directory = run_pipeline(
+        character="poirot",
+        provider_name="mock",
+        user_message="Investigate this.",
+        output_root=tmp_path,
+        paths=default_pipeline_paths(PROJECT_ROOT),
+        timestamp=FIXED_TIME,
+    )
+
+    assert run_directory.is_dir()
+    assert len(calls) == 1
+    assert calls[0]["character_slug"] == "poirot"
+    assert calls[0]["response"].turn_index == 0  # type: ignore[union-attr]
 
 
 def test_rejects_unsupported_provider(tmp_path: Path) -> None:

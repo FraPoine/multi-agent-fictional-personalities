@@ -108,12 +108,13 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
     )
     assert metadata["provider"] == "mock"
     assert metadata["is_synthetic"] is True
-    assert metadata["character"] == character
+    assert metadata["character_id"] == character_id
+    assert metadata["character_slug"] == character
     assert metadata["model"] == "mock"
     assert metadata["user_message"] == user_message
-    assert metadata["persona_path"] == "persona.json"
-    assert metadata["system_prompt_path"] == "system_prompt.txt"
-    assert metadata["response_path"] == "response.txt"
-    saved_timestamp = datetime.fromisoformat(metadata["timestamp_utc"])
+    assert metadata["persona_file"] == "persona.json"
+    assert metadata["system_prompt_file"] == "system_prompt.txt"
+    assert metadata["response_file"] == "response.txt"
+    saved_timestamp = datetime.fromisoformat(metadata["created_at"])
     assert saved_timestamp.tzinfo is not None
     assert saved_timestamp.utcoffset() == timezone.utc.utcoffset(None)
