@@ -6,7 +6,11 @@ This document describes what the system should do from the point of view of its 
 
 The system supports the creation, simulation, and evaluation of persona-seeded fictional-character agents.
 
-This is an individual Track B project. The first interface is a CLI. The initial MVB exposes Sherlock Holmes and Hercule Poirot; L and Professor Layton are later extensions.
+This is an individual Track B project. The CLI is the first implemented
+interface and remains supported. Sprint 4 plans an additional minimal local web
+interface that uses the same conversation functionality and is mock-only.
+The initial MVB exposes Sherlock Holmes and Hercule Poirot; L and Professor
+Layton are later extensions.
 
 ## User types
 
@@ -16,6 +20,10 @@ The project user is a student, researcher, or developer using the system to run 
 
 The project user needs to:
 - select characters;
+- enter an investigation topic and select a turn count;
+- run a local mock conversation;
+- read the ordered transcript and locate its saved artifacts;
+- understand visible validation or runtime errors;
 - inspect or edit character corpora;
 - generate persona profiles;
 - run multi-agent chat simulations;
@@ -265,6 +273,67 @@ The system computes evaluation metrics from rater responses.
 - Results are reproducible from committed or documented inputs.
 - Analysis distinguishes confirmatory and exploratory results.
 
+F6, F7, and F8 describe future evaluation capabilities. They are not part of
+the Sprint 4 project-user conversation interface and are not yet implemented.
+
+## F9 — Minimal conversation web interface
+
+### Description
+
+A planned local web interface exposes the existing deterministic mock
+multi-agent simulation to a project user. It is an additional interface and
+does not replace the existing CLI or the separate future blind-rater
+interface.
+
+### Inputs
+
+- selected supported character IDs or slugs;
+- investigation topic;
+- conversation turn count;
+- fixed `mock` provider;
+- default or configured seed;
+- configured output root.
+
+The Sprint 4 page does not need to expose the seed or output root as editable
+controls.
+
+### Outputs
+
+- rendered conversation transcript;
+- run ID;
+- artifact directory;
+- generated artifact filenames;
+- readable validation or execution error.
+
+### Validation rules
+
+- The topic must not be empty or whitespace-only.
+- At least two supported, unique characters must be selected.
+- Unsupported character slugs must be rejected.
+- The turn count must be an integer within a documented bounded range.
+- The provider must remain `mock`.
+- Validation, simulation, and persistence failures must not be silently
+  converted into successful responses.
+
+The implemented runtime currently requires a positive turn count but has no
+upper bound. The bounded UI range is an implementation-level Sprint 4 decision
+and must be documented and applied consistently when selected.
+
+### Acceptance criteria
+
+- The main page can be opened locally through a documented startup command.
+- Sherlock Holmes and Hercule Poirot are available.
+- A topic and turn count can be submitted.
+- Valid input invokes the existing local mock conversation pipeline.
+- Messages are displayed in speaker and turn order.
+- The run ID and artifact directory are displayed.
+- `run.json`, `messages.jsonl`, and `transcript.md` are generated and identified
+  by the completed view.
+- Invalid input produces understandable feedback.
+- Runtime or persistence failures are not hidden or reported as success.
+- No API key or network access is required.
+- The existing CLI continues to work.
+
 ## Non-functional requirements
 
 ## Reproducibility
@@ -286,6 +355,8 @@ The project should keep separate modules for:
 - persona extraction;
 - agent runtime;
 - simulation;
+- framework-independent application orchestration;
+- web delivery;
 - evaluation;
 - logging;
 - analysis.
@@ -296,7 +367,12 @@ Prompts must live in the `prompts/` directory, not inside long source-code strin
 
 ## Configuration and provider
 
-Configuration uses YAML and structured inputs/outputs use Pydantic schemas. OpenAI is the initial provider, but the exact model must be configurable and not hard-coded. API keys and other secrets must be loaded from environment variables.
+Configuration uses YAML and structured inputs/outputs use Pydantic schemas.
+The current conversation flow enables only the local mock provider. OpenAI is
+a planned live provider, but no OpenAI-backed conversation execution has been
+implemented or verified. Any future exact model must be configurable and not
+hard-coded, and API keys and other secrets must be loaded from environment
+variables.
 
 ## Error handling
 
@@ -308,11 +384,19 @@ The system should:
 
 ## Usability
 
-The first interface is a CLI. It should eventually support:
-- choosing characters;
-- running a simulation;
-- viewing a transcript;
-- exporting evaluation trials.
+The existing CLI supports configuring and saving local deterministic mock
+conversations. Sprint 4 plans a minimal local project-user web interface with
+only the actions needed to select Sherlock Holmes and Hercule Poirot, enter a
+topic and turn count, run the same mock conversation flow, read the transcript,
+and locate the saved artifacts.
+
+The planned page must distinguish empty, loading, completed, and error states.
+It does not require a dashboard, authentication, database, history browser,
+evaluation statistics, or live-provider configuration.
+
+The future rater interface remains separate: it will present anonymized
+evaluation trials and collect guesses without exposing ground truth. It is not
+the Sprint 4 conversation UI.
 
 ## Security and ethics
 

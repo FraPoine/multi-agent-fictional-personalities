@@ -1,0 +1,14 @@
+# Existing project runtime
+openai
+python-dotenv
+jinja2
+pydantic
+
+# Web UI
+fastapi
+uvicorn
+python-multipart
+
+# Testing
+pytest
+httpx

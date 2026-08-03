@@ -6,56 +6,49 @@ This document describes the conceptual architecture, main components, data flow,
 
 The architecture is intentionally simple for Sprint 1. It should be updated whenever the implementation diverges from this design.
 
-The first delivery interface is a CLI. OpenAI is the initial provider, selected behind a configurable model boundary; the model name comes from YAML/environment configuration and is never hard-coded. Pydantic schemas validate structured boundaries and JSONL is the execution-log format.
+The first delivered interface is the CLI. Sprint 4 plans an additional minimal
+local web interface over the same importable conversation logic. The currently
+implemented conversation provider is the network-free mock provider; live
+OpenAI-backed conversation execution remains future work. Provider and model
+selection remain behind configurable boundaries, Pydantic schemas validate
+structured boundaries, and JSONL is an execution-log format.
 
 ## High-level architecture
 
 ```txt
-               ┌────────────────────┐
-               │ Character metadata  │
-               └─────────┬──────────┘
-                         │
-                         ▼
-               ┌────────────────────┐
-               │ Corpus documents   │
-               └─────────┬──────────┘
-                         │
-                         ▼
-               ┌────────────────────┐
-               │ Persona extraction │
-               └─────────┬──────────┘
-                         │
-                         ▼
-               ┌────────────────────┐
-               │ Persona profiles   │
-               └─────────┬──────────┘
-                         │
-                         ▼
-               ┌────────────────────┐
-               │ Agent runtime      │
-               └─────────┬──────────┘
-                         │
-                         ▼
-               ┌────────────────────┐
-               │ Chat simulation    │
-               └─────────┬──────────┘
-                         │
-          ┌──────────────┴──────────────┐
-          ▼                             ▼
-┌────────────────────┐        ┌────────────────────┐
-│ Transcript/logs    │        │ Evaluation trials  │
-└────────────────────┘        └─────────┬──────────┘
-                                        │
-                                        ▼
-                              ┌────────────────────┐
-                              │ Rater responses    │
-                              └─────────┬──────────┘
-                                        │
-                                        ▼
-                              ┌────────────────────┐
-                              │ Analysis results   │
-                              └────────────────────┘
+Character metadata → Corpus documents → Persona extraction → Persona profiles
+                                                               │
+Browser / web page → Web route or controller → Application service ← CLI
+                                                      │
+                                                      │ resolves profiles
+                                                      ▼
+                                           Simulation engine
+                                                      │
+                                                      ├─→ Agent runtime
+                                                      │
+                                                      ▼
+                                      Conversation persistence
+                                                      │
+                                                      ▼
+                              ConversationRun, transcript, and artifact path
+                                      │                         │
+                                      ▼                         ▼
+                              Rendered web result          Transcript/logs
+                                                                │
+                                                                ▼
+                                                        Evaluation trials
+                                                                │
+                                                                ▼
+                                                         Rater responses
+                                                                │
+                                                                ▼
+                                                         Analysis results
 ```
+
+The browser, web route, application service, and rendered-result path are
+planned for Sprint 4. The CLI, agent runtime, simulation engine, and
+conversation persistence are already implemented for deterministic local mock
+conversations. Evaluation and analysis remain future components.
 
 ## Main components
 
@@ -180,6 +173,59 @@ temporary directory after success or handled failure. This is process-safe for
 writers using this persistence function; it is not a distributed lock or a
 machine-crash recovery mechanism.
 
+## Application service boundary
+
+### Responsibility
+
+Sprint 4 plans a framework-independent application service between delivery
+interfaces and the existing conversation components. It will:
+
+- accept validated conversation parameters;
+- resolve supported Sherlock Holmes and Hercule Poirot personas and the local
+  mock provider;
+- invoke the existing simulation engine;
+- invoke the existing conversation persistence layer;
+- return a structured result suitable for CLI or web presentation.
+
+The exact interface and package location are provisional. The service must not
+depend on FastAPI or another web framework. Web routes should not duplicate the
+CLI implementation; the CLI and UI should share importable application logic.
+The simulation engine remains independent of web concerns, and the existing
+CLI remains supported.
+
+## Minimal web UI
+
+### Responsibility
+
+The planned Sprint 4 web interface will:
+
+- display the conversation configuration form;
+- collect supported character selections, topic, and turn count;
+- submit a local mock conversation request;
+- render the transcript in speaker and turn order;
+- render the run ID, artifact directory, and artifact filenames;
+- present readable validation, simulation, and persistence errors.
+
+The web layer does not own persona loading rules, turn scheduling, reply
+generation, `ConversationRun` construction, persistence semantics, run ID
+reservation, or artifact generation. Simulation and persistence remain
+authoritative for those responsibilities. Mock is the only enabled
+conversation provider during Sprint 4, and the complete path requires no
+network access.
+
+### Error flow
+
+```txt
+Invalid user input
+→ web validation error
+→ readable feedback
+
+Simulation or persistence failure
+→ application error
+→ web layer renders a concise message
+→ failure is not reported as success
+```
+
 ## 5. Logger
 
 ### Responsibility
@@ -236,7 +282,9 @@ Show anonymized messages and collect rater guesses.
 
 ### Initial implementation
 
-A CLI dry run is implemented first. A human-facing form or page may be added for the final evaluation.
+A CLI dry run is planned as the first evaluation step. A separate human-facing
+form or page may be added for the later controlled evaluation. Neither is part
+of the Sprint 4 conversation UI.
 
 ## 8. Analyzer
 
@@ -485,11 +533,11 @@ Tradeoff:
 
 ## Planned package structure
 
-Implementation will use subpackages such as
-`src/multi_agent_personalities/persona_extraction/`,
-`src/multi_agent_personalities/agent_runtime/`,
-`src/multi_agent_personalities/simulation/`,
-`src/multi_agent_personalities/evaluation/`, and
-`src/multi_agent_personalities/logging/`, with executable CLI entry points
-under `scripts/`. These directories are planned and should be created only as
-their Sprint 2 or later implementations are added.
+The implementation already separates persona extraction, agent runtime,
+simulation, models, providers, artifacts, and CLI concerns beneath
+`src/multi_agent_personalities/`, with executable entry points under
+`scripts/`. Sprint 4 is expected to add conceptual `application/` and `web/`
+areas while keeping framework-independent orchestration separate from web
+delivery. These names are planned rather than commitments to directories or
+files. Evaluation and analysis areas should be added only when their future
+implementations begin.
