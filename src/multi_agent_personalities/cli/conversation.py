@@ -5,16 +5,8 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from pydantic import ValidationError
-
+from multi_agent_personalities.application import run_mock_conversation
 from multi_agent_personalities.artifacts import save_conversation_run
-from multi_agent_personalities.llm import RoundRobinMockProvider
-from multi_agent_personalities.models import Persona, validate_run_id
-from multi_agent_personalities.pipeline import character_registry
-from multi_agent_personalities.simulation import simulate_chat
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 class _ArgumentParser(argparse.ArgumentParser):
@@ -43,52 +35,6 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _load_inputs(character_slugs: Sequence[str]) -> tuple[list[Persona], list[str]]:
-    if len(character_slugs) < 2:
-        raise ValueError("at least two characters are required")
-    if len(character_slugs) != len(set(character_slugs)):
-        raise ValueError("characters must not contain duplicates")
-
-    registry = character_registry(PROJECT_ROOT)
-    unsupported = [slug for slug in character_slugs if slug not in registry]
-    if unsupported:
-        supported = ", ".join(registry)
-        raise ValueError(
-            f"unsupported character: {unsupported[0]!r}. Supported: {supported}"
-        )
-
-    personas: list[Persona] = []
-    responses: list[str] = []
-    for slug in character_slugs:
-        config = registry[slug]
-        try:
-            persona = Persona.model_validate_json(
-                config.persona_fixture.read_text(encoding="utf-8")
-            )
-        except (OSError, ValidationError) as error:
-            raise ValueError(
-                f"invalid synthetic persona fixture for {slug!r}: {error}"
-            ) from error
-        if (persona.character_id, persona.display_name) != (
-            config.character_id,
-            config.display_name,
-        ):
-            raise ValueError(
-                f"synthetic persona identity does not match {slug!r}"
-            )
-        try:
-            response = config.agent_response_fixture.read_text(encoding="utf-8")
-        except OSError as error:
-            raise ValueError(
-                f"invalid synthetic response fixture for {slug!r}: {error}"
-            ) from error
-        if not response.strip():
-            raise ValueError(f"synthetic response fixture for {slug!r} is empty")
-        personas.append(persona)
-        responses.append(response)
-    return personas, responses
-
-
 def main(argv: Sequence[str] | None = None) -> int:
     """Run one synthetic conversation, returning a process-style exit code."""
     try:
@@ -97,21 +43,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             raise ValueError(
                 f"unsupported provider: {args.provider!r}. Supported: mock"
             )
-        if args.run_id is not None:
-            validate_run_id(args.run_id)
-        personas, responses = _load_inputs(args.characters)
-        provider = RoundRobinMockProvider(responses)
-        run = simulate_chat(
-            personas=personas,
+        result = run_mock_conversation(
+            character_slugs=args.characters,
             topic=args.topic,
             turn_count=args.turn_count,
-            provider=provider,
-            provider_name="mock",
-            model_name="mock-round-robin",
             seed=args.seed,
+            output_root=args.output_root,
             run_id=args.run_id,
+            _save_run=save_conversation_run,
         )
-        directory = save_conversation_run(output_root=args.output_root, run=run)
     except ValueError as error:
         print(f"Error: {error}", file=sys.stderr)
         return 2
@@ -123,8 +63,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 2
 
     print("Conversation completed.")
-    print(f"Run ID: {run.run_id}")
-    print(f"Turns: {len(run.messages)}")
-    print(f"Artifacts: {directory}")
-    print(f"Transcript: {directory / 'transcript.md'}")
+    print(f"Run ID: {result.run_id}")
+    print(f"Turns: {len(result.run.messages)}")
+    print(f"Artifacts: {result.artifact_directory}")
+    print(f"Transcript: {result.transcript_path}")
     return 0
