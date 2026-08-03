@@ -30,6 +30,24 @@ def test_valid_message_is_accepted(valid_message: dict) -> None:
     assert message.speaker_character_id == "sherlock_holmes"
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("text", "A different conclusion."), ("turn_index", 1)],
+)
+def test_message_fields_cannot_be_reassigned(
+    valid_message: dict, field: str, value: object
+) -> None:
+    message = Message.model_validate(valid_message)
+    with pytest.raises(ValidationError):
+        setattr(message, field, value)
+
+
+def test_json_serialization_still_works(valid_message: dict) -> None:
+    serialized = Message.model_validate(valid_message).model_dump_json()
+    assert '"message_id":"msg_001"' in serialized
+    assert '"timestamp":"2026-07-30T12:00:00Z"' in serialized
+
+
 def test_negative_turn_index_is_rejected(valid_message: dict) -> None:
     valid_message["turn_index"] = -1
 

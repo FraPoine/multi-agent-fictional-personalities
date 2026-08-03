@@ -22,7 +22,10 @@ NonEmptyStr = Annotated[
 class Message(BaseModel):
     """One generated message in a conversation run."""
 
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+    )
 
     message_id: NonEmptyStr
     run_id: NonEmptyStr

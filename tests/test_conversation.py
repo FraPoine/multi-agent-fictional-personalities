@@ -67,6 +67,14 @@ def test_fields_cannot_be_reassigned(valid_conversation: dict) -> None:
         conversation.messages = ()
 
 
+def test_contained_messages_cannot_be_modified(
+    valid_conversation: dict,
+) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+    with pytest.raises(ValidationError):
+        conversation.messages[0].text = "A changed observation."
+
+
 def test_message_and_character_collections_cannot_be_mutated(
     valid_conversation: dict,
 ) -> None:
