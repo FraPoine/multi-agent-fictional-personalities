@@ -112,8 +112,14 @@ def main(argv: Sequence[str] | None = None) -> int:
             run_id=args.run_id,
         )
         directory = save_conversation_run(output_root=args.output_root, run=run)
-    except (ValueError, FileExistsError) as error:
+    except ValueError as error:
         print(f"Error: {error}", file=sys.stderr)
+        return 2
+    except OSError as error:
+        print(
+            f"Error: unable to save conversation artifacts: {error}",
+            file=sys.stderr,
+        )
         return 2
 
     print("Conversation completed.")

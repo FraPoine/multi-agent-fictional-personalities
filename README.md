@@ -148,8 +148,12 @@ and `--topic`. Optional arguments are `--turn-count` (default `6`),
 `--output-root` (default `outputs`), and `--run-id` (otherwise generated).
 The supported MVB character slugs are `sherlock` and `poirot`.
 
-Each successful run is published only after all files have been written under
-`<output-root>/conversations/runs/<run-id>/`:
+Persistence atomically reserves each run ID with a per-run lock file, writes
+through a temporary sibling directory, and publishes only after all files have
+been written under `<output-root>/conversations/runs/<run-id>/`. Existing run
+IDs are never intentionally overwritten; temporary directories and owned lock
+files are removed after success or handled failure. Expected filesystem errors
+produce a concise CLI error and a non-zero exit code.
 
 - `run.json`: the validated complete `ConversationRun`;
 - `messages.jsonl`: one validated `Message` per line;
@@ -158,7 +162,9 @@ Each successful run is published only after all files have been written under
 **Warning:** the conversation personas and replies are deterministic synthetic
 development fixtures. The CLI makes no network calls and does not demonstrate
 real model personality quality. OpenAI conversation execution is not yet
-implemented. See the completed [Sprint 2 plan](docs/sprint_2_plan.md) and the
+implemented. A six-turn subprocess end-to-end test covers the script, fixture
+loading, mock generation, simulation, and persistence, including duplicate
+invocation. See the completed [Sprint 2 plan](docs/sprint_2_plan.md) and the
 [roadmap](docs/roadmap.md).
 
 ## Development

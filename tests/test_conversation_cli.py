@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+import multi_agent_personalities.cli.conversation as conversation_cli
 from multi_agent_personalities.cli.conversation import main
 from multi_agent_personalities.models import ConversationRun, Message
 
@@ -97,3 +98,57 @@ def test_cli_returns_nonzero_for_user_errors(
 def test_cli_requires_characters_and_topic(capsys: pytest.CaptureFixture[str]) -> None:
     assert main([]) != 0
     assert "required" in capsys.readouterr().err
+
+
+def test_existing_run_returns_nonzero_without_success_text(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    assert main(arguments(tmp_path)) == 0
+    capsys.readouterr()
+
+    assert main(arguments(tmp_path)) != 0
+    captured = capsys.readouterr()
+    assert "already exists" in captured.err
+    assert "Conversation completed." not in captured.out
+
+
+def test_invalid_output_location_returns_nonzero(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output_file = tmp_path / "not-a-directory"
+    output_file.write_text("content", encoding="utf-8")
+
+    assert main(arguments(output_file)) != 0
+    captured = capsys.readouterr()
+    assert "unable to save conversation artifacts" in captured.err
+    assert "Conversation completed." not in captured.out
+
+
+def test_writer_oserror_is_reported_without_success(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def fail_save(**kwargs: object) -> Path:
+        raise PermissionError("simulated denied write")
+
+    monkeypatch.setattr(conversation_cli, "save_conversation_run", fail_save)
+    assert main(arguments(tmp_path)) != 0
+    captured = capsys.readouterr()
+    assert "unable to save conversation artifacts" in captured.err
+    assert "simulated denied write" in captured.err
+    assert "Conversation completed." not in captured.out
+
+
+def test_unexpected_writer_exception_propagates(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_save(**kwargs: object) -> Path:
+        raise AssertionError("programming error")
+
+    monkeypatch.setattr(conversation_cli, "save_conversation_run", fail_save)
+    with pytest.raises(AssertionError, match="programming error"):
+        main(arguments(tmp_path))

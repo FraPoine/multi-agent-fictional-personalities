@@ -1,6 +1,8 @@
 """Tests for complete conversation artifact persistence."""
 
 import socket
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -154,6 +156,30 @@ def test_existing_run_is_not_overwritten(tmp_path: Path) -> None:
         save_conversation_run(output_root=tmp_path, run=run)
 
     assert (directory / "run.json").read_text(encoding="utf-8") == original
+    assert {path.name for path in directory.iterdir()} == {
+        "run.json", "messages.jsonl", "transcript.md",
+    }
+    assert {path.name for path in directory.parent.iterdir()} == {run.run_id}
+
+
+def test_existing_reservation_rejects_before_temporary_directory_creation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run = make_run()
+    runs_directory = tmp_path / "conversations" / "runs"
+    runs_directory.mkdir(parents=True)
+    lock_path = runs_directory / f".{run.run_id}.lock"
+    lock_path.touch()
+
+    def reject_mkdtemp(*args: object, **kwargs: object) -> str:
+        raise AssertionError("temporary directory must not be created")
+
+    monkeypatch.setattr(writer_module.tempfile, "mkdtemp", reject_mkdtemp)
+    with pytest.raises(FileExistsError, match="reserved"):
+        save_conversation_run(output_root=tmp_path, run=run)
+
+    assert list(runs_directory.iterdir()) == [lock_path]
 
 
 def test_simulation_and_persistence_are_network_free(
@@ -206,3 +232,41 @@ def test_failed_write_leaves_no_final_or_temporary_directory(
     runs_directory = tmp_path / "conversations" / "runs"
     assert not (runs_directory / run.run_id).exists()
     assert list(runs_directory.iterdir()) == []
+
+
+def test_concurrent_writers_cannot_both_publish_same_run(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run = make_run()
+    temporary_created = threading.Event()
+    allow_first_writer = threading.Event()
+    real_mkdtemp = writer_module.tempfile.mkdtemp
+
+    def coordinated_mkdtemp(*args: object, **kwargs: object) -> str:
+        path = real_mkdtemp(*args, **kwargs)
+        temporary_created.set()
+        assert allow_first_writer.wait(timeout=5)
+        return path
+
+    monkeypatch.setattr(writer_module.tempfile, "mkdtemp", coordinated_mkdtemp)
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        first = executor.submit(
+            save_conversation_run, output_root=tmp_path, run=run
+        )
+        assert temporary_created.wait(timeout=5)
+        second = executor.submit(
+            save_conversation_run, output_root=tmp_path, run=run
+        )
+        with pytest.raises(FileExistsError):
+            second.result(timeout=5)
+        allow_first_writer.set()
+        directory = first.result(timeout=5)
+
+    assert ConversationRun.model_validate_json(
+        (directory / "run.json").read_text(encoding="utf-8")
+    ) == run
+    assert {path.name for path in directory.iterdir()} == {
+        "run.json", "messages.jsonl", "transcript.md",
+    }
+    assert {path.name for path in directory.parent.iterdir()} == {run.run_id}

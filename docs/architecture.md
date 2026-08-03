@@ -173,7 +173,12 @@ timing may be refined later without adding clock calls inside the turn loop.
 Persistence remains separate from simulation. `save_conversation_run()` writes
 a complete run beneath `conversations/runs/{run_id}/`, while the existing
 `save_single_agent_run()` continues to write the older Sprint 2 persona and
-single-response artifacts.
+single-response artifacts. Conversation persistence uses an atomically created
+per-run reservation file and a temporary sibling directory. It never
+intentionally overwrites a completed run, and removes its reservation and
+temporary directory after success or handled failure. This is process-safe for
+writers using this persistence function; it is not a distributed lock or a
+machine-crash recovery mechanism.
 
 ## 5. Logger
 
