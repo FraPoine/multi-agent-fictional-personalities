@@ -114,11 +114,11 @@ generates deterministic mock responses, and saves persona, prompt, response,
 and metadata artifacts in isolated run directories. Unit and network-free
 end-to-end tests cover this flow.
 
-## Next step: Sprint 3
+## Sprint 3 conversation CLI
 
-Sprint 3 extends the completed local vertical slice. The round-robin
-conversation and explicit in-run history are implemented; complete runs can
-also be persisted as `run.json`, `messages.jsonl`, and `transcript.md`:
+Sprint 3 extends the completed local vertical slice with round-robin
+conversation, explicit in-run history, atomic persistence, and an importable
+local CLI:
 
 ```txt
 Sherlock persona + Poirot persona
@@ -128,9 +128,37 @@ Sherlock persona + Poirot persona
 → structured JSONL logs
 ```
 
-Sprint 3 will also implement the OpenAI provider and defer live verification
-until credentials become available. OpenAI-backed execution does not currently
-work. See the completed [Sprint 2 plan](docs/sprint_2_plan.md) and the
+Run a six-turn synthetic conversation from the repository root:
+
+```bash
+export PYTHONPATH="$PWD/src"
+
+python scripts/run_conversation.py \
+    --characters sherlock poirot \
+    --topic "A valuable document disappeared from a locked room." \
+    --turn-count 6 \
+    --provider mock \
+    --seed 42 \
+    --output-root outputs
+```
+
+The required options are `--characters` (two or more unique supported slugs)
+and `--topic`. Optional arguments are `--turn-count` (default `6`),
+`--provider` (default and currently only `mock`), `--seed` (default `42`),
+`--output-root` (default `outputs`), and `--run-id` (otherwise generated).
+The supported MVB character slugs are `sherlock` and `poirot`.
+
+Each successful run is published only after all files have been written under
+`<output-root>/conversations/runs/<run-id>/`:
+
+- `run.json`: the validated complete `ConversationRun`;
+- `messages.jsonl`: one validated `Message` per line;
+- `transcript.md`: a human-readable transcript.
+
+**Warning:** the conversation personas and replies are deterministic synthetic
+development fixtures. The CLI makes no network calls and does not demonstrate
+real model personality quality. OpenAI conversation execution is not yet
+implemented. See the completed [Sprint 2 plan](docs/sprint_2_plan.md) and the
 [roadmap](docs/roadmap.md).
 
 ## Development

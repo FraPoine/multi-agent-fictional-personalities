@@ -15,9 +15,10 @@ Poirot.
 ## Sprint 3
 
 - Completed multi-agent round-robin simulation with explicit per-run history.
-- Complete-run persistence with a Markdown transcript, canonical JSON, and
-  structured JSONL messages.
-- OpenAI provider implementation and deferred live verification remain.
+- Completed atomic conversation persistence with a Markdown transcript,
+  canonical JSON, and structured JSONL messages.
+- Completed local CLI for saved, deterministic synthetic mock conversations.
+- OpenAI provider implementation and live verification remain pending.
 
 ## Sprint 4
 

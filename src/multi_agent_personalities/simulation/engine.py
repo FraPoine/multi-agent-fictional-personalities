@@ -7,6 +7,7 @@ from uuid import uuid4
 from multi_agent_personalities.agent_runtime import generate_reply
 from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.models.conversation import ConversationRun
+from multi_agent_personalities.models.identifiers import validate_run_id
 from multi_agent_personalities.models.message import Message
 from multi_agent_personalities.models.persona import Persona
 
@@ -44,12 +45,12 @@ def simulate_chat(
     if turn_count <= 0:
         raise ValueError("turn_count must be greater than zero")
     if run_id is not None:
-        _require_non_empty(run_id, "run_id")
+        validate_run_id(run_id)
 
     created_at = timestamp or datetime.now(timezone.utc)
     if created_at.tzinfo is None or created_at.utcoffset() is None:
         raise ValueError("timestamp must be timezone-aware")
-    resolved_run_id = run_id or uuid4().hex
+    resolved_run_id = validate_run_id(run_id or uuid4().hex)
 
     history: list[Message] = []
     for turn_index in range(turn_count):

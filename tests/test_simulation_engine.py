@@ -161,3 +161,28 @@ def test_mock_messages_share_run_creation_timestamp(
 ) -> None:
     run = simulate(personas[:2], RecordingProvider(), turn_count=4)
     assert {message.timestamp for message in run.messages} == {run.created_at}
+
+
+@pytest.mark.parametrize(
+    "run_id",
+    ["run_001", "20260803T120000.000000Z", "conversation-test-1"],
+)
+def test_safe_run_ids_are_accepted(personas: list[Persona], run_id: str) -> None:
+    run = simulate(personas[:2], RecordingProvider(), run_id=run_id)
+    assert run.run_id == run_id
+
+
+@pytest.mark.parametrize(
+    "run_id",
+    [
+        "../outside", "folder/run", r"folder\run", ".", "..",
+        "run with spaces", "_leading", "éclair", "x" * 129,
+    ],
+)
+def test_unsafe_run_ids_fail_before_provider_call(
+    personas: list[Persona], run_id: str
+) -> None:
+    provider = RecordingProvider()
+    with pytest.raises(ValueError, match="run_id"):
+        simulate(personas[:2], provider, run_id=run_id)
+    assert provider.prompts == []

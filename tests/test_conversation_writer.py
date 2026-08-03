@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+import multi_agent_personalities.artifacts.conversation_writer as writer_module
 from multi_agent_personalities.artifacts import save_conversation_run
 from multi_agent_personalities.models import ConversationRun, Message, Persona
 from multi_agent_personalities.simulation import simulate_chat
@@ -178,3 +179,30 @@ def test_conversation_models_remain_immutable() -> None:
         run.topic = "Changed"
     with pytest.raises(ValidationError):
         run.messages[0].text = "Changed"
+
+
+def test_writer_defensively_rejects_traversal_run_id(tmp_path: Path) -> None:
+    run = make_run().model_copy(update={"run_id": "../outside"})
+
+    with pytest.raises(ValueError, match="run_id"):
+        save_conversation_run(output_root=tmp_path, run=run)
+
+    assert not (tmp_path / "outside").exists()
+
+
+def test_failed_write_leaves_no_final_or_temporary_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    run = make_run()
+
+    def fail_render(run: ConversationRun) -> str:
+        raise OSError("simulated transcript failure")
+
+    monkeypatch.setattr(writer_module, "_render_transcript", fail_render)
+    with pytest.raises(OSError, match="simulated transcript failure"):
+        save_conversation_run(output_root=tmp_path, run=run)
+
+    runs_directory = tmp_path / "conversations" / "runs"
+    assert not (runs_directory / run.run_id).exists()
+    assert list(runs_directory.iterdir()) == []

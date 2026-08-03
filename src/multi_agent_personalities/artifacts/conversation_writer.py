@@ -1,8 +1,11 @@
 """Persistence for complete multi-agent conversation runs."""
 
+import shutil
+import tempfile
 from pathlib import Path
 
 from multi_agent_personalities.models.conversation import ConversationRun
+from multi_agent_personalities.models.identifiers import validate_run_id
 
 
 def _render_transcript(run: ConversationRun) -> str:
@@ -48,28 +51,41 @@ def save_conversation_run(
     output_root: Path,
     run: ConversationRun,
 ) -> Path:
-    """Save one validated conversation without overwriting an existing run."""
-    run_directory = (
-        Path(output_root) / "conversations" / "runs" / run.run_id
-    )
-    run_directory.mkdir(parents=True, exist_ok=False)
+    """Atomically save a conversation without overwriting an existing run."""
+    run_id = validate_run_id(run.run_id)
+    runs_directory = Path(output_root) / "conversations" / "runs"
+    runs_directory.mkdir(parents=True, exist_ok=True)
+    run_directory = runs_directory / run_id
+    if run_directory.exists():
+        raise FileExistsError(f"conversation run already exists: {run_directory}")
 
-    (run_directory / "run.json").write_text(
-        run.model_dump_json(indent=2) + "\n",
-        encoding="utf-8",
+    temporary_directory = Path(
+        tempfile.mkdtemp(prefix=f".{run_id}.", dir=runs_directory)
     )
+    try:
+        (temporary_directory / "run.json").write_text(
+            run.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
 
-    messages_jsonl = "".join(
-        message.model_dump_json() + "\n" for message in run.messages
-    )
-    (run_directory / "messages.jsonl").write_text(
-        messages_jsonl,
-        encoding="utf-8",
-    )
+        messages_jsonl = "".join(
+            message.model_dump_json() + "\n" for message in run.messages
+        )
+        (temporary_directory / "messages.jsonl").write_text(
+            messages_jsonl,
+            encoding="utf-8",
+        )
 
-    (run_directory / "transcript.md").write_text(
-        _render_transcript(run),
-        encoding="utf-8",
-    )
+        (temporary_directory / "transcript.md").write_text(
+            _render_transcript(run),
+            encoding="utf-8",
+        )
+
+        # The destination was checked before writing; rename publishes the
+        # fully populated sibling directory as one filesystem operation.
+        temporary_directory.rename(run_directory)
+    except BaseException:
+        shutil.rmtree(temporary_directory, ignore_errors=True)
+        raise
 
     return run_directory
