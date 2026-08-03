@@ -18,31 +18,30 @@ structured boundaries, and JSONL is an execution-log format.
 ```txt
 Character metadata → Corpus documents → Persona extraction → Persona profiles
                                                                │
+                                                               │ selected profiles
+                                                               ▼
 Browser / web page → Web route or controller → Application service ← CLI
-                                                      │
-                                                      │ resolves profiles
-                                                      ▼
-                                           Simulation engine
-                                                      │
-                                                      ├─→ Agent runtime
-                                                      │
-                                                      ▼
-                                      Conversation persistence
-                                                      │
-                                                      ▼
-                              ConversationRun, transcript, and artifact path
-                                      │                         │
-                                      ▼                         ▼
-                              Rendered web result          Transcript/logs
-                                                                │
-                                                                ▼
-                                                        Evaluation trials
-                                                                │
-                                                                ▼
-                                                         Rater responses
-                                                                │
-                                                                ▼
-                                                         Analysis results
+                                                               │
+                                                               ▼
+                                                      Simulation engine
+                                                               │
+                                                               ▼
+                                                        Agent runtime
+                                                               │
+                                                               ▼
+                                                 Conversation persistence
+                                                               │
+                                                               ▼
+                               ConversationRun, transcript, and artifact path
+                                              │                    │
+                                              ▼                    ▼
+                                    Rendered web result    Evaluation trials (future)
+                                                                   │
+                                                                   ▼
+                                                          Rater responses (future)
+                                                                   │
+                                                                   ▼
+                                                          Analysis results (future)
 ```
 
 The browser, web route, application service, and rendered-result path are
@@ -52,7 +51,7 @@ conversations. Evaluation and analysis remain future components.
 
 ## Main components
 
-## 1. Corpus manager
+## Corpus manager
 
 ### Responsibility
 
@@ -72,7 +71,7 @@ Load and validate character-specific text examples.
 
 Francesco (individual Track B project).
 
-## 2. Persona extractor
+## Persona extractor
 
 ### Responsibility
 
@@ -93,7 +92,7 @@ Convert a character corpus into a structured persona profile.
 
 This component should validate that the generated profile follows the expected schema.
 
-## 3. Agent runtime
+## Agent runtime
 
 ### Responsibility
 
@@ -121,7 +120,7 @@ and turn scheduling remain responsibilities of the simulation engine.
 The Sprint 2 single-response pipeline also uses this public runtime, so all
 agent replies pass through the same validation and message-construction path.
 
-## 4. Simulation engine
+## Simulation engine
 
 ### Responsibility
 
@@ -226,7 +225,7 @@ Simulation or persistence failure
 → failure is not reported as success
 ```
 
-## 5. Logger
+## Logger
 
 ### Responsibility
 
@@ -258,7 +257,7 @@ The implemented single-agent pipeline uses one canonical artifact writer. It
 stores each run under `outputs/{character-slug}/runs/{run-id}/` with
 `persona.json`, `system_prompt.txt`, `response.txt`, and `metadata.json`.
 
-## 6. Evaluation builder
+## Evaluation builder
 
 ### Responsibility
 
@@ -274,7 +273,7 @@ Convert generated messages into blind evaluation trials.
 
 - `EvaluationTrial` records.
 
-## 7. Rater interface
+## Rater interface
 
 ### Responsibility
 
@@ -286,7 +285,7 @@ A CLI dry run is planned as the first evaluation step. A separate human-facing
 form or page may be added for the later controlled evaluation. Neither is part
 of the Sprint 4 conversation UI.
 
-## 8. Analyzer
+## Analyzer
 
 ### Responsibility
 
@@ -453,28 +452,31 @@ Each log should record:
 
 ## Logging policy
 
-Every run should create:
+Implemented conversation persistence writes each complete conversation beneath
+the configured output root:
 
 ```txt
-logs/runs/{run_id}/
+<output-root>/conversations/runs/<run-id>/
 ├── run.json
 ├── messages.jsonl
-├── steps.jsonl
 └── transcript.md
 ```
 
+This structure is distinct from the older Sprint 2 single-agent structure at
+`outputs/<character-slug>/runs/<run-id>/`, which contains `persona.json`,
+`system_prompt.txt`, `response.txt`, and `metadata.json`. Conversation
+persistence does not create `steps.jsonl`.
+
 ## Planned smoke test path
 
-The smoke test should run the smallest possible pipeline:
+The planned smoke test should exercise the current critical path:
 
 ```txt
 Sherlock Holmes and Hercule Poirot
-↓
-2 processed corpora
-↓
-2 persona profiles
-↓
-1 saved agent response
+→ load validated synthetic personas
+→ run a short deterministic round-robin mock conversation
+→ save the complete conversation
+→ verify run.json, messages.jsonl, and transcript.md
 ```
 
 Target command:
