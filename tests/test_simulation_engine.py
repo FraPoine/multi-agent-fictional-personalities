@@ -1,5 +1,6 @@
 """Tests for the deterministic round-robin simulation engine."""
 
+import socket
 from datetime import datetime, timezone
 
 import pytest
@@ -141,3 +142,22 @@ def test_provider_exception_is_propagated(personas: list[Persona]) -> None:
             provider=FailingProvider(), provider_name="failing", seed=1,
             run_id="run_fixed", timestamp=FIXED_TIME,
         )
+
+
+def test_local_provider_simulation_does_not_access_network(
+    personas: list[Persona],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def reject_network(*args: object, **kwargs: object) -> None:
+        raise AssertionError("network access attempted")
+
+    monkeypatch.setattr(socket, "create_connection", reject_network)
+    run = simulate(personas[:2], RecordingProvider(), turn_count=2)
+    assert [message.text for message in run.messages] == ["Reply 0", "Reply 1"]
+
+
+def test_mock_messages_share_run_creation_timestamp(
+    personas: list[Persona],
+) -> None:
+    run = simulate(personas[:2], RecordingProvider(), turn_count=4)
+    assert {message.timestamp for message in run.messages} == {run.created_at}

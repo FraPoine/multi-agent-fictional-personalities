@@ -18,7 +18,7 @@ The project has both:
 
 The final experiment uses Sherlock Holmes, Hercule Poirot, L, and Professor Layton. The initial Minimum Viable Build (MVB) uses only Sherlock and Poirot; L and Professor Layton are later extensions after the first end-to-end pipeline works.
 
-The first interface is a CLI. OpenAI is the initial LLM provider, while the exact model is supplied through YAML configuration and an environment variable rather than hard-coded. Agents retain conversation history only within a run; there is no persistent memory. Multi-agent turns will use deterministic round-robin scheduling and runs will produce JSONL logs.
+The first interface is a CLI. OpenAI is the initial LLM provider, while the exact model is supplied through YAML configuration and an environment variable rather than hard-coded. Agents retain conversation history only within a run; there is no persistent memory. The repository provides immutable `Message` objects, immutable `ConversationRun` snapshots, and deterministic round-robin simulation with explicit complete history and exactly one `generate_reply()` call per turn.
 
 ## Minimum Viable Build
 
@@ -116,7 +116,9 @@ end-to-end tests cover this flow.
 
 ## Next step: Sprint 3
 
-Sprint 3 extends the completed local vertical slice into:
+Sprint 3 extends the completed local vertical slice. The round-robin
+conversation and explicit in-run history are implemented; complete runs can
+also be persisted as `run.json`, `messages.jsonl`, and `transcript.md`:
 
 ```txt
 Sherlock persona + Poirot persona

@@ -146,13 +146,15 @@ Coordinate multiple agents in a turn-based group chat.
 ### Output
 
 - `ConversationRun`
-- list of `Message` records
-- transcript
-- logs
+
+The run contains its ordered tuple of `Message` records. Transcript and file
+generation belong to the separate artifact writer.
 
 `ConversationRun` is an immutable validated snapshot, not simulation state.
-The simulation engine will maintain a separate mutable local history and create
-new snapshots when needed.
+The implemented simulation engine maintains a separate mutable local history,
+passes the complete ordered history explicitly, and calls `generate_reply()`
+exactly once per turn before returning the completed snapshot. `Message`
+objects are also immutable.
 
 ### Turn-taking policy
 
@@ -163,6 +165,15 @@ round_robin
 ```
 
 Each agent speaks in a fixed order until the configured number of turns is reached.
+
+`ConversationRun.created_at` identifies the start of a run. Mock-generated
+messages share this timestamp to keep simulation deterministic; real-provider
+timing may be refined later without adding clock calls inside the turn loop.
+
+Persistence remains separate from simulation. `save_conversation_run()` writes
+a complete run beneath `conversations/runs/{run_id}/`, while the existing
+`save_single_agent_run()` continues to write the older Sprint 2 persona and
+single-response artifacts.
 
 ## 5. Logger
 

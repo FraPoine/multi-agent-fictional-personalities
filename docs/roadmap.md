@@ -14,11 +14,10 @@ Poirot.
 
 ## Sprint 3
 
-- OpenAI provider implementation and deferred live verification.
-- Multi-agent round-robin simulation.
-- Explicit per-run conversation history.
-- Transcript generation.
-- Structured JSONL message and execution logs.
+- Completed multi-agent round-robin simulation with explicit per-run history.
+- Complete-run persistence with a Markdown transcript, canonical JSON, and
+  structured JSONL messages.
+- OpenAI provider implementation and deferred live verification remain.
 
 ## Sprint 4
 

@@ -182,9 +182,13 @@ used to construct new snapshots.
 
 ### Storage
 
-- run metadata: `logs/runs/{run_id}/run.json`
-- messages: `logs/runs/{run_id}/messages.jsonl`
-- transcript: `logs/runs/{run_id}/transcript.md`
+- complete run: `<output_root>/conversations/runs/{run_id}/run.json`
+- messages: `<output_root>/conversations/runs/{run_id}/messages.jsonl`
+- transcript: `<output_root>/conversations/runs/{run_id}/transcript.md`
+
+`run.json` is the canonical complete `ConversationRun`; JSONL and Markdown are
+ordered message and human-readable views. Conversation persistence is separate
+from the Sprint 2 single-agent writer described below.
 
 ### Fields
 
@@ -232,7 +236,10 @@ One generated message in a simulated conversation.
 
 ### Storage
 
-`logs/runs/{run_id}/messages.jsonl`
+`<output_root>/conversations/runs/{run_id}/messages.jsonl`
+
+Mock simulation uses the run's `created_at` value for every message timestamp
+to remain deterministic. Distinct real-provider timing can be added later.
 
 ### Fields
 

@@ -28,7 +28,12 @@ def simulate_chat(
     run_id: str | None = None,
     timestamp: datetime | None = None,
 ) -> ConversationRun:
-    """Generate a complete conversation using fixed round-robin speakers."""
+    """Generate a complete conversation using fixed round-robin speakers.
+
+    ``created_at`` marks the run start. Every message receives the same
+    timestamp in this deterministic mock implementation; provider-specific
+    timing can be introduced later without clock calls inside the turn loop.
+    """
     if len(personas) < 2:
         raise ValueError("at least two personas are required")
     character_ids = tuple(persona.character_id for persona in personas)

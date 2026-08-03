@@ -1,0 +1,180 @@
+"""Tests for complete conversation artifact persistence."""
+
+import socket
+from datetime import datetime, timezone
+from pathlib import Path
+
+import pytest
+from pydantic import ValidationError
+
+from multi_agent_personalities.artifacts import save_conversation_run
+from multi_agent_personalities.models import ConversationRun, Message, Persona
+from multi_agent_personalities.simulation import simulate_chat
+
+
+CREATED_AT = datetime(2026, 8, 3, 12, 0, tzinfo=timezone.utc)
+
+
+class LocalProvider:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def generate(self, prompt: str, *, task_name: str) -> str:
+        reply = (
+            f"Response {self.calls}."
+            if self.calls != 1
+            else "Response 1, first paragraph.\n\nSecond paragraph."
+        )
+        self.calls += 1
+        return reply
+
+
+def make_persona(character_id: str, display_name: str) -> Persona:
+    return Persona(
+        character_id=character_id,
+        display_name=display_name,
+        description=f"Description of {display_name}.",
+        speaking_style=["Precise"],
+        reasoning_style=["Methodical"],
+        personality_traits=["Observant"],
+        behavior_rules=["Address the topic"],
+        example_messages=["An example."],
+    )
+
+
+def make_run(turn_count: int = 2) -> ConversationRun:
+    return simulate_chat(
+        personas=[
+            make_persona("sherlock", "Sherlock Holmes"),
+            make_persona("poirot", "Hercule Poirot"),
+        ],
+        topic="A locked-room mystery",
+        turn_count=turn_count,
+        provider=LocalProvider(),
+        provider_name="mock",
+        model_name="mock-v1",
+        seed=42,
+        run_id="run_fixed",
+        timestamp=CREATED_AT,
+    )
+
+
+def test_writes_exact_files_and_round_trippable_models(tmp_path: Path) -> None:
+    run = make_run()
+    original_dump = run.model_dump_json()
+
+    run_directory = save_conversation_run(output_root=tmp_path, run=run)
+
+    assert run_directory == tmp_path / "conversations" / "runs" / "run_fixed"
+    assert {path.name for path in run_directory.iterdir()} == {
+        "run.json",
+        "messages.jsonl",
+        "transcript.md",
+    }
+
+    run_text = (run_directory / "run.json").read_text(encoding="utf-8")
+    assert run_text.endswith("\n")
+    assert ConversationRun.model_validate_json(run_text) == run
+
+    message_text = (run_directory / "messages.jsonl").read_text(
+        encoding="utf-8"
+    )
+    assert message_text.endswith("\n")
+    lines = message_text.splitlines()
+    reconstructed = [Message.model_validate_json(line) for line in lines]
+    assert len(lines) == len(run.messages)
+    assert reconstructed == list(run.messages)
+    assert [message.turn_index for message in reconstructed] == [0, 1]
+
+    assert run.model_dump_json() == original_dump
+
+
+def test_transcript_preserves_metadata_speakers_and_text(tmp_path: Path) -> None:
+    run = make_run()
+    run_directory = save_conversation_run(output_root=tmp_path, run=run)
+    transcript = (run_directory / "transcript.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert transcript.endswith("\n")
+    for expected in (
+        "**Run ID:** run_fixed",
+        "**Topic:** A locked-room mystery",
+        "**Status:** completed",
+        "**Provider:** mock",
+        "**Model:** mock-v1",
+        "**Seed:** 42",
+        "**Created at:** 2026-08-03T12:00:00+00:00",
+        "## Turn 0 — Sherlock Holmes",
+        "## Turn 1 — Hercule Poirot",
+    ):
+        assert expected in transcript
+    for message in run.messages:
+        assert transcript.count(message.text) == 1
+    assert "Response 1, first paragraph.\n\nSecond paragraph." in transcript
+
+
+def test_transcript_records_textless_generation_error(tmp_path: Path) -> None:
+    message = Message(
+        message_id="failed_message_0000",
+        run_id="failed",
+        turn_index=0,
+        speaker_character_id="sherlock",
+        speaker_name="Sherlock Holmes",
+        text="",
+        provider="mock",
+        timestamp=CREATED_AT,
+        error="provider unavailable",
+    )
+    run = ConversationRun(
+        run_id="failed",
+        topic="A mystery",
+        character_ids=("sherlock", "poirot"),
+        turn_count=2,
+        seed=1,
+        provider="mock",
+        created_at=CREATED_AT,
+        status="failed",
+        messages=(message,),
+    )
+
+    directory = save_conversation_run(output_root=tmp_path, run=run)
+    transcript = (directory / "transcript.md").read_text(encoding="utf-8")
+    assert "_Generation error: provider unavailable_" in transcript
+    assert "**Model:**" not in transcript
+
+
+def test_existing_run_is_not_overwritten(tmp_path: Path) -> None:
+    run = make_run()
+    directory = save_conversation_run(output_root=tmp_path, run=run)
+    original = (directory / "run.json").read_text(encoding="utf-8")
+
+    with pytest.raises(FileExistsError):
+        save_conversation_run(output_root=tmp_path, run=run)
+
+    assert (directory / "run.json").read_text(encoding="utf-8") == original
+
+
+def test_simulation_and_persistence_are_network_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def reject_network(*args: object, **kwargs: object) -> None:
+        raise AssertionError("network access attempted")
+
+    monkeypatch.setattr(socket, "create_connection", reject_network)
+    run = make_run(turn_count=6)
+    directory = save_conversation_run(output_root=tmp_path, run=run)
+
+    assert len(run.messages) == 6
+    assert len(
+        (directory / "messages.jsonl").read_text(encoding="utf-8").splitlines()
+    ) == 6
+
+
+def test_conversation_models_remain_immutable() -> None:
+    run = make_run()
+    with pytest.raises(ValidationError):
+        run.topic = "Changed"
+    with pytest.raises(ValidationError):
+        run.messages[0].text = "Changed"
