@@ -18,6 +18,21 @@ This is an individual Track B project with both a system-building component and 
 - Basic working-version target: August 7, 2026.
 - Final course deadline: September 2026
 
+## Current Sprint 4 implementation
+
+Sprint 4 is complete. The repository provides both the existing conversation
+CLI and a local FastAPI/Jinja web interface for deterministic mock
+conversations between Sherlock Holmes and Hercule Poirot. Both delivery layers
+reuse framework-independent application and runtime logic; the web path also
+reuses the existing simulation and atomic conversation-persistence layers.
+
+Completed runs persist `run.json`, `messages.jsonl`, and `transcript.md`. The
+web interface provides bounded server-side validation, readable errors,
+loading feedback, an ordered transcript, and visible run and artifact paths.
+The verified Sprint 4 provider is `mock`, requires no API key or network
+access, and does not establish real LLM persona quality or recognizability.
+OpenAI-backed conversation execution was not part of Sprint 4.
+
 ## High-level architecture
 
 The system has five main stages:

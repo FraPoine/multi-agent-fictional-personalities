@@ -38,6 +38,13 @@ Both delivery interfaces remain available:
   states, loading feedback, ordered transcript rendering, and visible run and
   artifact paths.
 
+Sprint 4 formally completed this local web workflow in commit
+`b48636ae6fffbb73f9cf65adaf848dd4792e5633`; its
+[completion record](docs/sprint_4_completion.md) documents the historical
+verification result of 189 passing tests. The web and CLI delivery layers
+reuse the framework-independent conversation application/runtime logic rather
+than duplicating simulation or persistence behavior.
+
 Route and startup tests cover the web boundary. The current conversation
 provider is fixed to `mock`, needs no API key, and makes no network request.
 These deterministic fixtures support local development and reproducibility;

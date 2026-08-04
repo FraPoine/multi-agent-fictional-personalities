@@ -7,8 +7,9 @@ This document describes what the system should do from the point of view of its 
 The system supports the creation, simulation, and evaluation of persona-seeded fictional-character agents.
 
 This is an individual Track B project. The CLI is the first implemented
-interface and remains supported. Sprint 4 plans an additional minimal local web
-interface that uses the same conversation functionality and is mock-only.
+interface and remains supported. Sprint 4 completed an additional minimal local
+FastAPI/Jinja web interface that uses the same conversation functionality and
+is mock-only.
 The initial MVB exposes Sherlock Holmes and Hercule Poirot; L and Professor
 Layton are later extensions.
 
@@ -282,7 +283,7 @@ separate from the Sprint 4 conversation UI and is not a scientific evaluation.
 
 ### Description
 
-A planned local web interface exposes the existing deterministic mock
+A completed local web interface exposes the existing deterministic mock
 multi-agent simulation to a project user. It is an additional interface and
 does not replace the existing CLI or the separate future blind-rater
 interface.
@@ -296,8 +297,7 @@ interface.
 - default or configured seed;
 - configured output root.
 
-The Sprint 4 page does not need to expose the seed or output root as editable
-controls.
+The Sprint 4 page does not expose the seed or output root as editable controls.
 
 ### Outputs
 
@@ -387,12 +387,12 @@ The system should:
 ## Usability
 
 The existing CLI supports configuring and saving local deterministic mock
-conversations. Sprint 4 plans a minimal local project-user web interface with
-only the actions needed to select Sherlock Holmes and Hercule Poirot, enter a
-topic and turn count, run the same mock conversation flow, read the transcript,
-and locate the saved artifacts.
+conversations. Sprint 4 completed a minimal local project-user web interface
+with only the actions needed to select Sherlock Holmes and Hercule Poirot,
+enter a topic and turn count, run the same mock conversation flow, read the
+ordered transcript, and locate the saved artifacts.
 
-The planned page must distinguish empty, loading, completed, and error states.
+The implemented page distinguishes empty, loading, completed, and error states.
 It does not require a dashboard, authentication, database, history browser,
 evaluation statistics, or live-provider configuration.
 

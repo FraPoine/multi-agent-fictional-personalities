@@ -6,8 +6,9 @@ This document describes the conceptual architecture, main components, data flow,
 
 The architecture is intentionally simple for Sprint 1. It should be updated whenever the implementation diverges from this design.
 
-The first delivered interface is the CLI. Sprint 4 plans an additional minimal
-local web interface over the same importable conversation logic. The currently
+The first delivered interface was the CLI. Sprint 4 completed an additional
+minimal local FastAPI/Jinja web interface over the same importable conversation
+logic. The currently
 implemented conversation provider is the network-free mock provider; live
 OpenAI-backed conversation execution remains future work. Provider and model
 selection remain behind configurable boundaries, Pydantic schemas validate
@@ -29,6 +30,9 @@ Browser / web page → Web route or controller → Application service ← CLI
                                                         Agent runtime
                                                                │
                                                                ▼
+                                             Deterministic mock provider
+                                                               │
+                                                               ▼
                                                  Conversation persistence
                                                                │
                                                                ▼
@@ -44,10 +48,11 @@ Browser / web page → Web route or controller → Application service ← CLI
                                                           Analysis artifacts
 ```
 
-The browser, web route, application service, and rendered-result path are
-planned for Sprint 4. The CLI, agent runtime, simulation engine, and
-conversation persistence are already implemented for deterministic local mock
-conversations. Evaluation and analysis remain future components.
+The browser, FastAPI route, framework-independent application service, and
+rendered-result path were implemented and verified in Sprint 4. Both the CLI
+and browser path reuse the agent runtime, deterministic round-robin simulation,
+and atomic conversation persistence for local mock conversations. Evaluation
+and analysis remain future components.
 
 ## Main components
 
@@ -176,8 +181,9 @@ machine-crash recovery mechanism.
 
 ### Responsibility
 
-Sprint 4 plans a framework-independent application service between delivery
-interfaces and the existing conversation components. It will:
+Sprint 4 implemented a framework-independent conversation application service
+between the CLI or web delivery layer and the existing conversation
+components. It:
 
 - accept validated conversation parameters;
 - resolve supported Sherlock Holmes and Hercule Poirot personas and the local
@@ -186,17 +192,18 @@ interfaces and the existing conversation components. It will:
 - invoke the existing conversation persistence layer;
 - return a structured result suitable for CLI or web presentation.
 
-The exact interface and package location are provisional. The service must not
-depend on FastAPI or another web framework. Web routes should not duplicate the
-CLI implementation; the CLI and UI should share importable application logic.
-The simulation engine remains independent of web concerns, and the existing
-CLI remains supported.
+The service is implemented under `application/conversation_service.py` and
+does not depend on FastAPI or another web framework. Web routes delegate to
+this importable service instead of duplicating conversation orchestration. The
+service reuses the simulation engine and conversation writer, the simulation
+engine remains independent of web concerns, and the existing CLI remains
+supported.
 
 ## Minimal web UI
 
 ### Responsibility
 
-The planned Sprint 4 web interface will:
+The implemented Sprint 4 web interface does the following:
 
 - display the conversation configuration form;
 - collect supported character selections, topic, and turn count;
@@ -204,6 +211,11 @@ The planned Sprint 4 web interface will:
 - render the transcript in speaker and turn order;
 - render the run ID, artifact directory, and artifact filenames;
 - present readable validation, simulation, and persistence errors.
+
+It also provides loading feedback while a request is in progress. The form
+requires Sherlock Holmes and Hercule Poirot, accepts a nonblank topic and a
+bounded turn count from 2 through 12, and renders the completed run ID plus the
+paths for `run.json`, `messages.jsonl`, and `transcript.md`.
 
 The web layer does not own persona loading rules, turn scheduling, reply
 generation, `ConversationRun` construction, persistence semantics, run ID
@@ -546,13 +558,12 @@ Reason:
 Tradeoff:
 - agents cannot retain information between runs.
 
-## Planned package structure
+## Package structure
 
 The implementation already separates persona extraction, agent runtime,
 simulation, models, providers, artifacts, and CLI concerns beneath
 `src/multi_agent_personalities/`, with executable entry points under
-`scripts/`. Sprint 4 is expected to add conceptual `application/` and `web/`
-areas while keeping framework-independent orchestration separate from web
-delivery. These names are planned rather than commitments to directories or
-files. Evaluation and analysis areas should be added only when their future
-implementations begin.
+`scripts/`. Sprint 4 added the `application/` and `web/` areas while keeping
+framework-independent conversation orchestration separate from FastAPI/Jinja
+delivery. The web layer reuses the implemented simulation, runtime, provider,
+and artifact boundaries.
