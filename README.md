@@ -66,15 +66,17 @@ python scripts/analyze_evaluation_pilot.py --pilot-id <pilot-id>
 ```
 
 Pilots are atomically published under `outputs/evaluation/pilots/<pilot-id>/`
-with `pilot_manifest.json`, answer-free `trials_public.jsonl`, private
-`answer_key.jsonl`, `responses.jsonl`, reproducible `analysis.json`, and
-`report.md`. Existing IDs are not overwritten. Analysis uses a 50% chance
-baseline and a 95% Wilson score interval.
+with `pilot_manifest.json`, provenance-free and answer-free
+`trials_public.jsonl`, private `answer_key.jsonl`, genuine `responses.jsonl`,
+development-only `synthetic_responses.jsonl`, reproducible `analysis.json`,
+and `report.md`. Existing IDs are not overwritten. Normal analysis uses only
+genuine responses, a 50% chance baseline, and a 95% Wilson score interval.
 
 For automated development only, synthetic responses require the explicit
 command `python scripts/create_synthetic_responses.py --pilot-id <pilot-id>
 --confirm-development-only`. They carry `synthetic_data=true`, are never made
 by pilot preparation, and must not be represented as human data.
+Analyze that separate development file only with `--response-source synthetic`.
 
 ## Quick start
 
@@ -247,6 +249,7 @@ guaranteed to be committed.
 - [Roadmap](docs/roadmap.md)
 - [Sprint 4 plan](docs/sprint_4_plan.md)
 - [Sprint 4 smoke test](docs/sprint_4_smoke_test.md)
+- [Sprint 5 plan](docs/sprint_5_plan.md)
 
 ## Historical development details
 

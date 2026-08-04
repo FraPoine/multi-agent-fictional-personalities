@@ -25,7 +25,8 @@ Character
 source-run, and source-message IDs; condition; anonymized text; candidate and
 correct character IDs; source provider; and a synthetic-data flag. Its
 rater-safe `PublicEvaluationTrial` counterpart structurally omits the correct
-character. `TrialAnswer` stores the separate ground-truth mapping.
+character and source provenance. Private `TrialAnswer` stores ground truth plus
+source run and message IDs.
 
 `RaterResponse` is immutable and records a stable response ID, trial ID,
 anonymous rater ID, selected pilot character, confidence from 1 through 5,
@@ -35,6 +36,8 @@ rater/trial answers.
 
 Pilot records live under `outputs/evaluation/pilots/<pilot-id>/`; source IDs
 preserve traceability to normal conversation artifacts.
+`responses.jsonl` is reserved for genuine interface submissions, while
+`synthetic_responses.jsonl` is an explicitly selected development fixture.
 
 ## 1. Character
 
@@ -289,26 +292,27 @@ One anonymized item shown to a rater.
 
 ### Storage
 
-`data/evaluation/trials.jsonl`
+Public: `outputs/evaluation/pilots/<pilot-id>/trials_public.jsonl`
+
+Private ground truth/provenance: `answer_key.jsonl`
 
 ### Fields
 
 ```json
 {
   "trial_id": "trial_001",
-  "message_id": "msg_001",
-  "condition": "persona_seeded",
+  "condition": "persona_seeded_mock",
   "display_text": "An anonymized generated response is stored here.",
   "candidate_character_ids": [
     "sherlock_holmes",
-    "hercule_poirot",
-    "l",
-    "professor_layton"
+    "hercule_poirot"
   ],
-  "correct_character_id": "sherlock_holmes",
-  "source_run_id": "run_001"
+  "synthetic_data": true
 }
 ```
+
+The private record adds `correct_character_id`, `source_run_id`, and
+`source_message_id`. Those fields never appear in the public schema.
 
 ### Relationships
 
@@ -323,7 +327,9 @@ One human answer to one evaluation trial.
 
 ### Storage
 
-`data/evaluation/responses.jsonl`
+Genuine: `outputs/evaluation/pilots/<pilot-id>/responses.jsonl`
+
+Development-only: `synthetic_responses.jsonl`
 
 ### Fields
 
@@ -335,7 +341,8 @@ One human answer to one evaluation trial.
   "selected_character_id": "sherlock_holmes",
   "confidence": 4,
   "timestamp": "2026-05-05T00:00:00Z",
-  "response_time_seconds": 18.4
+  "response_duration_seconds": 18.4,
+  "synthetic_data": false
 }
 ```
 

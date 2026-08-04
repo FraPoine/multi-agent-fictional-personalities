@@ -2,7 +2,7 @@
 
 from pathlib import Path
 import asyncio
-import httpx
+import httpx2
 
 from multi_agent_personalities.application.evaluation_service import prepare_technical_pilot
 from multi_agent_personalities.web.rater_app import create_rater_app
@@ -16,8 +16,8 @@ def make_app(tmp_path: Path) -> tuple[object, Path]:
     return create_rater_app(pilot_directory=result.pilot_directory, pilot_id=result.pilot_id), result.pilot_directory
 
 
-async def request(app: object, method: str, url: str, **kwargs: object) -> httpx.Response:
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver") as client:
+async def request(app: object, method: str, url: str, **kwargs: object) -> httpx2.Response:
+    async with httpx2.AsyncClient(transport=httpx2.ASGITransport(app=app), base_url="http://testserver") as client:
         return await client.request(method, url, **kwargs)
 
 
@@ -27,6 +27,9 @@ def test_rater_page_hides_answer_and_accepts_response(tmp_path: Path) -> None:
     assert page.status_code == 200
     answer = (directory / "answer_key.jsonl").read_text()
     assert "correct_character_id" not in page.text
+    assert "source_run_id" not in page.text
+    assert "source_message_id" not in page.text
+    assert "pilot_web_source_" not in page.text
     assert answer not in page.text
     trial_id = page.text.split('name="trial_id" value="', 1)[1].split('"', 1)[0]
     response = asyncio.run(request(app, "POST", "/responses", data={"rater_id": "rater_001", "trial_id": trial_id, "selected_character_id": "sherlock_holmes", "confidence": "4"}, follow_redirects=False))

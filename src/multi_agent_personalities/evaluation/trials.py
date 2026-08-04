@@ -61,15 +61,30 @@ def build_trials(
             eligible[message.speaker_character_id].append((run, message))
             texts[message.text.strip()] += 1
 
-    shortages = {key: len(value) for key, value in eligible.items() if len(value) < trials_per_character}
-    if shortages:
-        raise ValueError(f"cannot build balanced trial sample; eligible counts: {shortages}")
-
     rng = random.Random(seed)
     selected: list[tuple[ConversationRun, object]] = []
-    for character_id in PILOT_CHARACTER_IDS:
-        pool = sorted(eligible[character_id], key=lambda item: (item[0].run_id, item[1].message_id))
-        selected.extend(rng.sample(pool, trials_per_character))
+    selected_per_run: dict[str, dict[str, int]] = {}
+    if len(runs) != trials_per_character:
+        raise ValueError(
+            "one source run per configured topic is required for balanced trials"
+        )
+    for run in runs:
+        selected_per_run[run.run_id] = {}
+        for character_id in PILOT_CHARACTER_IDS:
+            pool = sorted(
+                (
+                    item for item in eligible[character_id]
+                    if item[0].run_id == run.run_id
+                ),
+                key=lambda item: item[1].message_id,
+            )
+            if not pool:
+                raise ValueError(
+                    "cannot build balanced trial sample; source run "
+                    f"{run.run_id!r} has no eligible {character_id!r} message"
+                )
+            selected.append(rng.choice(pool))
+            selected_per_run[run.run_id][character_id] = 1
     rng.shuffle(selected)
 
     trials = []
@@ -102,6 +117,7 @@ def build_trials(
         "excluded_messages": sum(exclusions.values()),
         "exclusions_by_reason": dict(sorted(exclusions.items())),
         "accepted_trials_per_character": dict(accepted_per_character),
+        "selected_trials_per_run_and_character": selected_per_run,
         "duplicate_text_warnings": duplicates,
         "source_run_ids": source_run_ids,
         "minimum_text_length": minimum_text_length,

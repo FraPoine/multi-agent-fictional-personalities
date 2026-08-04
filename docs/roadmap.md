@@ -36,10 +36,12 @@ Poirot.
 
 ## Sprint 5
 
-- Implemented a mock-only technical pilot with deterministic balanced trials,
-  leakage filtering, separated answer keys, a separate local rater interface,
-  validated response persistence, and reproducible basic analysis.
-- Live-provider generation and a controlled human evaluation remain pending.
+- Implemented only the mock technical foundation: balanced trial generation,
+  leakage filtering, a separate rater-interface dry run, response persistence,
+  synthetic development checks, and basic analysis.
+- Sprint 5 is not complete. Live-provider generation, diverse real outputs,
+  measured token/cost usage, genuine human responses, and the controlled
+  Sherlock/Poirot pilot remain pending. See the [Sprint 5 plan](sprint_5_plan.md).
 
 ## Presentation sprint
 

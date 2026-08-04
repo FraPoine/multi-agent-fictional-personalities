@@ -25,9 +25,14 @@ def _wilson_interval(correct: int, total: int, z: float = 1.959963984540054) -> 
 
 def analyze_pilot(
     trials: Sequence[PublicEvaluationTrial], answers: Sequence[TrialAnswer],
-    responses: Sequence[RaterResponse],
+    responses: Sequence[RaterResponse], *, response_source: str = "human",
 ) -> dict[str, object]:
     """Validate linked records and compute fixed pilot metrics."""
+    if response_source not in {"human", "synthetic"}:
+        raise ValueError("unsupported response source")
+    expected_synthetic = response_source == "synthetic"
+    if any(item.synthetic_data != expected_synthetic for item in responses):
+        raise ValueError("response data does not match the selected response source")
     trial_map = {trial.trial_id: trial for trial in trials}
     if len(trial_map) != len(trials):
         raise ValueError("duplicated trial IDs")
@@ -37,7 +42,11 @@ def analyze_pilot(
     if set(answer_map) != set(trial_map):
         raise ValueError("answer key must contain exactly one answer for every trial")
     seen: set[tuple[str, str]] = set()
+    response_ids: set[str] = set()
     for response in responses:
+        if response.response_id in response_ids:
+            raise ValueError("duplicated response ID")
+        response_ids.add(response.response_id)
         if response.trial_id not in trial_map:
             raise ValueError(f"unknown trial ID: {response.trial_id}")
         if response.selected_character_id not in trial_map[response.trial_id].candidate_character_ids:
@@ -71,6 +80,7 @@ def analyze_pilot(
     mean = lambda values: sum(values) / len(values) if values else None
     return {
         "disclaimer": DISCLAIMER,
+        "response_source": response_source,
         "synthetic_response_count": sum(item.synthetic_data for item in responses),
         "total_response_count": total,
         "correct_response_count": correct,

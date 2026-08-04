@@ -11,7 +11,10 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from multi_agent_personalities.evaluation.persistence import append_response, load_jsonl, refresh_analysis
+from multi_agent_personalities.evaluation.persistence import (
+    load_jsonl,
+    submit_rater_response,
+)
 from multi_agent_personalities.models import PublicEvaluationTrial, RaterResponse
 from multi_agent_personalities.models.identifiers import validate_run_id
 
@@ -74,8 +77,7 @@ def create_rater_app(*, pilot_directory: Path, pilot_id: str) -> FastAPI:
                 confidence=parsed_confidence, timestamp=datetime.now(timezone.utc),
                 response_duration_seconds=duration,
             )
-            append_response(directory, response)
-            refresh_analysis(directory)
+            submit_rater_response(directory, response)
         except (ValueError, OSError, RuntimeError) as error:
             logger.warning("Rater response rejected: %s", error)
             return render(request, rater_id=rater_id, trial=trial, error=str(error), status_code=400)

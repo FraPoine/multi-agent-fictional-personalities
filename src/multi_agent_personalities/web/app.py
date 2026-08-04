@@ -6,8 +6,7 @@ from pathlib import Path
 from typing import Annotated
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
@@ -163,14 +162,22 @@ def create_app() -> FastAPI:
         ),
         version="0.1.0",
     )
-    application.mount(
-        "/static",
-        StaticFiles(directory=STATIC_DIRECTORY),
-        name="static",
-    )
+    @application.get("/static/{path:path}", name="static")
+    async def static_asset(path: str) -> Response:
+        """Serve the two fixed local assets without a worker-thread hop."""
+        media_types = {
+            "styles.css": "text/css",
+            "conversation.js": "text/javascript",
+        }
+        if path not in media_types:
+            return Response(status_code=404)
+        return Response(
+            content=(STATIC_DIRECTORY / path).read_bytes(),
+            media_type=media_types[path],
+        )
 
     @application.get("/", response_class=HTMLResponse)
-    def home(request: Request) -> HTMLResponse:
+    async def home(request: Request) -> HTMLResponse:
         """Render the static conversation workspace."""
         return _render_page(request)
 
@@ -179,7 +186,7 @@ def create_app() -> FastAPI:
         response_class=HTMLResponse,
         name="start_conversation",
     )
-    def start_conversation(
+    async def start_conversation(
         request: Request,
         characters: Annotated[list[str] | None, Form()] = None,
         topic: Annotated[str | None, Form()] = None,
@@ -272,7 +279,7 @@ def create_app() -> FastAPI:
         )
 
     @application.get("/health")
-    def health() -> dict[str, str]:
+    async def health() -> dict[str, str]:
         """Report local application availability without external calls."""
         return {"status": "ok", "provider": "mock"}
 

@@ -40,15 +40,24 @@ class EvaluationTrial(BaseModel):
 
     def public_dict(self) -> dict[str, object]:
         """Return the complete rater-safe representation."""
-        return self.model_dump(exclude={"correct_character_id"})
+        return self.model_dump(
+            exclude={
+                "correct_character_id",
+                "source_run_id",
+                "source_message_id",
+                "source_provider",
+            }
+        )
 
 
 class TrialAnswer(BaseModel):
-    """Ground truth stored separately from public trials."""
+    """Private ground truth and source provenance for one public trial."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
     trial_id: NonEmptyStr
     correct_character_id: CharacterId
+    source_run_id: NonEmptyStr
+    source_message_id: NonEmptyStr
 
 
 class PublicEvaluationTrial(BaseModel):
@@ -56,12 +65,9 @@ class PublicEvaluationTrial(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
     trial_id: NonEmptyStr
-    source_run_id: NonEmptyStr
-    source_message_id: NonEmptyStr
     condition: NonEmptyStr
     display_text: NonEmptyStr
     candidate_character_ids: tuple[CharacterId, CharacterId]
-    source_provider: NonEmptyStr
     synthetic_data: bool
 
 

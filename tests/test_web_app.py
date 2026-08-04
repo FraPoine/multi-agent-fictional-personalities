@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from fastapi.testclient import TestClient
+from tests.asgi_client import ASGITestClient
 
 
 web_module = importlib.import_module("multi_agent_personalities.web.app")
@@ -43,7 +43,7 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
 def web_client(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
-) -> Iterator[tuple[TestClient, Path]]:
+) -> Iterator[tuple[ASGITestClient, Path]]:
     """Provide a client whose real mock runs persist only beneath tmp_path."""
     output_root = tmp_path / "outputs"
     real_run_mock_conversation = web_module.run_mock_conversation
@@ -61,7 +61,7 @@ def web_client(
         isolated_run_mock_conversation,
     )
 
-    with TestClient(web_module.create_app()) as client:
+    with ASGITestClient(web_module.create_app()) as client:
         yield client, output_root
 
 
@@ -84,7 +84,7 @@ def extract_run_id(document: str) -> str:
     return match.group(1)
 
 
-def post_valid_conversation(client: TestClient) -> Any:
+def post_valid_conversation(client: ASGITestClient) -> Any:
     return client.post("/conversations", data=VALID_FORM_DATA)
 
 
@@ -99,7 +99,7 @@ def assert_failed_without_result(response: Any, status_code: int) -> None:
 
 
 def test_main_page_renders_without_creating_output(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, output_root = web_client
 
@@ -131,7 +131,7 @@ def test_main_page_renders_without_creating_output(
 
 
 def test_health_route_is_side_effect_free(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, output_root = web_client
 
@@ -143,7 +143,7 @@ def test_health_route_is_side_effect_free(
 
 
 def test_static_assets_are_served(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, _ = web_client
 
@@ -158,7 +158,7 @@ def test_static_assets_are_served(
 
 
 def test_valid_submission_renders_completed_conversation(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, output_root = web_client
 
@@ -194,7 +194,7 @@ def test_valid_submission_renders_completed_conversation(
 
 
 def test_valid_submission_creates_and_displays_artifacts(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, output_root = web_client
 
@@ -233,7 +233,7 @@ def test_valid_submission_creates_and_displays_artifacts(
 
 
 def test_read_only_routes_create_no_conversation_output(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, output_root = web_client
 
@@ -322,7 +322,7 @@ INVALID_SUBMISSIONS = (
 
 @pytest.mark.parametrize(("form_data", "field_error"), INVALID_SUBMISSIONS)
 def test_invalid_submissions_render_field_errors_without_calling_service(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
     monkeypatch: pytest.MonkeyPatch,
     form_data: dict[str, object],
     field_error: str,
@@ -349,7 +349,7 @@ def test_invalid_submissions_render_field_errors_without_calling_service(
 
 
 def test_invalid_submission_preserves_safe_values(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, output_root = web_client
@@ -412,7 +412,7 @@ def test_invalid_submission_preserves_safe_values(
     ),
 )
 def test_service_errors_render_safe_failed_state(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
     monkeypatch: pytest.MonkeyPatch,
     error: OSError | ValueError,
     status_code: int,
@@ -435,7 +435,7 @@ def test_service_errors_render_safe_failed_state(
 
 
 def test_topic_is_html_escaped(
-    web_client: tuple[TestClient, Path],
+    web_client: tuple[ASGITestClient, Path],
 ) -> None:
     client, _ = web_client
     topic = '<script>alert("case")</script>'

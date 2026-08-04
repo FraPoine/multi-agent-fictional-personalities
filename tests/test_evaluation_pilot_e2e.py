@@ -22,8 +22,17 @@ def test_prepares_three_runs_six_balanced_trials_without_network(tmp_path: Path,
     assert len((result.pilot_directory / "trials_public.jsonl").read_text().splitlines()) == 6
     assert len((result.pilot_directory / "answer_key.jsonl").read_text().splitlines()) == 6
     assert (result.pilot_directory / "responses.jsonl").read_text() == ""
+    assert (result.pilot_directory / "synthetic_responses.jsonl").read_text() == ""
+    public = (result.pilot_directory / "trials_public.jsonl").read_text()
+    assert "source_run_id" not in public
+    assert "source_message_id" not in public
+    assert "correct_character_id" not in public
     manifest = json.loads((result.pilot_directory / "pilot_manifest.json").read_text())
     assert manifest["trial_generation"]["accepted_trials_per_character"] == {"hercule_poirot": 3, "sherlock_holmes": 3}
     assert len(manifest["trial_generation"]["duplicate_text_warnings"]) == 2
+    assert all(
+        counts == {"sherlock_holmes": 1, "hercule_poirot": 1}
+        for counts in manifest["trial_generation"]["selected_trials_per_run_and_character"].values()
+    )
     for run_id in result.source_run_ids:
         assert (tmp_path / "conversations" / "runs" / run_id / "run.json").is_file()

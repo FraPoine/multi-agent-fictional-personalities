@@ -12,4 +12,4 @@ python-multipart
 
 # Testing
 pytest
-httpx
+httpx2

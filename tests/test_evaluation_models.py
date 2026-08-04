@@ -13,7 +13,10 @@ def make_trial() -> EvaluationTrial:
 
 def test_trial_is_immutable_and_public_form_has_no_answer() -> None:
     trial = make_trial()
-    assert "correct_character_id" not in trial.public_dict()
+    assert set(trial.public_dict()) == {
+        "trial_id", "condition", "display_text",
+        "candidate_character_ids", "synthetic_data",
+    }
     with pytest.raises(ValidationError):
         trial.display_text = "changed"
 

@@ -276,6 +276,8 @@ Convert generated messages into blind evaluation trials.
 The implemented builder filters completed conversation messages, records every
 exclusion reason, then deterministically samples three messages per pilot
 character. Public trials and private answers use separate schemas and files.
+Source run/message provenance is private because deterministic turn indexes can
+leak speaker identity. Selection is stratified by source run and character.
 
 ## Rater interface
 
@@ -289,6 +291,8 @@ A separate local FastAPI/Jinja application presents one unanswered trial at a
 time and appends validated responses under a per-pilot lock. It never supplies
 the answer key to template context or browser-visible responses. Complete
 pilot directories are published through a temporary sibling and atomic rename.
+Genuine and synthetic responses use separate JSONL files. A per-pilot lock
+covers validation, atomic response-set replacement, and analysis/report refresh.
 
 ## Analyzer
 

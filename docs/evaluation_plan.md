@@ -15,11 +15,17 @@ conversation per topic, three trials per character, two intended raters,
 confidence 1–5, seed 42, and a 50% baseline. It rejects direct identity leakage
 case-insensitively as well as malformed, empty, short, or unsupported-speaker
 records. Exclusions and duplicate mock text are recorded in the manifest.
+Exactly one message per character is selected from each of the three source
+topics. Public records omit source provenance as well as ground truth; both are
+kept in the private answer/provenance artifact.
 
 Analysis uses a 95% Wilson score interval and supports empty or incomplete
 response sets. Inconsistent keys, unknown trials, and duplicate rater/trial
 responses fail loudly. Synthetic repeated mock messages cannot establish
 recognizability or support scientific conclusions.
+Synthetic development responses are stored separately and are never pooled
+with genuine rater-interface responses; their analysis requires an explicit
+response-source option.
 
 ## Primary research question
 

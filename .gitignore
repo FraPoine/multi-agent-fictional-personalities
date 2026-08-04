@@ -11,6 +11,7 @@ __pycache__/
 logs/
 data/personas/
 outputs/*/runs/
+outputs/evaluation/pilots/
 *.tmp
 *.swp
 .DS_Store
