@@ -1,5 +1,14 @@
 # Sprint 4 Plan — Minimal Web UI
 
+## Status
+
+Completed on 2026-08-04.
+
+See:
+
+- [Sprint 4 completion](sprint_4_completion.md)
+- [Sprint 4 smoke test](sprint_4_smoke_test.md)
+
 ## Sprint objective
 
 Sprint 4 adds a minimal human-facing web interface over the existing local

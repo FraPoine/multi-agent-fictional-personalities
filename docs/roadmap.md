@@ -22,13 +22,17 @@ Poirot.
 
 ## Sprint 4
 
-- Add a minimal local web interface over the existing mock conversation
-  pipeline without replacing the CLI.
-- Allow Sherlock Holmes and Hercule Poirot selection, topic and turn-count
-  configuration, and local mock conversation submission.
-- Display the ordered transcript, visible validation or runtime errors, run ID,
-  saved artifact path, and generated artifact filenames.
-- Add critical-path tests plus local startup and reproducibility documentation.
+- Completed the minimal local web interface over the existing mock
+  conversation pipeline without replacing the CLI.
+- Added Sherlock Holmes and Hercule Poirot configuration, deterministic local
+  mock execution, ordered transcript display, and run and artifact details.
+- Added visible validation and safe error states, loading feedback, responsive
+  styling, route tests, and startup-command tests.
+- Documented and smoke-tested dependency installation, local startup,
+  conversation execution, and artifact inspection. See the
+  [Sprint 4 completion record](sprint_4_completion.md).
+- OpenAI-backed conversation execution remains pending, and persona evaluation
+  remains future work.
 
 ## Sprint 5
 
