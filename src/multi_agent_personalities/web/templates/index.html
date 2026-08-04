@@ -29,9 +29,11 @@
             </header>
 
             <form
+                id="conversation-form"
                 class="panel-body configuration-stack conversation-form"
                 method="post"
                 action="{{ url_for('start_conversation') }}"
+                data-conversation-form
             >
                 {% if error_message %}
                     <div class="form-error-summary" role="alert">
@@ -168,8 +170,12 @@
                     <p>No external API calls are made.</p>
                 </section>
 
-                <button type="submit" class="primary-action">
-                    Start conversation
+                <button
+                    type="submit"
+                    class="primary-action"
+                    data-submit-button
+                >
+                    <span data-submit-label>Start conversation</span>
                 </button>
                 <p class="form-status-note">
                     Runs locally with deterministic mock responses.
@@ -177,22 +183,34 @@
             </form>
         </section>
 
-        <section class="panel transcript-panel" aria-labelledby="transcript-title">
+        <section
+            class="panel transcript-panel"
+            aria-labelledby="transcript-title"
+            data-transcript-panel
+        >
             <header class="panel-header transcript-header">
                 <div>
                     <p class="eyebrow">Investigation log</p>
                     <h2 id="transcript-title">Conversation transcript</h2>
                 </div>
                 {% if conversation_result %}
-                    <span class="status-label status-label--completed">Completed</span>
+                    <span
+                        class="status-label status-label--completed"
+                        data-transcript-status
+                    >Completed</span>
                 {% elif error_message %}
-                    <span class="status-label status-label--failed">Failed</span>
+                    <span
+                        class="status-label status-label--failed"
+                        data-transcript-status
+                    >Failed</span>
                 {% else %}
-                    <span class="status-label">Awaiting case</span>
+                    <span class="status-label" data-transcript-status>
+                        Awaiting case
+                    </span>
                 {% endif %}
             </header>
 
-            <div class="transcript-body">
+            <div class="transcript-body" data-transcript-body>
                 {% if conversation_result %}
                     <ol class="transcript-list" aria-label="Conversation messages">
                         {% for message in conversation_result.run.messages %}
@@ -290,5 +308,9 @@
         <span aria-hidden="true">•</span>
         <p>No API key required</p>
     </footer>
+    <script
+        src="{{ url_for('static', path='/conversation.js') }}"
+        defer
+    ></script>
 </body>
 </html>
