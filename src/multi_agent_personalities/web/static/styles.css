@@ -622,17 +622,97 @@ body {
     font-size: 0.75rem;
 }
 
-.artifact-shells {
-    margin-top: var(--spacing-md);
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm) 16px;
+.run-details {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-medium);
+    background: rgb(235 240 237 / 42%);
 }
 
-.artifact-shells span {
-    color: var(--color-faint);
+.run-details-header {
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-default);
+}
+
+.run-details-header h3 {
+    margin-top: 2px;
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 0.9375rem;
+}
+
+.run-summary {
+    margin: var(--spacing-md) 0 0;
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.run-summary-row {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(100px, 0.28fr) minmax(0, 1fr);
+    gap: var(--spacing-md);
+}
+
+.run-summary-row dt {
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.run-summary-row dd {
+    min-width: 0;
+    margin: 0;
+}
+
+.run-summary-row code,
+.artifact-path {
+    color: var(--color-ink);
     font-family: var(--font-mono);
-    font-size: 0.625rem;
+    font-size: 0.6875rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.artifact-list {
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-sm);
+    list-style: none;
+}
+
+.artifact-item {
+    min-width: 0;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-small);
+    background: var(--surface-panel);
+}
+
+.artifact-name {
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.artifact-description {
+    margin: 2px 0 var(--spacing-xs);
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+}
+
+.artifact-path {
+    display: block;
+}
+
+.path-note {
+    margin-top: var(--spacing-md);
+    color: var(--color-faint);
+    font-size: 0.6875rem;
 }
 
 .app-footer {
@@ -709,6 +789,11 @@ body {
 
     .empty-state {
         padding: var(--spacing-2xl) 12px;
+    }
+
+    .run-summary-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
     }
 
     .app-footer {

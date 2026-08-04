@@ -197,18 +197,50 @@
                     </div>
                 {% endif %}
 
-                <aside class="metadata-placeholder" aria-labelledby="metadata-title">
-                    <p class="field-label" id="metadata-title">Run details</p>
-                    <p>
-                        Placeholder: run metadata and saved artifact paths will appear here
-                        in a later task.
-                    </p>
-                    <div class="artifact-shells" aria-hidden="true">
-                        <span>run.json</span>
-                        <span>messages.jsonl</span>
-                        <span>transcript.md</span>
-                    </div>
-                </aside>
+                {% if conversation_result %}
+                    <aside class="run-details" aria-labelledby="run-details-title">
+                        <header class="run-details-header">
+                            <div>
+                                <p class="field-label">Saved run</p>
+                                <h3 id="run-details-title">Run artifacts</h3>
+                            </div>
+                        </header>
+
+                        <dl class="run-summary">
+                            <div class="run-summary-row">
+                                <dt>Run ID</dt>
+                                <dd><code>{{ run_id }}</code></dd>
+                            </div>
+                            <div class="run-summary-row">
+                                <dt>Artifact directory</dt>
+                                <dd><code>{{ artifact_directory_path }}</code></dd>
+                            </div>
+                        </dl>
+
+                        <ul class="artifact-list">
+                            {% for artifact in artifact_files %}
+                                <li class="artifact-item">
+                                    <p class="artifact-name">{{ artifact.filename }}</p>
+                                    <p class="artifact-description">
+                                        {{ artifact.description }}
+                                    </p>
+                                    <code class="artifact-path">{{ artifact.path }}</code>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                        <p class="path-note">Paths are relative to the repository root.</p>
+                    </aside>
+                {% else %}
+                    <aside
+                        class="metadata-placeholder"
+                        aria-labelledby="metadata-placeholder-title"
+                    >
+                        <p class="field-label" id="metadata-placeholder-title">
+                            Run details
+                        </p>
+                        <p>Run and artifact details will appear after execution.</p>
+                    </aside>
+                {% endif %}
             </div>
         </section>
     </main>

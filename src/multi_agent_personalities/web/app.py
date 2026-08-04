@@ -21,6 +21,16 @@ OUTPUT_ROOT = PROJECT_ROOT / "outputs"
 TEMPLATE_DIRECTORY = WEB_DIRECTORY / "templates"
 STATIC_DIRECTORY = WEB_DIRECTORY / "static"
 templates = Jinja2Templates(directory=TEMPLATE_DIRECTORY)
+_ARTIFACT_DESCRIPTIONS = {
+    "run.json": "Complete structured run metadata and messages.",
+    "messages.jsonl": "One serialized message per line.",
+    "transcript.md": "Human-readable Markdown transcript.",
+}
+
+
+def _repository_relative_path(path: Path) -> str:
+    """Format a trusted application-service path for local display."""
+    return path.relative_to(PROJECT_ROOT).as_posix()
 
 
 def _page_context(
@@ -31,6 +41,23 @@ def _page_context(
     conversation_result: ConversationResult | None = None,
 ) -> dict[str, object]:
     """Build the shared template context for conversation pages."""
+    run_id: str | None = None
+    artifact_directory_path: str | None = None
+    artifact_files: tuple[dict[str, str], ...] = ()
+    if conversation_result is not None:
+        run_id = conversation_result.run_id
+        artifact_directory_path = _repository_relative_path(
+            conversation_result.artifact_directory
+        )
+        artifact_files = tuple(
+            {
+                "filename": artifact_path.name,
+                "description": _ARTIFACT_DESCRIPTIONS[artifact_path.name],
+                "path": _repository_relative_path(artifact_path),
+            }
+            for artifact_path in conversation_result.artifact_paths
+        )
+
     return {
         "page_title": "Multi-Agent Fictional Personalities",
         "provider_name": "mock",
@@ -38,6 +65,9 @@ def _page_context(
         "topic_value": topic,
         "turn_count_value": turn_count,
         "conversation_result": conversation_result,
+        "run_id": run_id,
+        "artifact_directory_path": artifact_directory_path,
+        "artifact_files": artifact_files,
     }
 
 
