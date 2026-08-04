@@ -101,10 +101,29 @@ hercule_poirot
 ```
 
 The normal form includes Task 13's JavaScript loading hooks, and the automated
-web suite covers their presence. The transient disabled-button and `Running`
-state could not be directly observed during this non-interactive headless
-smoke session because the local mock response completed immediately; no claim
-of a separate visual timing observation is made here.
+web suite covers their presence. The original non-interactive headless smoke
+session could not directly observe the transient visual state because the
+local mock response completed almost immediately.
+
+### Interactive loading-state verification
+
+A subsequent interactive browser check was performed manually by the user.
+Browser network throttling was enabled solely to make the short-lived state
+visible during a valid Sherlock Holmes and Hercule Poirot submission. The user
+directly observed that:
+
+- the transcript status changed to `Running`;
+- the submit-button label changed to `Generating conversation…`;
+- the submit button became disabled;
+- the loading indicator and loading message appeared;
+- the previous transcript or placeholder content was replaced;
+- the returned server-rendered state changed to `Completed`;
+- the submit button returned to its normal state on the returned page.
+
+No production code, artificial server delay, polling, AJAX behavior, or
+browser automation was introduced for this verification. This interactive
+user observation supplements rather than replaces the automated and headless
+smoke-test evidence above.
 
 ## Artifact verification
 
@@ -175,8 +194,9 @@ of the working tree.
 
 The automated suite, documented no-`PYTHONPATH` startup command, default HTTP
 routes, deterministic six-turn conversation, artifact persistence,
-server-rendered invalid-input path, and custom-port startup all passed. No API
-key, OpenAI call, or network-backed conversation provider was used.
+server-rendered invalid-input path, custom-port startup, and user-observed
+interactive loading state all passed. No API key, OpenAI call, or
+network-backed conversation provider was used.
 
 ## Limitations
 
@@ -185,7 +205,4 @@ key, OpenAI call, or network-backed conversation provider was used.
 - OpenAI-backed conversation execution was not tested because it is not
   implemented and no API key was present or required.
 - L, Professor Layton, and evaluation functionality remain future work.
-- The transient loading animation was not independently timed in the
-  non-interactive browser session, as noted above; its hooks and behavior
-  remain covered by the existing implementation and tests.
 - This Task 17 report does not perform Task 18 or formally close Sprint 4.
