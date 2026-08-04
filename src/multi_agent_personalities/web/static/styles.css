@@ -460,6 +460,14 @@ body {
     white-space: nowrap;
 }
 
+.status-label--completed {
+    padding: 4px 9px;
+    border: 1px solid var(--color-accent);
+    border-radius: 999px;
+    background: rgb(37 111 76 / 8%);
+    font-weight: 600;
+}
+
 .transcript-body {
     display: grid;
     gap: var(--spacing-xl);
@@ -491,6 +499,24 @@ body {
     color: var(--color-muted);
     font-size: 0.8125rem;
     line-height: 1.6;
+}
+
+.empty-state--completed {
+    border-radius: var(--radius-medium);
+    background: rgb(37 111 76 / 5%);
+}
+
+.completion-mark {
+    width: 36px;
+    height: 36px;
+    margin: 0 auto var(--spacing-md);
+    border: 1px solid var(--color-accent);
+    border-radius: 50%;
+    color: var(--color-accent-dark);
+    display: grid;
+    place-items: center;
+    font-size: 1rem;
+    font-weight: 700;
 }
 
 .metadata-placeholder {

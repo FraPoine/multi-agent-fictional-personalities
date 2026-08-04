@@ -28,7 +28,11 @@
                 </div>
             </header>
 
-            <form class="panel-body configuration-stack conversation-form">
+            <form
+                class="panel-body configuration-stack conversation-form"
+                method="post"
+                action="{{ url_for('start_conversation') }}"
+            >
                 <fieldset class="character-fieldset">
                     <legend class="field-label">Characters</legend>
                     <div class="character-list">
@@ -38,7 +42,8 @@
                                 type="checkbox"
                                 name="characters"
                                 value="sherlock"
-                                checked
+                                required
+                                {% if "sherlock" in selected_characters %}checked{% endif %}
                             >
                             <label
                                 for="character-sherlock"
@@ -61,7 +66,8 @@
                                 type="checkbox"
                                 name="characters"
                                 value="poirot"
-                                checked
+                                required
+                                {% if "poirot" in selected_characters %}checked{% endif %}
                             >
                             <label
                                 for="character-poirot"
@@ -78,7 +84,9 @@
                             </label>
                         </div>
                     </div>
-                    <p class="field-note">Both detectives will take part in this local mock run.</p>
+                    <p class="field-note">
+                        Both detectives are selected by default and required for this sprint.
+                    </p>
                 </fieldset>
 
                 <div class="section-rule" aria-hidden="true"></div>
@@ -93,7 +101,7 @@
                         placeholder="A valuable document disappeared from a locked room."
                         aria-describedby="topic-help"
                         required
-                    ></textarea>
+                    >{{ topic_value }}</textarea>
                     <p class="field-note" id="topic-help">
                         The topic begins the local mock investigation.
                     </p>
@@ -109,7 +117,7 @@
                         min="2"
                         max="12"
                         step="1"
-                        value="6"
+                        value="{{ turn_count_value }}"
                         aria-describedby="turn-count-help"
                         required
                     >
@@ -128,12 +136,11 @@
                     <p>No external API calls are made.</p>
                 </section>
 
-                <button type="submit" class="primary-action" disabled>
+                <button type="submit" class="primary-action">
                     Start conversation
                 </button>
                 <p class="form-status-note">
-                    Conversation execution will be enabled when the backend
-                    route is connected.
+                    Runs locally with deterministic mock responses.
                 </p>
             </form>
         </section>
@@ -144,22 +151,40 @@
                     <p class="eyebrow">Investigation log</p>
                     <h2 id="transcript-title">Conversation transcript</h2>
                 </div>
-                <span class="status-label">Awaiting case</span>
+                {% if conversation_result %}
+                    <span class="status-label status-label--completed">Completed</span>
+                {% else %}
+                    <span class="status-label">Awaiting case</span>
+                {% endif %}
             </header>
 
             <div class="transcript-body">
-                <div class="empty-state">
-                    <span class="empty-state-rule" aria-hidden="true"></span>
-                    <h3>No conversation yet</h3>
-                    <p>
-                        Configure the investigation to prepare a deterministic
-                        mock conversation between Sherlock and Poirot.
-                    </p>
-                </div>
+                {% if conversation_result %}
+                    <div class="empty-state empty-state--completed">
+                        <span class="completion-mark" aria-hidden="true">✓</span>
+                        <h3>Conversation generated</h3>
+                        <p>
+                            The deterministic mock conversation completed successfully.
+                            Transcript rendering will be added in the next task.
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <span class="empty-state-rule" aria-hidden="true"></span>
+                        <h3>No conversation yet</h3>
+                        <p>
+                            Configure the investigation to prepare a deterministic
+                            mock conversation between Sherlock and Poirot.
+                        </p>
+                    </div>
+                {% endif %}
 
                 <aside class="metadata-placeholder" aria-labelledby="metadata-title">
                     <p class="field-label" id="metadata-title">Run details</p>
-                    <p>Run metadata and saved artifact paths will appear here.</p>
+                    <p>
+                        Placeholder: run metadata and saved artifact paths will appear here
+                        in a later task.
+                    </p>
                     <div class="artifact-shells" aria-hidden="true">
                         <span>run.json</span>
                         <span>messages.jsonl</span>
