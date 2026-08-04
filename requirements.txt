@@ -3,6 +3,7 @@ openai
 python-dotenv
 jinja2
 pydantic
+PyYAML
 
 # Web UI
 fastapi

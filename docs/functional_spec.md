@@ -273,8 +273,10 @@ The system computes evaluation metrics from rater responses.
 - Results are reproducible from committed or documented inputs.
 - Analysis distinguishes confirmatory and exploratory results.
 
-F6, F7, and F8 describe future evaluation capabilities. They are not part of
-the Sprint 4 project-user conversation interface and are not yet implemented.
+F6, F7, and F8 now have a minimal two-character, mock-only technical-pilot
+implementation: deterministic blind trials, a separate local rater page,
+structured filesystem responses, and reproducible analysis. It remains
+separate from the Sprint 4 conversation UI and is not a scientific evaluation.
 
 ## F9 — Minimal conversation web interface
 

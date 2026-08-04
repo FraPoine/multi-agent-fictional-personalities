@@ -43,7 +43,38 @@ provider is fixed to `mock`, needs no API key, and makes no network request.
 These deterministic fixtures support local development and reproducibility;
 they do not demonstrate real LLM persona quality or validate character
 recognizability. OpenAI-backed conversation execution is not implemented or
-verified. L, Professor Layton, and human evaluation remain future work.
+verified. A two-character technical mock pilot now exercises blind trial
+generation, local rating, response persistence, and analysis. It verifies the
+pipeline only; L, Professor Layton, and a scientifically interpretable human
+evaluation remain future work.
+
+## Technical blind-evaluation pilot
+
+Prepare the fixed pilot (three neutral topics, three six-turn conversations,
+six balanced trials, seed 42), then start its separate local rater interface:
+
+```bash
+python scripts/prepare_evaluation_pilot.py
+python scripts/run_rater_web.py --pilot-id <pilot-id>
+```
+
+The first command prints the generated pilot ID and directory. The rater app
+defaults to <http://127.0.0.1:8001/>. Recompute analysis after responses with:
+
+```bash
+python scripts/analyze_evaluation_pilot.py --pilot-id <pilot-id>
+```
+
+Pilots are atomically published under `outputs/evaluation/pilots/<pilot-id>/`
+with `pilot_manifest.json`, answer-free `trials_public.jsonl`, private
+`answer_key.jsonl`, `responses.jsonl`, reproducible `analysis.json`, and
+`report.md`. Existing IDs are not overwritten. Analysis uses a 50% chance
+baseline and a 95% Wilson score interval.
+
+For automated development only, synthetic responses require the explicit
+command `python scripts/create_synthetic_responses.py --pilot-id <pilot-id>
+--confirm-development-only`. They carry `synthetic_data=true`, are never made
+by pilot preparation, and must not be represented as human data.
 
 ## Quick start
 
@@ -173,8 +204,9 @@ critical-path tests reject attempted network access.
 - OpenAI-backed conversation execution is not implemented or verified.
 - L and Professor Layton are not yet supported by the working conversation
   interfaces.
-- Evaluation trials, the rater interface, human responses, and statistical
-  analysis remain future work.
+- The technical mock pilot cannot establish persona recognizability or support
+  scientific conclusions; a real provider and genuine human responses are
+  required before making persona-quality claims.
 - The web interface is local and has no authentication, deployment, or run
   history browser.
 

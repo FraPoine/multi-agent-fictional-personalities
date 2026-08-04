@@ -36,11 +36,10 @@ Poirot.
 
 ## Sprint 5
 
-- Generate blind evaluation trials and introduce the separate rater interface.
-- Add basic analysis and prepare the first controlled evaluation.
-- Complete smoke-test or reproducibility work not finished during Sprint 4.
-
-This phase is future work and has not started.
+- Implemented a mock-only technical pilot with deterministic balanced trials,
+  leakage filtering, separated answer keys, a separate local rater interface,
+  validated response persistence, and reproducible basic analysis.
+- Live-provider generation and a controlled human evaluation remain pending.
 
 ## Presentation sprint
 

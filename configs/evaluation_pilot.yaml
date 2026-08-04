@@ -1,0 +1,18 @@
+pilot:
+  characters:
+    - sherlock
+    - poirot
+  topics:
+    - A sealed archive box is found open although its key never left the desk.
+    - An unsigned map appears overnight in a locked university reading room.
+    - A museum clock stops precisely when a catalogued object goes missing.
+  conversations_per_topic: 1
+  turns_per_conversation: 6
+  trials_per_character: 3
+  intended_raters: 2
+  confidence_min: 1
+  confidence_max: 5
+  chance_baseline: 0.50
+  seed: 42
+  minimum_text_length: 20
+  condition: persona_seeded_mock

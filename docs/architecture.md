@@ -35,13 +35,13 @@ Browser / web page → Web route or controller → Application service ← CLI
                                ConversationRun, transcript, and artifact path
                                               │                    │
                                               ▼                    ▼
-                                    Rendered web result    Evaluation trials (future)
+                                    Rendered web result    Evaluation trial builder
                                                                    │
                                                                    ▼
-                                                          Rater responses (future)
+                                                        Separate rater web app
                                                                    │
                                                                    ▼
-                                                          Analysis results (future)
+                                                          Analysis artifacts
 ```
 
 The browser, web route, application service, and rendered-result path are
@@ -273,6 +273,10 @@ Convert generated messages into blind evaluation trials.
 
 - `EvaluationTrial` records.
 
+The implemented builder filters completed conversation messages, records every
+exclusion reason, then deterministically samples three messages per pilot
+character. Public trials and private answers use separate schemas and files.
+
 ## Rater interface
 
 ### Responsibility
@@ -281,9 +285,10 @@ Show anonymized messages and collect rater guesses.
 
 ### Initial implementation
 
-A CLI dry run is planned as the first evaluation step. A separate human-facing
-form or page may be added for the later controlled evaluation. Neither is part
-of the Sprint 4 conversation UI.
+A separate local FastAPI/Jinja application presents one unanswered trial at a
+time and appends validated responses under a per-pilot lock. It never supplies
+the answer key to template context or browser-visible responses. Complete
+pilot directories are published through a temporary sibling and atomic rename.
 
 ## Analyzer
 
@@ -302,6 +307,10 @@ Compute evaluation metrics and produce figures/tables.
 - confidence interval;
 - confusion matrix;
 - per-character breakdown.
+
+The analyzer also reports a 2×2 confusion matrix, confidence by correctness,
+response counts per rater, and a 95% Wilson score interval. Results are derived
+only from public trials, the answer key, and persisted responses.
 
 ## Public interfaces
 

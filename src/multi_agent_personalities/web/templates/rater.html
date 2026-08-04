@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blind Evaluation Pilot</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 48rem; margin: 3rem auto; padding: 0 1rem; color: #17202a; }
+        main { border: 1px solid #d8dee6; border-radius: 12px; padding: 2rem; }
+        .notice { background: #fff4d6; padding: 1rem; border-radius: 8px; }
+        .message { font-size: 1.15rem; line-height: 1.6; padding: 1.25rem; background: #f5f7fa; border-radius: 8px; }
+        fieldset { margin: 1.25rem 0; border: 0; padding: 0; }
+        label { display: block; margin: .65rem 0; }
+        input[type=text] { padding: .65rem; width: min(24rem, 90%); }
+        button { padding: .7rem 1.2rem; font-weight: 700; }
+        .error { color: #9b1c1c; font-weight: 700; }
+    </style>
+</head>
+<body><main>
+    <h1>Blind detective identification</h1>
+    <p class="notice">Technical mock pilot: these synthetic messages cannot establish persona recognizability.</p>
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    {% if not rater_id %}
+        <form method="get" action="/">
+            <label for="rater-id">Anonymous rater ID</label>
+            <input id="rater-id" name="rater_id" type="text" minlength="3" maxlength="64" required>
+            <button type="submit">Begin</button>
+        </form>
+    {% elif complete %}
+        <h2>Thank you — all trials are complete.</h2>
+        <p>Your anonymous rater ID is <code>{{ rater_id }}</code>.</p>
+    {% elif trial %}
+        <p>Read one anonymized message and select its most likely speaker.</p>
+        <blockquote class="message">{{ trial.display_text }}</blockquote>
+        <form method="post" action="/responses">
+            <input type="hidden" name="rater_id" value="{{ rater_id }}">
+            <input type="hidden" name="trial_id" value="{{ trial.trial_id }}">
+            <fieldset><legend>Character</legend>
+                {% for character_id, display_name in candidates %}
+                    <label><input type="radio" name="selected_character_id" value="{{ character_id }}" required> {{ display_name }}</label>
+                {% endfor %}
+            </fieldset>
+            <fieldset><legend>Confidence (1 = low, 5 = high)</legend>
+                {% for value in range(1, 6) %}<label><input type="radio" name="confidence" value="{{ value }}" required> {{ value }}</label>{% endfor %}
+            </fieldset>
+            <button type="submit">Submit and continue</button>
+        </form>
+    {% endif %}
+</main></body></html>

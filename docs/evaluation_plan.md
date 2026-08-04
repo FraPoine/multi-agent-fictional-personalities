@@ -8,6 +8,19 @@ The evaluation is designed before the main experiment to avoid changing metrics 
 
 The final experiment evaluates Sherlock Holmes, Hercule Poirot, L, and Professor Layton. The initial Sherlock/Poirot pilot is a development check for the pipeline and must be reported separately.
 
+## Implemented technical pilot
+
+The implementation fixes three versioned neutral topics, one six-turn mock
+conversation per topic, three trials per character, two intended raters,
+confidence 1–5, seed 42, and a 50% baseline. It rejects direct identity leakage
+case-insensitively as well as malformed, empty, short, or unsupported-speaker
+records. Exclusions and duplicate mock text are recorded in the manifest.
+
+Analysis uses a 95% Wilson score interval and supports empty or incomplete
+response sets. Inconsistent keys, unknown trials, and duplicate rater/trial
+responses fail loudly. Synthetic repeated mock messages cannot establish
+recognizability or support scientific conclusions.
+
 ## Primary research question
 
 Can human raters identify which fictional character generated a message produced by a persona-seeded LLM agent?

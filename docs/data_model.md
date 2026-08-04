@@ -19,6 +19,23 @@ Character
                                       └── RaterResponse
 ```
 
+## Evaluation pilot records
+
+`EvaluationTrial` is an immutable internal record with stable trial,
+source-run, and source-message IDs; condition; anonymized text; candidate and
+correct character IDs; source provider; and a synthetic-data flag. Its
+rater-safe `PublicEvaluationTrial` counterpart structurally omits the correct
+character. `TrialAnswer` stores the separate ground-truth mapping.
+
+`RaterResponse` is immutable and records a stable response ID, trial ID,
+anonymous rater ID, selected pilot character, confidence from 1 through 5,
+timezone-aware timestamp, optional nonnegative duration, and synthetic-data
+flag. Persistence rejects unknown trials, unsupported choices, and duplicate
+rater/trial answers.
+
+Pilot records live under `outputs/evaluation/pilots/<pilot-id>/`; source IDs
+preserve traceability to normal conversation artifacts.
+
 ## 1. Character
 
 ### Definition
