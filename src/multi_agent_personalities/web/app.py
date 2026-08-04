@@ -1,7 +1,17 @@
 """Minimal FastAPI application for the local Sprint 4 interface."""
 
-from fastapi import FastAPI
+from pathlib import Path
+
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
+
+WEB_DIRECTORY = Path(__file__).resolve().parent
+TEMPLATE_DIRECTORY = WEB_DIRECTORY / "templates"
+STATIC_DIRECTORY = WEB_DIRECTORY / "static"
+templates = Jinja2Templates(directory=TEMPLATE_DIRECTORY)
 
 
 def create_app() -> FastAPI:
@@ -13,31 +23,22 @@ def create_app() -> FastAPI:
         ),
         version="0.1.0",
     )
+    application.mount(
+        "/static",
+        StaticFiles(directory=STATIC_DIRECTORY),
+        name="static",
+    )
 
     @application.get("/", response_class=HTMLResponse)
-    def home() -> HTMLResponse:
-        """Return a minimal page confirming that the web interface is ready."""
-        return HTMLResponse(
-            content="""<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Multi-Agent Fictional Personalities</title>
-</head>
-<body>
-    <main>
-        <h1>Sprint 4 Web UI</h1>
-        <p>
-            The local conversation interface for Sherlock Holmes and
-            Hercule Poirot is being prepared.
-        </p>
-        <p>Current provider: <strong>mock</strong>.</p>
-    </main>
-</body>
-</html>
-""",
-            status_code=200,
+    def home(request: Request) -> HTMLResponse:
+        """Render the static conversation workspace."""
+        return templates.TemplateResponse(
+            request=request,
+            name="index.html",
+            context={
+                "page_title": "Multi-Agent Fictional Personalities",
+                "provider_name": "mock",
+            },
         )
 
     @application.get("/health")

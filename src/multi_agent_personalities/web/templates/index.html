@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand-block">
+                <p class="brand-name">{{ page_title }}</p>
+                <p class="brand-description">
+                    Fictional detective conversation simulator
+                </p>
+            </div>
+            <span class="provider-badge">{{ provider_name }} provider</span>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <section class="panel configuration-panel" aria-labelledby="configuration-title">
+            <header class="panel-header">
+                <div>
+                    <p class="eyebrow">Conversation configuration</p>
+                    <h1 id="configuration-title">New investigation</h1>
+                </div>
+            </header>
+
+            <div class="panel-body configuration-stack">
+                <section aria-labelledby="characters-title">
+                    <h2 class="field-label" id="characters-title">Characters</h2>
+                    <div class="character-list">
+                        <article class="character-card character-card--sherlock">
+                            <span class="character-initials" aria-hidden="true">SH</span>
+                            <div class="character-copy">
+                                <h3>Sherlock Holmes</h3>
+                                <p>Analytical, observational, and deductive.</p>
+                            </div>
+                            <span class="selection-mark" aria-hidden="true">✓</span>
+                        </article>
+
+                        <article class="character-card character-card--poirot">
+                            <span class="character-initials" aria-hidden="true">HP</span>
+                            <div class="character-copy">
+                                <h3>Hercule Poirot</h3>
+                                <p>Methodical, psychological, and orderly.</p>
+                            </div>
+                            <span class="selection-mark" aria-hidden="true">✓</span>
+                        </article>
+                    </div>
+                    <p class="field-note">Both detectives will take part in this local mock run.</p>
+                </section>
+
+                <div class="section-rule" aria-hidden="true"></div>
+
+                <section aria-labelledby="topic-title">
+                    <h2 class="field-label" id="topic-title">Investigation topic</h2>
+                    <div class="topic-placeholder">
+                        A valuable document disappeared from a locked room.
+                    </div>
+                    <p class="field-note">The topic will begin the conversation.</p>
+                </section>
+
+                <section aria-labelledby="turns-title">
+                    <h2 class="field-label" id="turns-title">Conversation turns</h2>
+                    <div class="turn-display">
+                        <span class="step-shell" aria-hidden="true">−</span>
+                        <span class="turn-value">6</span>
+                        <span class="step-shell" aria-hidden="true">+</span>
+                        <span class="turn-range">2–12 turns</span>
+                    </div>
+                </section>
+
+                <div class="section-rule" aria-hidden="true"></div>
+
+                <section class="provider-card" aria-label="Provider status">
+                    <div class="provider-row">
+                        <span>Provider</span>
+                        <strong>Local {{ provider_name }}</strong>
+                    </div>
+                    <p>No external API calls are made.</p>
+                </section>
+
+                <div class="action-placeholder">
+                    Start conversation
+                    <span class="visually-hidden">— not yet available</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel transcript-panel" aria-labelledby="transcript-title">
+            <header class="panel-header transcript-header">
+                <div>
+                    <p class="eyebrow">Investigation log</p>
+                    <h2 id="transcript-title">Conversation transcript</h2>
+                </div>
+                <span class="status-label">Awaiting case</span>
+            </header>
+
+            <div class="transcript-body">
+                <div class="empty-state">
+                    <span class="empty-state-rule" aria-hidden="true"></span>
+                    <h3>No conversation yet</h3>
+                    <p>
+                        Configure the investigation to prepare a deterministic
+                        mock conversation between Sherlock and Poirot.
+                    </p>
+                </div>
+
+                <aside class="metadata-placeholder" aria-labelledby="metadata-title">
+                    <p class="field-label" id="metadata-title">Run details</p>
+                    <p>Run metadata and saved artifact paths will appear here.</p>
+                    <div class="artifact-shells" aria-hidden="true">
+                        <span>run.json</span>
+                        <span>messages.jsonl</span>
+                        <span>transcript.md</span>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer">
+        <p>Local deterministic mock execution</p>
+        <span aria-hidden="true">•</span>
+        <p>No API key required</p>
+    </footer>
+</body>
+</html>
