@@ -501,22 +501,113 @@ body {
     line-height: 1.6;
 }
 
-.empty-state--completed {
-    border-radius: var(--radius-medium);
-    background: rgb(37 111 76 / 5%);
+.transcript-list {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-md);
+    list-style: none;
 }
 
-.completion-mark {
-    width: 36px;
-    height: 36px;
-    margin: 0 auto var(--spacing-md);
-    border: 1px solid var(--color-accent);
+.transcript-item,
+.message-card,
+.message-identity,
+.message-content {
+    min-width: 0;
+}
+
+.message-card {
+    padding: 16px;
+    border: 1px solid var(--border-default);
+    border-left-width: 3px;
+    border-radius: var(--radius-medium);
+}
+
+.message-card--sherlock {
+    border-left-color: var(--color-ink);
+    background: var(--surface-sherlock);
+}
+
+.message-card--poirot {
+    border-color: var(--border-poirot);
+    border-left-color: var(--color-poirot);
+    background: var(--surface-poirot);
+}
+
+.message-header {
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.message-avatar {
+    width: 34px;
+    height: 34px;
+    border: 1px solid currentcolor;
     border-radius: 50%;
-    color: var(--color-accent-dark);
+    color: var(--color-ink);
     display: grid;
+    flex: 0 0 auto;
     place-items: center;
-    font-size: 1rem;
+    font-family: var(--font-serif);
+    font-size: 0.6875rem;
     font-weight: 700;
+}
+
+.message-card--poirot .message-avatar {
+    color: var(--color-poirot-dark);
+}
+
+.message-speaker {
+    color: var(--color-ink);
+    font-family: var(--font-serif);
+    font-size: 0.9375rem;
+    line-height: 1.25;
+}
+
+.message-card--poirot .message-speaker {
+    color: var(--color-poirot-dark);
+}
+
+.message-turn {
+    margin-top: 2px;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.message-content p,
+.message-error p {
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.message-content p {
+    color: var(--color-text);
+    font-size: 0.8125rem;
+    line-height: 1.65;
+}
+
+.message-error {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    border: 1px solid #9b5a50;
+    border-left-width: 3px;
+    border-radius: var(--radius-small);
+    background: #f4e7e3;
+    color: #63362f;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.message-error strong {
+    display: block;
+    margin-bottom: var(--spacing-xs);
+    font-size: 0.75rem;
 }
 
 .metadata-placeholder {

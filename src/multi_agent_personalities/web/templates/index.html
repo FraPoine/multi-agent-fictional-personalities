@@ -160,14 +160,32 @@
 
             <div class="transcript-body">
                 {% if conversation_result %}
-                    <div class="empty-state empty-state--completed">
-                        <span class="completion-mark" aria-hidden="true">✓</span>
-                        <h3>Conversation generated</h3>
-                        <p>
-                            The deterministic mock conversation completed successfully.
-                            Transcript rendering will be added in the next task.
-                        </p>
-                    </div>
+                    <ol class="transcript-list" aria-label="Conversation messages">
+                        {% for message in conversation_result.run.messages %}
+                            <li class="transcript-item">
+                                <article class="message-card{% if message.speaker_character_id == 'sherlock_holmes' %} message-card--sherlock{% elif message.speaker_character_id == 'hercule_poirot' %} message-card--poirot{% endif %}">
+                                    <header class="message-header">
+                                        <span class="message-avatar" aria-hidden="true">
+                                            {% if message.speaker_character_id == "sherlock_holmes" %}SH{% elif message.speaker_character_id == "hercule_poirot" %}HP{% endif %}
+                                        </span>
+                                        <div class="message-identity">
+                                            <h3 class="message-speaker">{{ message.speaker_name }}</h3>
+                                            <p class="message-turn">Turn {{ message.turn_index + 1 }}</p>
+                                        </div>
+                                    </header>
+                                    <div class="message-content">
+                                        <p>{{ message.text }}</p>
+                                    </div>
+                                    {% if message.error %}
+                                        <div class="message-error">
+                                            <strong>Generation error</strong>
+                                            <p>{{ message.error }}</p>
+                                        </div>
+                                    {% endif %}
+                                </article>
+                            </li>
+                        {% endfor %}
+                    </ol>
                 {% else %}
                     <div class="empty-state">
                         <span class="empty-state-rule" aria-hidden="true"></span>
