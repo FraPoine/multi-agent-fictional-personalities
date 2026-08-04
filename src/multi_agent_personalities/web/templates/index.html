@@ -33,7 +33,18 @@
                 method="post"
                 action="{{ url_for('start_conversation') }}"
             >
-                <fieldset class="character-fieldset">
+                {% if error_message %}
+                    <div class="form-error-summary" role="alert">
+                        <h2>Unable to start conversation</h2>
+                        <p>{{ error_message }}</p>
+                    </div>
+                {% endif %}
+
+                <fieldset
+                    class="character-fieldset"
+                    aria-describedby="characters-help{% if field_errors.get('characters') %} characters-error{% endif %}"
+                    {% if field_errors.get("characters") %}aria-invalid="true"{% endif %}
+                >
                     <legend class="field-label">Characters</legend>
                     <div class="character-list">
                         <div class="character-option">
@@ -43,6 +54,8 @@
                                 name="characters"
                                 value="sherlock"
                                 required
+                                aria-describedby="characters-help{% if field_errors.get('characters') %} characters-error{% endif %}"
+                                {% if field_errors.get("characters") %}aria-invalid="true"{% endif %}
                                 {% if "sherlock" in selected_characters %}checked{% endif %}
                             >
                             <label
@@ -67,6 +80,8 @@
                                 name="characters"
                                 value="poirot"
                                 required
+                                aria-describedby="characters-help{% if field_errors.get('characters') %} characters-error{% endif %}"
+                                {% if field_errors.get("characters") %}aria-invalid="true"{% endif %}
                                 {% if "poirot" in selected_characters %}checked{% endif %}
                             >
                             <label
@@ -84,9 +99,14 @@
                             </label>
                         </div>
                     </div>
-                    <p class="field-note">
+                    <p class="field-note" id="characters-help">
                         Both detectives are selected by default and required for this sprint.
                     </p>
+                    {% if field_errors.get("characters") %}
+                        <p class="field-error" id="characters-error">
+                            {{ field_errors.get("characters") }}
+                        </p>
+                    {% endif %}
                 </fieldset>
 
                 <div class="section-rule" aria-hidden="true"></div>
@@ -99,12 +119,18 @@
                         name="topic"
                         rows="4"
                         placeholder="A valuable document disappeared from a locked room."
-                        aria-describedby="topic-help"
+                        aria-describedby="topic-help{% if field_errors.get('topic') %} topic-error{% endif %}"
+                        {% if field_errors.get("topic") %}aria-invalid="true"{% endif %}
                         required
                     >{{ topic_value }}</textarea>
                     <p class="field-note" id="topic-help">
                         The topic begins the local mock investigation.
                     </p>
+                    {% if field_errors.get("topic") %}
+                        <p class="field-error" id="topic-error">
+                            {{ field_errors.get("topic") }}
+                        </p>
+                    {% endif %}
                 </div>
 
                 <div class="form-group">
@@ -118,12 +144,18 @@
                         max="12"
                         step="1"
                         value="{{ turn_count_value }}"
-                        aria-describedby="turn-count-help"
+                        aria-describedby="turn-count-help{% if field_errors.get('turn_count') %} turn-count-error{% endif %}"
+                        {% if field_errors.get("turn_count") %}aria-invalid="true"{% endif %}
                         required
                     >
                     <p class="field-note" id="turn-count-help">
                         Choose between 2 and 12 turns.
                     </p>
+                    {% if field_errors.get("turn_count") %}
+                        <p class="field-error" id="turn-count-error">
+                            {{ field_errors.get("turn_count") }}
+                        </p>
+                    {% endif %}
                 </div>
 
                 <div class="section-rule" aria-hidden="true"></div>
@@ -153,6 +185,8 @@
                 </div>
                 {% if conversation_result %}
                     <span class="status-label status-label--completed">Completed</span>
+                {% elif error_message %}
+                    <span class="status-label status-label--failed">Failed</span>
                 {% else %}
                     <span class="status-label">Awaiting case</span>
                 {% endif %}
@@ -186,6 +220,12 @@
                             </li>
                         {% endfor %}
                     </ol>
+                {% elif error_message %}
+                    <div class="transcript-error" role="status">
+                        <span class="transcript-error-mark" aria-hidden="true">!</span>
+                        <h3>Conversation not generated</h3>
+                        <p>{{ error_message }}</p>
+                    </div>
                 {% else %}
                     <div class="empty-state">
                         <span class="empty-state-rule" aria-hidden="true"></span>
