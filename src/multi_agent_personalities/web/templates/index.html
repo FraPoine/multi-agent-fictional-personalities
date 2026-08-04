@@ -28,50 +28,95 @@
                 </div>
             </header>
 
-            <div class="panel-body configuration-stack">
-                <section aria-labelledby="characters-title">
-                    <h2 class="field-label" id="characters-title">Characters</h2>
+            <form class="panel-body configuration-stack conversation-form">
+                <fieldset class="character-fieldset">
+                    <legend class="field-label">Characters</legend>
                     <div class="character-list">
-                        <article class="character-card character-card--sherlock">
-                            <span class="character-initials" aria-hidden="true">SH</span>
-                            <div class="character-copy">
-                                <h3>Sherlock Holmes</h3>
-                                <p>Analytical, observational, and deductive.</p>
-                            </div>
-                            <span class="selection-mark" aria-hidden="true">✓</span>
-                        </article>
+                        <div class="character-option">
+                            <input
+                                id="character-sherlock"
+                                type="checkbox"
+                                name="characters"
+                                value="sherlock"
+                                checked
+                            >
+                            <label
+                                for="character-sherlock"
+                                class="character-card character-card--sherlock"
+                            >
+                                <span class="character-initials" aria-hidden="true">SH</span>
+                                <span class="character-copy">
+                                    <span class="character-name">Sherlock Holmes</span>
+                                    <span class="character-description">
+                                        Analytical, observational, and deductive.
+                                    </span>
+                                </span>
+                                <span class="selection-mark" aria-hidden="true">✓</span>
+                            </label>
+                        </div>
 
-                        <article class="character-card character-card--poirot">
-                            <span class="character-initials" aria-hidden="true">HP</span>
-                            <div class="character-copy">
-                                <h3>Hercule Poirot</h3>
-                                <p>Methodical, psychological, and orderly.</p>
-                            </div>
-                            <span class="selection-mark" aria-hidden="true">✓</span>
-                        </article>
+                        <div class="character-option">
+                            <input
+                                id="character-poirot"
+                                type="checkbox"
+                                name="characters"
+                                value="poirot"
+                                checked
+                            >
+                            <label
+                                for="character-poirot"
+                                class="character-card character-card--poirot"
+                            >
+                                <span class="character-initials" aria-hidden="true">HP</span>
+                                <span class="character-copy">
+                                    <span class="character-name">Hercule Poirot</span>
+                                    <span class="character-description">
+                                        Methodical, psychological, and orderly.
+                                    </span>
+                                </span>
+                                <span class="selection-mark" aria-hidden="true">✓</span>
+                            </label>
+                        </div>
                     </div>
                     <p class="field-note">Both detectives will take part in this local mock run.</p>
-                </section>
+                </fieldset>
 
                 <div class="section-rule" aria-hidden="true"></div>
 
-                <section aria-labelledby="topic-title">
-                    <h2 class="field-label" id="topic-title">Investigation topic</h2>
-                    <div class="topic-placeholder">
-                        A valuable document disappeared from a locked room.
-                    </div>
-                    <p class="field-note">The topic will begin the conversation.</p>
-                </section>
+                <div class="form-group">
+                    <label class="field-label" for="topic">Investigation topic</label>
+                    <textarea
+                        class="form-control topic-input"
+                        id="topic"
+                        name="topic"
+                        rows="4"
+                        placeholder="A valuable document disappeared from a locked room."
+                        aria-describedby="topic-help"
+                        required
+                    ></textarea>
+                    <p class="field-note" id="topic-help">
+                        The topic begins the local mock investigation.
+                    </p>
+                </div>
 
-                <section aria-labelledby="turns-title">
-                    <h2 class="field-label" id="turns-title">Conversation turns</h2>
-                    <div class="turn-display">
-                        <span class="step-shell" aria-hidden="true">−</span>
-                        <span class="turn-value">6</span>
-                        <span class="step-shell" aria-hidden="true">+</span>
-                        <span class="turn-range">2–12 turns</span>
-                    </div>
-                </section>
+                <div class="form-group">
+                    <label class="field-label" for="turn-count">Conversation turns</label>
+                    <input
+                        class="form-control turn-input"
+                        id="turn-count"
+                        name="turn_count"
+                        type="number"
+                        min="2"
+                        max="12"
+                        step="1"
+                        value="6"
+                        aria-describedby="turn-count-help"
+                        required
+                    >
+                    <p class="field-note" id="turn-count-help">
+                        Choose between 2 and 12 turns.
+                    </p>
+                </div>
 
                 <div class="section-rule" aria-hidden="true"></div>
 
@@ -83,11 +128,14 @@
                     <p>No external API calls are made.</p>
                 </section>
 
-                <div class="action-placeholder">
+                <button type="submit" class="primary-action" disabled>
                     Start conversation
-                    <span class="visually-hidden">— not yet available</span>
-                </div>
-            </div>
+                </button>
+                <p class="form-status-note">
+                    Conversation execution will be enabled when the backend
+                    route is connected.
+                </p>
+            </form>
         </section>
 
         <section class="panel transcript-panel" aria-labelledby="transcript-title">
