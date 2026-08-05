@@ -246,18 +246,29 @@ Sprint 5 mock metadata is deterministic. Real token counts, latency, request
 IDs, retry observations, and monetary costs are not collected in mock
 execution; live measurements and cost calculation are future work.
 
-## Sprint 5 mock-provider direction
+## Participant-owned provider bindings
 
-The current `RoundRobinMockProvider` advances one provider-wide call counter.
-This couples speaker order to fixture order. Sprint 5 must associate responses
-with the participant that owns them, so changing the selector cannot give
-Sherlock's fixture to Poirot or vice versa. Speaker order and fixture order are
-separate concerns.
+Task 6 implements immutable runtime-only `ConversationParticipant` bindings.
+Each binding contains one `Persona`, one provider instance, and its declared
+provider/model names. Identity delegates to the persona; the binding carries no
+turn, history, persistence, or investigation state and is not serialized.
 
-A participant may conceptually bind persona, provider, provider name, and model
-name, but `ConversationParticipant` is not an implemented or mandatory class
-name. Sprint 5 may choose a smaller compatible design while preserving these
-responsibility boundaries.
+For mock conversations, the application service validates all fixtures before
+simulation and gives every participant a separate file-backed `MockProvider`
+whose `agent_reply` task points only to that participant's response fixture.
+Fixture selection therefore cannot drift when a participant repeats, is
+skipped, or changes position. The call-counter-based
+`RoundRobinMockProvider` has been removed.
+
+`simulate_chat()` accepts the ordered participant bindings and invokes the
+provider owned by the participant selected with its existing inline modulo
+expression. All participants in one run must declare the same provider and
+model metadata, even though their provider objects are distinct. The validated
+uniform values populate the unchanged run-level and message-level fields;
+heterogeneous provider/model conversations remain future work.
+
+`SpeakerSelector` injection is still pending for Task 7. Task 6 does not call
+`select_valid_speaker()` or otherwise change the current turn order.
 
 ## Sprint 5 investigation-domain target
 
@@ -480,16 +491,22 @@ def reply(
 
 ```python
 def simulate_chat(
-    agents: list[Agent],
+    *,
+    participants: Sequence[ConversationParticipant],
     topic: str,
-    config: SimulationConfig,
+    turn_count: int,
+    seed: int,
+    run_id: str | None = None,
+    timestamp: datetime | None = None,
 ) -> ConversationRun:
     ...
 ```
 
 ### Errors
 
-- fewer than two agents;
+- fewer than two participants;
+- duplicate participant identities;
+- non-uniform provider or model metadata;
 - invalid turn count;
 - failed agent reply;
 - logging failure.

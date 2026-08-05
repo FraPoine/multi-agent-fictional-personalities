@@ -185,9 +185,10 @@ not as a nullable error inside a success result.
 
 The system runs a group conversation between multiple persona-seeded agents.
 The current `simulate_chat()` boundary accepts a configurable ordered sequence
-of at least two unique personas and schedules them deterministically in
-round-robin order. Only Sherlock and Poirot have working runtime fixtures and
-interfaces.
+of at least two unique runtime participant bindings and schedules them
+deterministically in round-robin order. Each binding associates one persona
+with its own provider instance and uniform run-level provider/model metadata.
+Only Sherlock and Poirot have working runtime fixtures and interfaces.
 
 ### Inputs
 

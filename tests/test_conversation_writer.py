@@ -12,24 +12,21 @@ from pydantic import ValidationError
 import multi_agent_personalities.artifacts.conversation_writer as writer_module
 from multi_agent_personalities.artifacts import save_conversation_run
 from multi_agent_personalities.models import ConversationRun, Message, Persona
-from multi_agent_personalities.simulation import simulate_chat
+from multi_agent_personalities.simulation import (
+    ConversationParticipant,
+    simulate_chat,
+)
 
 
 CREATED_AT = datetime(2026, 8, 3, 12, 0, tzinfo=timezone.utc)
 
 
 class LocalProvider:
-    def __init__(self) -> None:
-        self.calls = 0
+    def __init__(self, response: str) -> None:
+        self.response = response
 
     def generate(self, prompt: str, *, task_name: str) -> str:
-        reply = (
-            f"Response {self.calls}."
-            if self.calls != 1
-            else "Response 1, first paragraph.\n\nSecond paragraph."
-        )
-        self.calls += 1
-        return reply
+        return self.response
 
 
 def make_persona(character_id: str, display_name: str) -> Persona:
@@ -47,15 +44,24 @@ def make_persona(character_id: str, display_name: str) -> Persona:
 
 def make_run(turn_count: int = 2) -> ConversationRun:
     return simulate_chat(
-        personas=[
-            make_persona("sherlock", "Sherlock Holmes"),
-            make_persona("poirot", "Hercule Poirot"),
+        participants=[
+            ConversationParticipant(
+                persona=make_persona("sherlock", "Sherlock Holmes"),
+                provider=LocalProvider("Response 0."),
+                provider_name="mock",
+                model_name="mock-v1",
+            ),
+            ConversationParticipant(
+                persona=make_persona("poirot", "Hercule Poirot"),
+                provider=LocalProvider(
+                    "Response 1, first paragraph.\n\nSecond paragraph."
+                ),
+                provider_name="mock",
+                model_name="mock-v1",
+            ),
         ],
         topic="A locked-room mystery",
         turn_count=turn_count,
-        provider=LocalProvider(),
-        provider_name="mock",
-        model_name="mock-v1",
         seed=42,
         run_id="run_fixed",
         timestamp=CREATED_AT,

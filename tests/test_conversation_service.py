@@ -14,6 +14,7 @@ from multi_agent_personalities.application import (
     ConversationResult,
     run_mock_conversation,
 )
+from multi_agent_personalities.llm import MockProvider
 from multi_agent_personalities.models import ConversationRun, Message, Persona
 from multi_agent_personalities.pipeline import character_registry
 
@@ -170,6 +171,33 @@ def test_successful_conversation_execution(tmp_path: Path) -> None:
         "sherlock_holmes",
         "hercule_poirot",
     ]
+    expected_text = {
+        "sherlock_holmes": (
+            REPOSITORY_ROOT / "tests" / "fixtures" / "sherlock_agent_response.txt"
+        ).read_text(encoding="utf-8"),
+        "hercule_poirot": (
+            REPOSITORY_ROOT / "tests" / "fixtures" / "poirot_agent_response.txt"
+        ).read_text(encoding="utf-8"),
+    }
+    assert all(
+        message.text == expected_text[message.speaker_character_id]
+        for message in result.run.messages
+    )
+
+
+def test_service_builds_one_file_backed_provider_per_participant() -> None:
+    participants = service_module._load_mock_participants(
+        ["sherlock", "poirot"],
+        REPOSITORY_ROOT,
+    )
+
+    assert all(isinstance(item.provider, MockProvider) for item in participants)
+    assert participants[0].provider is not participants[1].provider
+    assert [item.provider_name for item in participants] == ["mock", "mock"]
+    assert [item.model_name for item in participants] == [
+        "mock-round-robin",
+        "mock-round-robin",
+    ]
 
 
 def test_artifact_creation_and_result_paths(tmp_path: Path) -> None:
@@ -239,6 +267,15 @@ def test_character_input_order_is_preserved(tmp_path: Path) -> None:
         "hercule_poirot",
         "sherlock_holmes",
     ]
+    expected_text = [
+        (
+            REPOSITORY_ROOT / "tests" / "fixtures" / "poirot_agent_response.txt"
+        ).read_text(encoding="utf-8"),
+        (
+            REPOSITORY_ROOT / "tests" / "fixtures" / "sherlock_agent_response.txt"
+        ).read_text(encoding="utf-8"),
+    ]
+    assert [message.text for message in result.run.messages] == expected_text * 2
 
 
 def test_three_catalog_participants_flow_through_service_and_artifacts(

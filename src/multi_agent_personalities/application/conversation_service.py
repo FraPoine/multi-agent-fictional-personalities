@@ -8,14 +8,17 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from multi_agent_personalities.artifacts import save_conversation_run
-from multi_agent_personalities.llm import RoundRobinMockProvider
+from multi_agent_personalities.llm import MockProvider
 from multi_agent_personalities.models import (
     ConversationRun,
     Persona,
     validate_run_id,
 )
 from multi_agent_personalities.pipeline import character_registry
-from multi_agent_personalities.simulation import simulate_chat
+from multi_agent_personalities.simulation import (
+    ConversationParticipant,
+    simulate_chat,
+)
 
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -49,10 +52,10 @@ class ConversationResult:
         return self.artifact_directory / "transcript.md"
 
 
-def _load_mock_inputs(
+def _load_mock_participants(
     character_slugs: Sequence[str],
     project_root: Path,
-) -> tuple[list[Persona], list[str]]:
+) -> list[ConversationParticipant]:
     if isinstance(character_slugs, (str, bytes)) or not isinstance(
         character_slugs, Sequence
     ):
@@ -72,8 +75,7 @@ def _load_mock_inputs(
             f"unsupported character: {unsupported[0]!r}. Supported: {supported}"
         )
 
-    personas: list[Persona] = []
-    responses: list[str] = []
+    participants: list[ConversationParticipant] = []
     for slug in character_slugs:
         config = registry[slug]
         try:
@@ -101,10 +103,18 @@ def _load_mock_inputs(
         if not response.strip():
             raise ValueError(f"synthetic response fixture for {slug!r} is empty")
 
-        personas.append(persona)
-        responses.append(response)
+        participants.append(
+            ConversationParticipant(
+                persona=persona,
+                provider=MockProvider(
+                    {"agent_reply": config.agent_response_fixture}
+                ),
+                provider_name="mock",
+                model_name="mock-round-robin",
+            )
+        )
 
-    return personas, responses
+    return participants
 
 
 def run_mock_conversation(
@@ -132,18 +142,14 @@ def run_mock_conversation(
     resolved_project_root = (
         _PROJECT_ROOT if project_root is None else Path(project_root)
     )
-    personas, responses = _load_mock_inputs(
+    participants = _load_mock_participants(
         character_slugs,
         resolved_project_root,
     )
-    provider = RoundRobinMockProvider(responses)
     run = simulate_chat(
-        personas=personas,
+        participants=participants,
         topic=topic,
         turn_count=turn_count,
-        provider=provider,
-        provider_name="mock",
-        model_name="mock-round-robin",
         seed=seed,
         run_id=run_id,
         timestamp=timestamp,

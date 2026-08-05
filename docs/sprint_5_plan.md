@@ -43,16 +43,16 @@ investigation.
 - Persona and response fixtures are deterministic and local.
 - `Message` and `ConversationRun` are immutable validated models.
 - Each complete run contains explicit, ordered per-run history.
-- `simulate_chat()` supports an ordered sequence of at least two unique
-  personas and directly schedules deterministic round-robin turns.
+- `simulate_chat()` supports an ordered sequence of at least two unique runtime
+  participant bindings and directly schedules deterministic round-robin turns.
 - The CLI and local conversation UI reuse application/runtime logic.
 - Conversation persistence atomically writes `run.json`, `messages.jsonl`, and
   `transcript.md`.
 - The two-character blind-evaluation pilot is technical, mock-only, and
   offline; it cannot establish recognizability.
 - Tests require no API key or network access.
-- Providers currently return plain text, and the conversation mock associates
-  fixture order with one provider-wide call counter.
+- Providers currently return plain text. Each mock participant owns a distinct
+  file-backed provider associated with its response fixture.
 - No live provider, dynamic manager, investigation domain or workflow, third
   or fourth runtime character, real game, or final experiment exists.
 
@@ -141,12 +141,16 @@ calculation is future work.
 
 ### Participant-bound mock responses
 
-Mock responses must be associated with their owning participant instead of a
-global provider call counter. Speaker order and fixture order are separate:
-changing the selector must not give Sherlock's response to Poirot or vice
-versa. A runtime participant may conceptually bind persona, provider, provider
-name, and model name, but the exact entity and class name remain implementation
-decisions.
+Task 6 implements immutable runtime-only `ConversationParticipant` bindings of
+persona, provider instance, provider name, and model name. Each mock participant
+owns a file-backed provider configured only for its own response fixture;
+speaker order and fixture ownership are therefore independent. The cyclic
+`RoundRobinMockProvider` and its global call counter have been removed.
+
+Provider and model names must be uniform within one conversation so the
+unchanged `ConversationRun.provider` and `ConversationRun.model` fields remain
+unambiguous. The engine still selects with its inline round-robin expression;
+`SpeakerSelector` injection remains pending for Task 7.
 
 ### Investigation domain
 

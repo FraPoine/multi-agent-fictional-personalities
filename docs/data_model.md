@@ -190,6 +190,23 @@ Agents may be created dynamically from config files.
 - An `Agent` uses one `PersonaProfile`.
 - An `Agent` produces many `Message` records during a `ConversationRun`.
 
+## Runtime conversation participant binding
+
+`ConversationParticipant` is an immutable runtime-only dependency binding, not
+a persisted domain record. It binds one validated `Persona` to one provider
+instance plus non-empty provider metadata and an optional non-empty model name.
+Its character ID and display name come only from the persona.
+
+Mock conversation construction gives each participant a distinct file-backed
+provider configured only with that participant's `agent_reply` fixture. The
+binding contains no turn index, history, run ID, output path, selection state,
+or investigation state. It is never serialized into `run.json`.
+
+One conversation currently requires uniform declared provider and model names
+across all bindings. `ConversationRun` remains unchanged and stores those
+validated values once at run level, while each generated `Message` retains its
+compatible top-level provider and model fields.
+
 ## 5. ConversationRun
 
 ### Definition
