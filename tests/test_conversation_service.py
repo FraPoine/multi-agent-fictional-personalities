@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 
 import multi_agent_personalities.application.conversation_service as service_module
 from multi_agent_personalities.application import (
@@ -20,6 +21,11 @@ from multi_agent_personalities.pipeline import character_registry
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 TOPIC = "A valuable document disappeared from a locked room."
 EXPECTED_FILES = {"run.json", "messages.jsonl", "transcript.md"}
+SYNTHETIC_CHARACTERS = (
+    ("alpha", "agent-alpha", "Agent Alpha"),
+    ("beta", "agent-beta", "Agent Beta"),
+    ("gamma", "agent-gamma", "Agent Gamma"),
+)
 
 
 @pytest.fixture(autouse=True)
@@ -55,6 +61,61 @@ def run_service(
 def assert_no_completed_run(output_root: Path) -> None:
     runs_directory = output_root / "conversations" / "runs"
     assert not runs_directory.exists() or list(runs_directory.iterdir()) == []
+
+
+def create_synthetic_project(project_root: Path) -> None:
+    """Create a three-character catalog and assets entirely under ``tmp_path``."""
+
+    config_directory = project_root / "configs"
+    asset_directory = project_root / "synthetic_assets"
+    config_directory.mkdir(parents=True)
+    entries: list[dict[str, str]] = []
+
+    for slug, character_id, display_name in SYNTHETIC_CHARACTERS:
+        character_directory = asset_directory / slug
+        character_directory.mkdir(parents=True)
+        (character_directory / "corpus.jsonl").write_text(
+            '{"text":"Synthetic test evidence."}\n',
+            encoding="utf-8",
+        )
+        persona = Persona(
+            character_id=character_id,
+            display_name=display_name,
+            description="A synthetic persona used only for service tests.",
+            speaking_style=["Neutral"],
+            reasoning_style=["Deterministic"],
+            personality_traits=["Test-only"],
+            behavior_rules=["Use only the supplied test context"],
+            example_messages=[f"response-from-{slug}"],
+        )
+        (character_directory / "persona.json").write_text(
+            persona.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (character_directory / "response.txt").write_text(
+            f"response-from-{slug}\n",
+            encoding="utf-8",
+        )
+        entries.append(
+            {
+                "slug": slug,
+                "character_id": character_id,
+                "display_name": display_name,
+                "description": "Synthetic service-test character.",
+                "corpus_path": f"../synthetic_assets/{slug}/corpus.jsonl",
+                "persona_fixture_path": (
+                    f"../synthetic_assets/{slug}/persona.json"
+                ),
+                "mock_response_fixture_path": (
+                    f"../synthetic_assets/{slug}/response.txt"
+                ),
+            }
+        )
+
+    (config_directory / "characters.yaml").write_text(
+        yaml.safe_dump({"characters": entries}, sort_keys=False),
+        encoding="utf-8",
+    )
 
 
 def replace_registry_fixture(
@@ -180,12 +241,147 @@ def test_character_input_order_is_preserved(tmp_path: Path) -> None:
     ]
 
 
-def test_rejects_fewer_than_two_characters(tmp_path: Path) -> None:
+def test_three_catalog_participants_flow_through_service_and_artifacts(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "synthetic_project"
+    output_root = tmp_path / "outputs"
+    create_synthetic_project(project_root)
+
+    result = run_mock_conversation(
+        character_slugs=["gamma", "alpha", "beta"],
+        topic="A synthetic boundary-verification case.",
+        turn_count=5,
+        seed=42,
+        output_root=output_root,
+        project_root=project_root,
+        run_id="three_participant_service_run",
+        timestamp=datetime(2026, 8, 5, 12, 0, tzinfo=timezone.utc),
+    )
+
+    expected_ids = (
+        "agent-gamma",
+        "agent-alpha",
+        "agent-beta",
+    )
+    expected_speakers = [
+        "agent-gamma",
+        "agent-alpha",
+        "agent-beta",
+        "agent-gamma",
+        "agent-alpha",
+    ]
+    expected_text = [
+        "response-from-gamma\n",
+        "response-from-alpha\n",
+        "response-from-beta\n",
+        "response-from-gamma\n",
+        "response-from-alpha\n",
+    ]
+
+    assert result.run.status == "completed"
+    assert result.run.character_ids == expected_ids
+    assert result.run.turn_count == 5
+    assert [message.speaker_character_id for message in result.run.messages] == (
+        expected_speakers
+    )
+    assert [message.text for message in result.run.messages] == expected_text
+    assert all(
+        message.speaker_character_id in result.run.character_ids
+        for message in result.run.messages
+    )
+
+    run = ConversationRun.model_validate_json(
+        (result.artifact_directory / "run.json").read_text(encoding="utf-8")
+    )
+    messages = [
+        Message.model_validate_json(line)
+        for line in (result.artifact_directory / "messages.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert run.character_ids == expected_ids
+    assert [message.speaker_character_id for message in messages] == (
+        expected_speakers
+    )
+    assert all(
+        message.speaker_character_id in run.character_ids
+        for message in messages
+    )
+
+    transcript = (result.artifact_directory / "transcript.md").read_text(
+        encoding="utf-8"
+    )
+    assert all(
+        display_name in transcript
+        for _, _, display_name in SYNTHETIC_CHARACTERS
+    )
+    assert "Sherlock" not in transcript
+    assert "Poirot" not in transcript
+
+
+def test_unknown_participant_in_injected_catalog_fails_without_artifacts(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "synthetic_project"
+    output_root = tmp_path / "outputs"
+    create_synthetic_project(project_root)
+
+    with pytest.raises(
+        ValueError,
+        match="unsupported character: 'unknown'.*alpha, beta, gamma",
+    ):
+        run_mock_conversation(
+            character_slugs=["gamma", "unknown", "alpha"],
+            topic=TOPIC,
+            turn_count=5,
+            output_root=output_root,
+            project_root=project_root,
+            run_id="unknown_synthetic_participant_run",
+        )
+
+    assert_no_completed_run(output_root)
+
+
+@pytest.mark.parametrize(
+    ("character_slugs", "error"),
+    [
+        (["alpha"], "at least two"),
+        (["alpha", "beta", "alpha"], "must not contain duplicates"),
+    ],
+)
+def test_injected_catalog_rejects_invalid_participant_collection(
+    tmp_path: Path,
+    character_slugs: list[str],
+    error: str,
+) -> None:
+    project_root = tmp_path / "synthetic_project"
+    output_root = tmp_path / "outputs"
+    create_synthetic_project(project_root)
+
+    with pytest.raises(ValueError, match=error):
+        run_mock_conversation(
+            character_slugs=character_slugs,
+            topic=TOPIC,
+            turn_count=5,
+            output_root=output_root,
+            project_root=project_root,
+            run_id="invalid_synthetic_participants_run",
+        )
+
+    assert_no_completed_run(output_root)
+
+
+@pytest.mark.parametrize("character_slugs", [[], ["sherlock"]])
+def test_rejects_fewer_than_two_characters(
+    tmp_path: Path,
+    character_slugs: list[str],
+) -> None:
     with pytest.raises(ValueError, match="at least two"):
         run_service(
             tmp_path,
             run_id="too_few_run",
-            character_slugs=["sherlock"],
+            character_slugs=character_slugs,
         )
 
     assert_no_completed_run(tmp_path)
