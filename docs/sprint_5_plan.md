@@ -62,7 +62,8 @@ investigation.
 - Tests require no API key or network access.
 - Providers return validated `GenerationResult` values. Each mock participant
   owns a distinct file-backed provider associated with its response fixture;
-  immediate consumers use `result.text`, while propagation remains pending.
+  new messages retain the complete result metadata while legacy messages remain
+  readable without it.
 - `ConversationParticipant` is an immutable runtime binding, and the former
   call-counter-based `RoundRobinMockProvider` has been removed.
 - No live provider, dynamic manager, investigation domain or workflow, third
@@ -80,13 +81,11 @@ investigation.
 | Task 6 — Bind deterministic mock providers to participants | Completed | `a118ea7` |
 | Task 7 — Inject `SpeakerSelector` into the simulation engine | Completed | `1477dfb` |
 | Task 8 — Define structured generation-result schemas | Completed | `8ff99c6` |
-| Task 9 — Migrate provider contract and local mocks | Implemented | Pending commit |
+| Task 9 — Migrate provider contract and local mocks | Completed | `86d5936` |
+| Task 10 — Propagate generation metadata into messages | Implemented | Pending commit |
 
 ## Remaining work
 
-- Propagate deterministic generation metadata into runtime messages and
-  artifacts while preserving compatibility. Task 9 migrates provider returns
-  and immediate text consumers only.
 - Add investigation-domain models with valid partial states.
 - Run the complete offline regression and reconcile final Sprint 5
   documentation.

@@ -94,6 +94,46 @@ def test_serialization_uses_json_arrays(valid_conversation: dict) -> None:
     assert isinstance(serialized["messages"], list)
 
 
+def test_legacy_run_messages_load_without_generation_metadata(
+    valid_conversation: dict,
+) -> None:
+    conversation = ConversationRun.model_validate(valid_conversation)
+    assert all(
+        message.generation_metadata is None
+        for message in conversation.messages
+    )
+
+
+def test_run_round_trip_preserves_nested_generation_metadata(
+    valid_conversation: dict,
+) -> None:
+    for message in valid_conversation["messages"]:
+        message["model"] = "mock-round-robin"
+        message["generation_metadata"] = {
+            "provider": "mock",
+            "model": None,
+            "usage": None,
+            "finish_reason": "completed",
+            "request_id": None,
+            "latency_ms": None,
+            "retry_count": 0,
+        }
+    valid_conversation["model"] = "mock-round-robin"
+
+    conversation = ConversationRun.model_validate(valid_conversation)
+    restored = ConversationRun.model_validate_json(
+        conversation.model_dump_json()
+    )
+
+    assert restored == conversation
+    assert isinstance(restored.messages, tuple)
+    assert all(
+        message.generation_metadata is not None
+        and message.generation_metadata.provider == "mock"
+        for message in restored.messages
+    )
+
+
 def test_only_one_character_is_rejected(valid_conversation: dict) -> None:
     valid_conversation["character_ids"] = ["sherlock_holmes"]
 

@@ -198,6 +198,17 @@ def test_successful_conversation_execution(tmp_path: Path) -> None:
         message.text == expected_text[message.speaker_character_id]
         for message in result.run.messages
     )
+    assert all(
+        message.generation_metadata is not None
+        and message.generation_metadata.provider == "mock"
+        and message.generation_metadata.model is None
+        and message.generation_metadata.usage is None
+        and message.generation_metadata.finish_reason == "completed"
+        and message.generation_metadata.request_id is None
+        and message.generation_metadata.latency_ms is None
+        and message.generation_metadata.retry_count == 0
+        for message in result.run.messages
+    )
 
 
 def test_service_builds_one_file_backed_provider_per_participant() -> None:

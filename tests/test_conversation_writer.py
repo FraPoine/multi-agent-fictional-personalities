@@ -1,5 +1,6 @@
 """Tests for complete conversation artifact persistence."""
 
+import json
 import socket
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -105,6 +106,24 @@ def test_writes_exact_files_and_round_trippable_models(tmp_path: Path) -> None:
     assert len(lines) == len(run.messages)
     assert reconstructed == list(run.messages)
     assert [message.turn_index for message in reconstructed] == [0, 1]
+    expected_metadata = {
+        "provider": "mock",
+        "model": None,
+        "usage": None,
+        "finish_reason": None,
+        "request_id": None,
+        "latency_ms": None,
+        "retry_count": 0,
+    }
+    run_payload = json.loads(run_text)
+    assert all(
+        message["generation_metadata"] == expected_metadata
+        for message in run_payload["messages"]
+    )
+    assert all(
+        json.loads(line)["generation_metadata"] == expected_metadata
+        for line in lines
+    )
 
     assert run.model_dump_json() == original_dump
 
@@ -132,6 +151,8 @@ def test_transcript_preserves_metadata_speakers_and_text(tmp_path: Path) -> None
     for message in run.messages:
         assert transcript.count(message.text) == 1
     assert "Response 1, first paragraph.\n\nSecond paragraph." in transcript
+    assert "generation_metadata" not in transcript
+    assert "retry_count" not in transcript
 
 
 def test_transcript_records_textless_generation_error(tmp_path: Path) -> None:

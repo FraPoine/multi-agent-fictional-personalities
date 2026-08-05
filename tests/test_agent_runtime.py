@@ -5,7 +5,11 @@ from datetime import datetime, timezone
 import pytest
 
 from multi_agent_personalities.agent_runtime import generate_reply
-from multi_agent_personalities.models import GenerationMetadata, GenerationResult
+from multi_agent_personalities.models import (
+    GenerationMetadata,
+    GenerationResult,
+    TokenUsage,
+)
 from multi_agent_personalities.models.message import Message
 from multi_agent_personalities.models.persona import Persona
 
@@ -16,20 +20,24 @@ FIXED_TIME = datetime(2026, 7, 30, 12, 0, tzinfo=timezone.utc)
 class SpyProvider:
     """Record deterministic provider calls for runtime assertions."""
 
-    def __init__(self, response: str = "The facts suggest one answer.") -> None:
-        self.response = response
+    def __init__(
+        self,
+        response: str = "The facts suggest one answer.",
+        metadata: GenerationMetadata | None = None,
+    ) -> None:
+        self.result = GenerationResult(
+            text=response,
+            metadata=(
+                GenerationMetadata(provider="mock")
+                if metadata is None
+                else metadata
+            ),
+        )
         self.calls: list[tuple[str, str]] = []
 
     def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.calls.append((prompt, task_name))
-        return GenerationResult(
-            text=self.response,
-            metadata=GenerationMetadata(
-                provider="test-provider",
-                model="test-model",
-                finish_reason="completed",
-            ),
-        )
+        return self.result
 
 
 @pytest.fixture
@@ -107,8 +115,7 @@ def test_valid_call_returns_expected_message_and_calls_provider_once(
     assert message.error is None
     assert len(provider.calls) == 1
     assert provider.calls[0][1] == "agent_reply"
-    assert message.provider != "test-provider"
-    assert message.model != "test-model"
+    assert message.generation_metadata is provider.result.metadata
 
 
 def test_prompt_contains_persona_topic_and_ordered_history(
@@ -147,6 +154,81 @@ def test_prompt_contains_persona_topic_and_ordered_history(
     assert second_text in prompt
     assert prompt.index(first_text) < prompt.index(second_text)
     assert "Produce only the next chat message." in prompt
+
+
+def test_complete_generation_metadata_is_propagated(
+    sherlock: Persona,
+) -> None:
+    metadata = GenerationMetadata(
+        provider="mock",
+        model="mock-v1",
+        usage=TokenUsage(input_tokens=20, output_tokens=8),
+        finish_reason="completed",
+        request_id="request-001",
+        latency_ms=4.5,
+        retry_count=1,
+    )
+    provider = SpyProvider("Complete metadata response.", metadata)
+
+    message = call_runtime(sherlock, provider)
+
+    assert message.text == provider.result.text
+    assert message.provider == metadata.provider
+    assert message.model == metadata.model
+    assert message.generation_metadata is metadata
+    assert len(provider.calls) == 1
+
+
+def test_absent_reported_model_uses_configured_model_without_mutation(
+    sherlock: Persona,
+) -> None:
+    metadata = GenerationMetadata(
+        provider="mock",
+        finish_reason="completed",
+    )
+    provider = SpyProvider(metadata=metadata)
+
+    message = call_runtime(sherlock, provider, model_name="mock-round-robin")
+
+    assert message.model == "mock-round-robin"
+    assert message.generation_metadata is metadata
+    assert message.generation_metadata.model is None
+
+
+def test_model_resolution_supports_reported_or_fully_absent_model(
+    sherlock: Persona,
+) -> None:
+    reported = SpyProvider(
+        metadata=GenerationMetadata(provider="mock", model="reported-model")
+    )
+    assert call_runtime(sherlock, reported, model_name=None).model == (
+        "reported-model"
+    )
+
+    absent = SpyProvider(metadata=GenerationMetadata(provider="mock"))
+    assert call_runtime(sherlock, absent, model_name=None).model is None
+
+
+def test_provider_metadata_mismatch_fails_after_one_call(
+    sherlock: Persona,
+) -> None:
+    provider = SpyProvider(
+        metadata=GenerationMetadata(provider="different-provider")
+    )
+    with pytest.raises(ValueError, match="declared provider does not match"):
+        call_runtime(sherlock, provider)
+    assert len(provider.calls) == 1
+
+
+def test_model_metadata_mismatch_fails_after_one_call(
+    sherlock: Persona,
+) -> None:
+    provider = SpyProvider(
+        metadata=GenerationMetadata(provider="mock", model="reported-model")
+    )
+    with pytest.raises(ValueError, match="declared model does not match"):
+        call_runtime(sherlock, provider, model_name="configured-model")
+    assert len(provider.calls) == 1
 
 
 def test_empty_history_is_explicit_and_input_is_not_mutated(

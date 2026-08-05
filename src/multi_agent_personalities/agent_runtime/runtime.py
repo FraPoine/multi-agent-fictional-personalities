@@ -121,6 +121,20 @@ def generate_reply(
         resolved_prompt,
         task_name="agent_reply",
     )
+    if provider_name != result.metadata.provider:
+        raise ValueError(
+            "declared provider does not match generation metadata provider"
+        )
+    reported_model = result.metadata.model
+    if (
+        reported_model is not None
+        and model_name is not None
+        and reported_model != model_name
+    ):
+        raise ValueError(
+            "declared model does not match generation metadata model"
+        )
+    resolved_model = reported_model if reported_model is not None else model_name
 
     return Message(
         message_id=f"{run_id}_message_{turn_index:04d}",
@@ -129,8 +143,9 @@ def generate_reply(
         speaker_character_id=persona.character_id,
         speaker_name=persona.display_name,
         text=result.text,
-        provider=provider_name,
-        model=model_name,
+        provider=result.metadata.provider,
+        model=resolved_model,
+        generation_metadata=result.metadata,
         timestamp=created_at,
         error=None,
     )

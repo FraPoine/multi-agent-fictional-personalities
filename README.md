@@ -78,8 +78,9 @@ application service supplies `RoundRobinSelector` by default, while the engine
 requires a `SpeakerSelector` and resolves its validated character ID to the
 participant-owned provider. The provider boundary now returns validated
 `GenerationResult` values with deterministic mock metadata. Persona extraction
-and agent runtime consume only `result.text`; metadata propagation into messages
-and artifacts remains pending.
+consumes `result.text`; agent runtime now stores both `result.text` and the
+complete metadata in each new `Message`. Legacy messages without nested metadata
+remain readable, and no metadata is shown in transcripts, CLI output, or web UI.
 
 ## Technical blind-evaluation pilot
 

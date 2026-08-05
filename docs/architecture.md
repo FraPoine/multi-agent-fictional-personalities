@@ -123,9 +123,8 @@ Wrap LLM calls and produce one in-character reply at a time.
 ### Output
 
 - providers return a validated `GenerationResult`;
-- agent runtime consumes `result.text` to construct `Message` with the existing
-  top-level provider and model fields;
-- structured metadata propagation remains pending.
+- agent runtime consumes `result.text` and stores `result.metadata` in the new
+  message while retaining top-level provider and model compatibility fields.
 
 ### Notes
 
@@ -247,18 +246,24 @@ GenerationResult
 `GenerationResult` represents success and therefore has no nullable `error`.
 Provider failures continue to fail loudly through exceptions; a separate
 failure entity can be added later if persistent failures become necessary.
-Existing top-level `Message.provider` and `Message.model` fields may remain for
-compatibility when optional structured metadata is added. Any duplicated
-provider/model values must be validated for consistency.
+Existing top-level `Message.provider` and `Message.model` fields remain for
+compatibility alongside optional `Message.generation_metadata`. The top-level
+provider must match the reported provider. A reported model must match the
+top-level model; when no model is reported, the top-level model may retain the
+configured compatibility value.
 
 The file-backed `MockProvider`, currently the only production provider, returns
 the exact file content with deterministic metadata: provider `mock`, no model
 or usage, finish reason `completed`, no request ID or latency, and retry count
-zero. Persona extraction and agent runtime consume `result.text`; they do not
-yet propagate metadata into `Persona`, `Message`, or artifacts. Provider and
-validation failures remain exceptions. Real token counts, latency, request IDs,
-retry observations, and monetary costs are not collected in mock execution;
-live measurements and cost calculation are future work.
+zero. Persona extraction consumes `result.text`. Agent runtime validates the
+reported provider/model against its declarations, stores the exact metadata in
+the new `Message`, and uses a configured model only when the provider reports
+none. Provider and validation failures remain exceptions and produce no
+successful message. New JSON artifacts serialize nested metadata naturally;
+legacy messages without it remain valid, and transcripts do not display it.
+Real token counts, latency, request IDs, retry observations, and monetary costs
+are not collected in mock execution; live measurements and cost calculation
+are future work.
 
 ## Participant-owned provider bindings
 

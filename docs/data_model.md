@@ -291,9 +291,9 @@ Task 8 implemented these schemas and validation. Task 9 migrates
 `LLMProvider.generate()` and the file-backed `MockProvider` to return
 `GenerationResult`. Mock metadata is deterministic: provider `mock`, no model
 or usage, finish reason `completed`, no request ID or latency, and retry count
-zero. Persona extraction and `generate_reply()` consume only `result.text`.
-Metadata propagation remains future work; `Message`, `ConversationRun`, and
-artifact schemas are unchanged.
+zero. Persona extraction consumes only `result.text`. Task 10 makes
+`generate_reply()` store both `result.text` and `result.metadata` in newly
+generated messages. Run-level aggregation remains future work.
 
 ## 5. ConversationRun
 
@@ -378,10 +378,31 @@ to remain deterministic. Distinct real-provider timing can be added later.
   "text": "A generated response is stored here at runtime.",
   "provider": "mock",
   "model": "mock-round-robin",
+  "generation_metadata": {
+    "provider": "mock",
+    "model": null,
+    "usage": null,
+    "finish_reason": "completed",
+    "request_id": null,
+    "latency_ms": null,
+    "retry_count": 0
+  },
   "timestamp": "2026-05-05T00:00:00Z",
   "error": null
 }
 ```
+
+`generation_metadata` is optional and defaults to `null`, so pre-Task-10
+messages and runs that omit it remain valid without migration. Newly generated
+successful messages store the exact provider metadata. The top-level provider
+must match its nested counterpart. When metadata reports a model, the top-level
+model must match it; when metadata reports no model, the top-level model may
+preserve a configured compatibility value such as `mock-round-robin`.
+
+Provider and consistency failures remain exceptions, and `generate_reply()`
+does not construct an error message after failure. New `run.json` and
+`messages.jsonl` records include nested metadata automatically, while
+`transcript.md` remains human-readable and does not print it.
 
 ### Relationships
 
