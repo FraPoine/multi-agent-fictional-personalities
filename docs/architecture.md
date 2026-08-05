@@ -180,7 +180,7 @@ personas. No concrete `ConversationEngine` class exists, and Sprint 5 need not
 introduce one. Only Sherlock Holmes and Hercule Poirot have working runtime
 fixtures despite the simulation core's sequence support.
 
-## Sprint 5 speaker-selection target
+## Speaker-selection boundary
 
 ```text
 `simulate_chat()` engine boundary
@@ -191,12 +191,25 @@ fixtures despite the simulation core's sequence support.
           └── future `ConversationManager`
 ```
 
-`SpeakerSelector` will be the replaceable contract for choosing the next
-speaker. `RoundRobinSelector` will preserve current deterministic order for any
-configured participant sequence of at least two. The selector must not own
-response generation, prompt construction, investigation reasoning,
-persistence, or conversation history. The engine remains responsible for
-passing the complete ordered history.
+Task 5 implements `SpeakerSelector` as a structural protocol and
+`RoundRobinSelector` as its stateless deterministic implementation. The public
+contract accepts an ordered sequence of unique `character_id` strings,
+read-only `Message` history, and an explicit zero-based `turn_index`. It returns
+the selected stable identifier rather than a positional index. Round-robin uses
+the configured order and `participant_ids[turn_index % len(participant_ids)]`;
+it neither infers turns from history nor maintains a mutable call counter.
+
+The public `select_valid_speaker()` boundary invokes any compatible selector
+and rejects results outside the supplied participant identifiers. Direct
+round-robin use also rejects empty or duplicate identifiers and negative turn
+indexes. Neither participant input nor history is mutated.
+
+The selector owns no response generation, prompt construction, provider calls,
+investigation reasoning, persistence, catalog loading, or conversation history.
+It can therefore be tested without fixtures or external services.
+
+Engine integration is intentionally still pending: `simulate_chat()` continues
+to use its existing inline modulo expression and does not yet accept a selector.
 
 A future `ConversationManager` may implement dynamic selection. Rule-based,
 LLM-based, content-dependent, priority-based, and investigation-specific
