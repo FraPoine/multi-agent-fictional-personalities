@@ -14,6 +14,7 @@ from multi_agent_personalities.artifacts import save_conversation_run
 from multi_agent_personalities.models import ConversationRun, Message, Persona
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
+    RoundRobinSelector,
     simulate_chat,
 )
 
@@ -60,6 +61,7 @@ def make_run(turn_count: int = 2) -> ConversationRun:
                 model_name="mock-v1",
             ),
         ],
+        speaker_selector=RoundRobinSelector(),
         topic="A locked-room mystery",
         turn_count=turn_count,
         seed=42,

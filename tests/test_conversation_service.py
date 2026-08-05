@@ -1,6 +1,7 @@
 """Tests for the framework-independent conversation application service."""
 
 import socket
+from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,6 +28,20 @@ SYNTHETIC_CHARACTERS = (
     ("beta", "agent-beta", "Agent Beta"),
     ("gamma", "agent-gamma", "Agent Gamma"),
 )
+
+
+class SequenceSelector:
+    def __init__(self, selections: Sequence[str]) -> None:
+        self.selections = tuple(selections)
+
+    def select_next(
+        self,
+        *,
+        participant_ids: Sequence[str],
+        history: Sequence[Message],
+        turn_index: int,
+    ) -> str:
+        return self.selections[turn_index]
 
 
 @pytest.fixture(autouse=True)
@@ -355,6 +370,97 @@ def test_three_catalog_participants_flow_through_service_and_artifacts(
     )
     assert "Sherlock" not in transcript
     assert "Poirot" not in transcript
+
+
+def test_injected_selector_controls_persisted_order_and_fixture_ownership(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "synthetic_project"
+    output_root = tmp_path / "outputs"
+    create_synthetic_project(project_root)
+    selections = [
+        "agent-alpha",
+        "agent-alpha",
+        "agent-gamma",
+        "agent-beta",
+        "agent-gamma",
+    ]
+
+    result = run_mock_conversation(
+        character_slugs=["alpha", "beta", "gamma"],
+        speaker_selector=SequenceSelector(selections),
+        topic=TOPIC,
+        turn_count=5,
+        output_root=output_root,
+        project_root=project_root,
+        run_id="custom_selector_run",
+    )
+
+    assert result.run.character_ids == (
+        "agent-alpha",
+        "agent-beta",
+        "agent-gamma",
+    )
+    assert [message.speaker_character_id for message in result.run.messages] == (
+        selections
+    )
+    assert [message.text for message in result.run.messages] == [
+        f"response-from-{character_id.removeprefix('agent-')}\n"
+        for character_id in selections
+    ]
+    persisted = ConversationRun.model_validate_json(
+        (result.artifact_directory / "run.json").read_text(encoding="utf-8")
+    )
+    assert persisted == result.run
+
+
+def test_invalid_injected_selector_prevents_completed_artifacts(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "synthetic_project"
+    output_root = tmp_path / "outputs"
+    create_synthetic_project(project_root)
+
+    with pytest.raises(ValueError, match="unsupported participant identifier"):
+        run_mock_conversation(
+            character_slugs=["alpha", "beta", "gamma"],
+            speaker_selector=SequenceSelector(["unknown-participant"]),
+            topic=TOPIC,
+            turn_count=1,
+            output_root=output_root,
+            project_root=project_root,
+            run_id="invalid_selector_run",
+        )
+
+    assert_no_completed_run(output_root)
+
+
+def test_injected_selector_exception_prevents_completed_artifacts(
+    tmp_path: Path,
+) -> None:
+    class SelectorFailure(RuntimeError):
+        pass
+
+    class FailingSelector:
+        def select_next(
+            self,
+            *,
+            participant_ids: Sequence[str],
+            history: Sequence[Message],
+            turn_index: int,
+        ) -> str:
+            raise SelectorFailure("selection unavailable")
+
+    output_root = tmp_path / "outputs"
+    with pytest.raises(SelectorFailure, match="selection unavailable"):
+        run_service(
+            output_root,
+            run_id="failing_selector_run",
+            turn_count=1,
+            speaker_selector=FailingSelector(),
+        )
+
+    assert_no_completed_run(output_root)
 
 
 def test_unknown_participant_in_injected_catalog_fails_without_artifacts(

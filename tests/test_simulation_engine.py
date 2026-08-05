@@ -1,15 +1,17 @@
 """Tests for conversation simulation with participant-owned providers."""
 
 import socket
+from collections.abc import Sequence
 from dataclasses import replace
 from datetime import datetime, timezone
 
 import pytest
 from pydantic import ValidationError
 
-from multi_agent_personalities.models import Persona
+from multi_agent_personalities.models import Message, Persona
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
+    RoundRobinSelector,
     simulate_chat,
 )
 
@@ -25,6 +27,35 @@ class RecordingProvider:
     def generate(self, prompt: str, *, task_name: str) -> str:
         self.prompts.append(prompt)
         return self.response
+
+
+class SequenceSelector:
+    def __init__(self, selections: Sequence[str]) -> None:
+        self.selections = tuple(selections)
+
+    def select_next(
+        self,
+        *,
+        participant_ids: Sequence[str],
+        history: Sequence[Message],
+        turn_index: int,
+    ) -> str:
+        return self.selections[turn_index]
+
+
+class RecordingSelector:
+    def __init__(self) -> None:
+        self.calls: list[tuple[Sequence[str], Sequence[Message], int]] = []
+
+    def select_next(
+        self,
+        *,
+        participant_ids: Sequence[str],
+        history: Sequence[Message],
+        turn_index: int,
+    ) -> str:
+        self.calls.append((participant_ids, history, turn_index))
+        return participant_ids[turn_index % len(participant_ids)]
 
 
 def persona(character_id: str, name: str) -> Persona:
@@ -64,6 +95,7 @@ def simulate(
 ):
     arguments: dict[str, object] = dict(
         participants=participants,
+        speaker_selector=RoundRobinSelector(),
         topic="A locked-room mystery",
         turn_count=6,
         seed=42,
@@ -118,9 +150,102 @@ def test_three_participants_and_partial_round_have_exact_call_counts(
         "response-from-alpha", "response-from-beta", "response-from-gamma",
         "response-from-alpha", "response-from-beta",
     ]
-    call_counts = [len(item.provider.prompts) for item in participants]  # type: ignore[attr-defined]
+    call_counts = [
+        len(item.provider.prompts)  # type: ignore[attr-defined]
+        for item in participants
+    ]
     assert call_counts == [2, 2, 1]
     assert sum(call_counts) == run.turn_count == len(run.messages)
+
+
+def test_non_alternating_selector_controls_speakers_and_bound_providers(
+    participants: list[ConversationParticipant],
+) -> None:
+    selections = ["alpha", "alpha", "gamma", "beta", "gamma"]
+
+    run = simulate(
+        participants,
+        turn_count=5,
+        speaker_selector=SequenceSelector(selections),
+    )
+
+    assert run.character_ids == ("alpha", "beta", "gamma")
+    assert [message.speaker_character_id for message in run.messages] == selections
+    assert [message.text for message in run.messages] == [
+        f"response-from-{character_id}" for character_id in selections
+    ]
+    assert [message.turn_index for message in run.messages] == list(range(5))
+    call_counts = [len(item.provider.prompts) for item in participants]  # type: ignore[attr-defined]
+    assert call_counts == [2, 1, 2]
+    assert sum(call_counts) == len(run.messages)
+
+
+def test_selector_is_called_once_per_turn_with_read_only_complete_history(
+    participants: list[ConversationParticipant],
+) -> None:
+    selector = RecordingSelector()
+
+    run = simulate(
+        participants,
+        turn_count=5,
+        speaker_selector=selector,
+    )
+
+    assert len(selector.calls) == 5
+    assert [call[2] for call in selector.calls] == list(range(5))
+    assert all(
+        call[0] == ("alpha", "beta", "gamma")
+        for call in selector.calls
+    )
+    assert [len(call[1]) for call in selector.calls] == list(range(5))
+    assert all(isinstance(call[1], tuple) for call in selector.calls)
+    for turn_index, (_, history, _) in enumerate(selector.calls):
+        assert history == run.messages[:turn_index]
+
+
+def test_invalid_selector_result_fails_before_provider_call(
+    participants: list[ConversationParticipant],
+) -> None:
+    with pytest.raises(ValueError, match="unsupported participant identifier"):
+        simulate(
+            participants,
+            turn_count=1,
+            speaker_selector=SequenceSelector(["unknown-participant"]),
+        )
+
+    assert all(
+        not item.provider.prompts  # type: ignore[attr-defined]
+        for item in participants
+    )
+
+
+def test_selector_exception_propagates_before_provider_call(
+    participants: list[ConversationParticipant],
+) -> None:
+    class SelectorFailure(RuntimeError):
+        pass
+
+    class FailingSelector:
+        def select_next(
+            self,
+            *,
+            participant_ids: Sequence[str],
+            history: Sequence[Message],
+            turn_index: int,
+        ) -> str:
+            raise SelectorFailure("selection unavailable")
+
+    with pytest.raises(SelectorFailure, match="selection unavailable"):
+        simulate(
+            participants,
+            turn_count=1,
+            speaker_selector=FailingSelector(),
+        )
+
+    assert all(
+        not item.provider.prompts  # type: ignore[attr-defined]
+        for item in participants
+    )
 
 
 def test_every_turn_receives_complete_ordered_history(

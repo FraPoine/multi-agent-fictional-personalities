@@ -52,7 +52,8 @@ investigation.
   three-participant synthetic coverage at the application boundary.
 - The conversation UI renders participant choices from the catalog.
 - The public `SpeakerSelector` contract and stateless `RoundRobinSelector` are
-  implemented, but selector injection into `simulate_chat()` remains pending.
+  implemented. `simulate_chat()` requires a selector, and the application
+  service supplies `RoundRobinSelector` by default.
 - The CLI and local conversation UI reuse application/runtime logic.
 - Conversation persistence atomically writes `run.json`, `messages.jsonl`, and
   `transcript.md`.
@@ -76,11 +77,10 @@ investigation.
 | Task 4 — Make the conversation web UI data-driven | Completed | `f963673` |
 | Task 5 — Define `SpeakerSelector` and `RoundRobinSelector` | Completed | `5140ba8` |
 | Task 6 — Bind deterministic mock providers to participants | Completed | `a118ea7` |
+| Task 7 — Inject `SpeakerSelector` into the simulation engine | Implemented | Pending commit |
 
 ## Remaining work
 
-- Integrate `SpeakerSelector` into the simulation engine while preserving the
-  current round-robin behavior.
 - Introduce structured `GenerationResult` values and deterministic mock
   metadata.
 - Add investigation-domain models with valid partial states.
@@ -182,8 +182,10 @@ speaker order and fixture ownership are therefore independent. The cyclic
 
 Provider and model names must be uniform within one conversation so the
 unchanged `ConversationRun.provider` and `ConversationRun.model` fields remain
-unambiguous. The engine still selects with its inline round-robin expression;
-`SpeakerSelector` injection remains pending for Task 7.
+unambiguous. The engine delegates every turn to its required `SpeakerSelector`,
+resolves the validated character ID to the participant binding, and then uses
+that participant's provider. The application service explicitly constructs
+`RoundRobinSelector` for normal calls.
 
 ### Investigation domain
 

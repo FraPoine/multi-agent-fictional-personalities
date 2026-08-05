@@ -59,8 +59,8 @@ rendered-result path were implemented and verified in Sprint 4. Both delivery
 paths reuse the agent runtime, deterministic round-robin simulation, and atomic
 conversation persistence. A two-character mock evaluation builder, rater app,
 and analyzer are also implemented as technical tooling, not a scientific
-experiment. Selector abstractions and participant-bound mocks are implemented
-Sprint 5 work. Selector injection, structured generation results, and
+experiment. Selector abstractions, engine injection, and participant-bound
+mocks are implemented Sprint 5 work. Structured generation results and
 investigation models remain Sprint 5 targets; a dynamic manager and live
 provider remain later work.
 
@@ -209,8 +209,17 @@ The selector owns no response generation, prompt construction, provider calls,
 investigation reasoning, persistence, catalog loading, or conversation history.
 It can therefore be tested without fixtures or external services.
 
-Engine integration is intentionally still pending: `simulate_chat()` continues
-to use its existing inline modulo expression and does not yet accept a selector.
+`simulate_chat()` requires a `SpeakerSelector`. Before each turn it passes the
+configured participant IDs, zero-based turn index, and complete ordered history
+as a tuple to `select_valid_speaker()`. The validated character ID resolves to
+the corresponding `ConversationParticipant`, whose provider generates exactly
+one message. Selector validation errors and selector exceptions propagate
+before generation for that turn.
+
+The application service owns the normal default policy: it constructs
+`RoundRobinSelector` when callers do not inject a selector. CLI and web callers
+therefore retain deterministic round-robin behavior without exposing selector
+controls.
 
 A future `ConversationManager` may implement dynamic selection. Rule-based,
 LLM-based, content-dependent, priority-based, and investigation-specific
@@ -261,15 +270,13 @@ Fixture selection therefore cannot drift when a participant repeats, is
 skipped, or changes position. The call-counter-based
 `RoundRobinMockProvider` has been removed.
 
-`simulate_chat()` accepts the ordered participant bindings and invokes the
-provider owned by the participant selected with its existing inline modulo
-expression. All participants in one run must declare the same provider and
-model metadata, even though their provider objects are distinct. The validated
-uniform values populate the unchanged run-level and message-level fields;
-heterogeneous provider/model conversations remain future work.
-
-`SpeakerSelector` injection is still pending for Task 7. Task 6 does not call
-`select_valid_speaker()` or otherwise change the current turn order.
+`simulate_chat()` accepts the ordered participant bindings and resolves the
+selector's validated character ID through a lookup built once before the turn
+loop. It invokes the provider owned by that participant. All participants in
+one run must declare the same provider and model metadata, even though their
+provider objects are distinct. The validated uniform values populate the
+unchanged run-level and message-level fields; heterogeneous provider/model
+conversations remain future work.
 
 ## Sprint 5 investigation-domain target
 
@@ -517,6 +524,7 @@ def reply(
 def simulate_chat(
     *,
     participants: Sequence[ConversationParticipant],
+    speaker_selector: SpeakerSelector,
     topic: str,
     turn_count: int,
     seed: int,

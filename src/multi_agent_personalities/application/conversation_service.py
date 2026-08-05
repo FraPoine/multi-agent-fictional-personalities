@@ -17,6 +17,8 @@ from multi_agent_personalities.models import (
 from multi_agent_personalities.pipeline import character_registry
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
+    RoundRobinSelector,
+    SpeakerSelector,
     simulate_chat,
 )
 
@@ -122,6 +124,7 @@ def run_mock_conversation(
     character_slugs: Sequence[str],
     topic: str,
     turn_count: int,
+    speaker_selector: SpeakerSelector | None = None,
     seed: int = 42,
     output_root: Path = Path("outputs"),
     project_root: Path | None = None,
@@ -146,8 +149,14 @@ def run_mock_conversation(
         character_slugs,
         resolved_project_root,
     )
+    resolved_selector = (
+        RoundRobinSelector()
+        if speaker_selector is None
+        else speaker_selector
+    )
     run = simulate_chat(
         participants=participants,
+        speaker_selector=resolved_selector,
         topic=topic,
         turn_count=turn_count,
         seed=seed,

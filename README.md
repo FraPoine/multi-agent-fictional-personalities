@@ -74,9 +74,10 @@ cleanup rather than part of the catalog refactor.
 Sprint 5 has implemented the validated catalog, configurable participant
 application boundaries, a data-driven conversation UI, the standalone speaker-
 selector contract, and participant-bound deterministic mock providers. The
-engine still performs round-robin scheduling inline; selector integration is
-pending. Provider generation still returns plain text, so structured
-generation metadata is also pending.
+application service supplies `RoundRobinSelector` by default, while the engine
+requires a `SpeakerSelector` and resolves its validated character ID to the
+participant-owned provider. Provider generation still returns plain text, so
+structured generation metadata remains pending.
 
 ## Technical blind-evaluation pilot
 
@@ -245,8 +246,8 @@ critical-path tests reject attempted network access.
   claims.
 - The web interface is local and has no authentication, deployment, or run
   history browser.
-- Speaker scheduling is fixed round-robin. There is no dynamic conversation
-  manager or content-dependent speaker priority.
+- Normal application scheduling uses deterministic round-robin. There is no
+  dynamic conversation manager or content-dependent speaker priority.
 - There is no investigation workflow, session persistence, investigation UI,
   or playable investigation game.
 - Real token usage, latency, request IDs, retries, and monetary costs are not
@@ -256,11 +257,11 @@ critical-path tests reject attempted network access.
 
 Sprint 5 has delivered the catalog, N-participant application boundary, data-
 driven UI, selector contract, and participant-provider binding. Selector
-integration, structured generation metadata, investigation-domain models, and
-the final offline regression remain. Later work will integrate a real provider,
-select and implement characters three and four, fix and pre-register the final
-human versus LLM-judge methodology, collect experimental data, and run
-moderated investigation sessions.
+integration is now complete; structured generation metadata, investigation-
+domain models, and the final offline regression remain. Later work will
+integrate a real provider, select and implement characters three and four, fix
+and pre-register the final human versus LLM-judge methodology, collect
+experimental data, and run moderated investigation sessions.
 
 ## Repository structure
 

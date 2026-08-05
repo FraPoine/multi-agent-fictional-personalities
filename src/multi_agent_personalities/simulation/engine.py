@@ -1,4 +1,4 @@
-"""Round-robin conversation simulation engine."""
+"""Selector-driven conversation simulation engine."""
 
 from datetime import datetime, timezone
 from typing import Sequence
@@ -11,6 +11,10 @@ from multi_agent_personalities.simulation.participant import (
     ConversationParticipant,
     generate_participant_reply,
 )
+from multi_agent_personalities.simulation.speaker_selector import (
+    SpeakerSelector,
+    select_valid_speaker,
+)
 
 
 def _require_non_empty(value: str, field_name: str) -> None:
@@ -21,13 +25,14 @@ def _require_non_empty(value: str, field_name: str) -> None:
 def simulate_chat(
     *,
     participants: Sequence[ConversationParticipant],
+    speaker_selector: SpeakerSelector,
     topic: str,
     turn_count: int,
     seed: int,
     run_id: str | None = None,
     timestamp: datetime | None = None,
 ) -> ConversationRun:
-    """Generate a complete conversation using fixed round-robin speakers.
+    """Generate a complete conversation using an injected speaker selector.
 
     ``created_at`` marks the run start. Every message receives the same
     timestamp in this deterministic mock implementation; provider-specific
@@ -35,9 +40,14 @@ def simulate_chat(
     """
     if len(participants) < 2:
         raise ValueError("at least two participants are required")
-    character_ids = tuple(participant.character_id for participant in participants)
-    if len(character_ids) != len(set(character_ids)):
+    participant_ids = tuple(
+        participant.character_id for participant in participants
+    )
+    if len(participant_ids) != len(set(participant_ids)):
         raise ValueError("participants must have unique character_id values")
+    participant_by_id = {
+        participant.character_id: participant for participant in participants
+    }
     _require_non_empty(topic, "topic")
     if turn_count <= 0:
         raise ValueError("turn_count must be greater than zero")
@@ -60,7 +70,13 @@ def simulate_chat(
 
     history: list[Message] = []
     for turn_index in range(turn_count):
-        participant = participants[turn_index % len(participants)]
+        selected_character_id = select_valid_speaker(
+            speaker_selector,
+            participant_ids=participant_ids,
+            history=tuple(history),
+            turn_index=turn_index,
+        )
+        participant = participant_by_id[selected_character_id]
         history.append(
             generate_participant_reply(
                 participant=participant,
@@ -75,7 +91,7 @@ def simulate_chat(
     return ConversationRun(
         run_id=resolved_run_id,
         topic=topic,
-        character_ids=character_ids,
+        character_ids=participant_ids,
         turn_count=turn_count,
         seed=seed,
         provider=provider_name,
