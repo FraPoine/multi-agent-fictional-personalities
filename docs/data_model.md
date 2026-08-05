@@ -427,7 +427,38 @@ effective message model becomes the run model.
 - Each `Message` is produced by one `Agent`.
 - A `Message` can become the source for one or more `EvaluationTrial` records.
 
-## 7. EvaluationTrial
+## 7. Clue and EvidenceReference
+
+### Definition
+
+Immutable building blocks for information explicitly revealed by the game
+master:
+
+```text
+Clue
+├── clue_id
+├── text
+└── reveal_order
+
+EvidenceReference
+├── clue_id
+└── relation
+    ├── supports
+    ├── contradicts
+    └── context
+```
+
+`Clue.text` contains only revealed information, and `reveal_order` records its
+position in progressive disclosure. It contains no hidden information,
+deduction, interpretation, hypothesis, or confidence. Clue IDs are unique
+within a validated collection.
+
+`EvidenceReference` points to a clue through its stable ID rather than copying
+the clue text. Deductions, explanations, and agent interpretations belong to
+future investigation models. Investigation-session persistence, UI loading,
+and automatic clue disclosure are not implemented.
+
+## 8. EvaluationTrial
 
 ### Definition
 
@@ -462,7 +493,7 @@ The private record adds `correct_character_id`, `source_run_id`, and
 - Each `EvaluationTrial` is derived from one `Message`.
 - Each `EvaluationTrial` can have many `RaterResponse` records.
 
-## 8. RaterResponse
+## 9. RaterResponse
 
 ### Definition
 
@@ -494,7 +525,7 @@ Development-only: `synthetic_responses.jsonl`
 - Each `RaterResponse` belongs to one `EvaluationTrial`.
 - Each response is compared with the correct character label during analysis.
 
-## 9. RunLogRecord
+## 10. RunLogRecord
 
 ### Definition
 
