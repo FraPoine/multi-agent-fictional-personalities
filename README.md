@@ -259,12 +259,13 @@ critical-path tests reject attempted network access.
 ## Future work
 
 Sprint 5 has delivered the catalog, N-participant application boundary, data-
-driven UI, selector contract, and participant-provider binding. Selector
-integration is now complete; structured generation metadata, investigation-
-domain models, and the final offline regression remain. Later work will
-integrate a real provider, select and implement characters three and four, fix
-and pre-register the final human versus LLM-judge methodology, collect
-experimental data, and run moderated investigation sessions.
+driven UI, selector integration, participant-provider binding, and structured
+generation metadata propagation. Sprint 5 still requires investigation-domain
+models and the final offline regression. Later work will integrate a real
+provider, collect real token/latency/request metadata, optionally aggregate
+run-level observability, calculate cost, select and implement characters three
+and four, pre-register the final evaluation methodology, collect experimental
+data, and run moderated investigation sessions.
 
 ## Repository structure
 

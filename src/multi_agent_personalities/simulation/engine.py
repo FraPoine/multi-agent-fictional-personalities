@@ -88,14 +88,32 @@ def simulate_chat(
             )
         )
 
+    message_providers = {message.provider for message in history}
+    if len(message_providers) != 1:
+        raise ValueError("generated messages must use one uniform provider")
+    effective_provider = history[0].provider
+    if effective_provider != provider_name:
+        raise ValueError(
+            "generated message provider must match the declared provider"
+        )
+
+    message_models = {message.model for message in history}
+    if len(message_models) != 1:
+        raise ValueError("generated messages must use one uniform model")
+    effective_model = history[0].model
+    if model_name is not None and effective_model != model_name:
+        raise ValueError(
+            "generated message model must match the declared model"
+        )
+
     return ConversationRun(
         run_id=resolved_run_id,
         topic=topic,
         character_ids=participant_ids,
         turn_count=turn_count,
         seed=seed,
-        provider=provider_name,
-        model=model_name,
+        provider=effective_provider,
+        model=effective_model,
         created_at=created_at,
         status="completed",
         messages=tuple(history),

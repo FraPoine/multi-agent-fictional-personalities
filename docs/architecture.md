@@ -265,6 +265,14 @@ Real token counts, latency, request IDs, retry observations, and monetary costs
 are not collected in mock execution; live measurements and cost calculation
 are future work.
 
+Participant declarations provide the expected provider and optional configured
+model; generation metadata provides the reported values. Agent runtime resolves
+the effective message model, using configuration only when the provider omits
+a model. The engine derives one effective run-level provider/model from the
+generated messages and validates every message against it. Heterogeneous
+provider or model runs remain unsupported. Error-bearing legacy messages cannot
+carry successful generation metadata.
+
 ## Participant-owned provider bindings
 
 Task 6 implements immutable runtime-only `ConversationParticipant` bindings.

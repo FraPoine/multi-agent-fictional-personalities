@@ -96,6 +96,32 @@ def test_empty_text_with_error_is_accepted(valid_message: dict) -> None:
     message = Message.model_validate(valid_message)
 
     assert message.text == ""
+    assert message.generation_metadata is None
+
+
+def test_failed_message_with_explicit_null_metadata_is_accepted(
+    valid_message: dict,
+) -> None:
+    valid_message.update(
+        text="",
+        error="Provider request failed.",
+        generation_metadata=None,
+    )
+    message = Message.model_validate(valid_message)
+    assert message.error == "Provider request failed."
+    assert message.generation_metadata is None
+
+
+def test_failed_message_with_success_metadata_is_rejected(
+    valid_message: dict,
+) -> None:
+    valid_message.update(
+        text="",
+        error="Provider request failed.",
+        generation_metadata=GenerationMetadata(provider="mock"),
+    )
+    with pytest.raises(ValidationError, match="failed messages must not contain"):
+        Message.model_validate(valid_message)
 
 
 def test_complete_generation_metadata_is_preserved_and_round_trips(

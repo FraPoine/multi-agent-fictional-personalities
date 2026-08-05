@@ -179,6 +179,48 @@ def test_message_from_another_run_is_rejected(valid_conversation: dict) -> None:
         ConversationRun.model_validate(valid_conversation)
 
 
+def test_message_provider_must_match_run_provider(
+    valid_conversation: dict,
+) -> None:
+    valid_conversation["messages"][0]["provider"] = "another-provider"
+    with pytest.raises(ValidationError, match="conversation provider"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+@pytest.mark.parametrize(
+    ("run_model", "message_model"),
+    [
+        ("model-a", "model-b"),
+        (None, "model-a"),
+        ("model-a", None),
+    ],
+)
+def test_message_model_must_match_run_model(
+    valid_conversation: dict,
+    run_model: str | None,
+    message_model: str | None,
+) -> None:
+    valid_conversation["model"] = run_model
+    valid_conversation["messages"][0]["model"] = message_model
+    valid_conversation["messages"][1]["model"] = run_model
+    with pytest.raises(ValidationError, match="conversation model"):
+        ConversationRun.model_validate(valid_conversation)
+
+
+def test_failed_legacy_run_with_coherent_error_message_is_valid(
+    valid_conversation: dict,
+) -> None:
+    failed_message = make_message()
+    failed_message.update(text="", error="provider unavailable")
+    valid_conversation.update(
+        status="failed",
+        messages=[failed_message],
+    )
+    conversation = ConversationRun.model_validate(valid_conversation)
+    assert conversation.messages[0].generation_metadata is None
+    assert conversation.messages[0].error == "provider unavailable"
+
+
 def test_duplicate_message_turn_indexes_are_rejected(
     valid_conversation: dict,
 ) -> None:

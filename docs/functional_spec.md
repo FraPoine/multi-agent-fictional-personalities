@@ -167,10 +167,11 @@ The system instantiates one LLM agent from each persona profile.
 - one generated message;
 - metadata about the generation call.
 
-The current provider contract returns plain text. Sprint 5 will target a
-successful `GenerationResult` containing required text and deterministic
-structured metadata. Provider failures continue to propagate as exceptions,
-not as a nullable error inside a success result.
+`LLMProvider.generate()` returns a successful `GenerationResult` containing
+required text and structured metadata. Persona extraction consumes
+`result.text`; agent runtime stores the text and metadata in `Message` while
+validating provider/model consistency. Provider failures continue to propagate
+as exceptions, not as a nullable error inside a success result.
 
 ### Acceptance criteria
 
@@ -185,10 +186,11 @@ not as a nullable error inside a success result.
 
 The system runs a group conversation between multiple persona-seeded agents.
 The current `simulate_chat()` boundary accepts a configurable ordered sequence
-of at least two unique runtime participant bindings and schedules them
-deterministically in round-robin order. Each binding associates one persona
-with its own provider instance and uniform run-level provider/model metadata.
-Only Sherlock and Poirot have working runtime fixtures and interfaces.
+of at least two unique runtime participant bindings and an injected
+`SpeakerSelector`. Each binding associates one persona with its own provider
+instance and uniform declared provider/model metadata. The application service
+supplies `RoundRobinSelector` for normal deterministic execution. Only Sherlock
+and Poirot have working runtime fixtures and interfaces.
 
 ### Inputs
 
@@ -213,14 +215,15 @@ Only Sherlock and Poirot have working runtime fixtures and interfaces.
 - Each run has a unique run ID.
 - Every agent reply is logged.
 - Provider failures fail loudly rather than being silently ignored.
+- Run-level provider/model values match every generated message.
 - Speaker selection can be replaced without giving the selector ownership of
   response generation, prompts, history, investigation reasoning, or
   persistence.
 
-Sprint 5 will isolate current behavior behind `SpeakerSelector` and
+Sprint 5 isolates current behavior behind `SpeakerSelector` and
 `RoundRobinSelector`. A future `ConversationManager` may choose speakers
 dynamically, but rule-based, LLM-based, content-dependent, and investigation-
-specific scheduling are outside Sprint 5.
+specific scheduling remain outside Sprint 5.
 
 ## F6 — Evaluation trial generation
 

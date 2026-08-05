@@ -47,7 +47,9 @@ investigation.
 - `Message` and `ConversationRun` are immutable validated models.
 - Each complete run contains explicit, ordered per-run history.
 - `simulate_chat()` supports an ordered sequence of at least two unique runtime
-  participant bindings and directly schedules deterministic round-robin turns.
+  participant bindings and delegates speaker choice to an injected
+  `SpeakerSelector`; the application service supplies `RoundRobinSelector` for
+  normal execution.
 - The application service supports configurable participant sequences, with
   three-participant synthetic coverage at the application boundary.
 - The conversation UI renders participant choices from the catalog.
@@ -64,6 +66,8 @@ investigation.
   owns a distinct file-backed provider associated with its response fixture;
   new messages retain the complete result metadata while legacy messages remain
   readable without it.
+- Failed messages cannot carry successful generation metadata. Effective run-
+  level provider/model values must match every generated message.
 - `ConversationParticipant` is an immutable runtime binding, and the former
   call-counter-based `RoundRobinMockProvider` has been removed.
 - No live provider, dynamic manager, investigation domain or workflow, third
@@ -82,7 +86,8 @@ investigation.
 | Task 7 — Inject `SpeakerSelector` into the simulation engine | Completed | `1477dfb` |
 | Task 8 — Define structured generation-result schemas | Completed | `8ff99c6` |
 | Task 9 — Migrate provider contract and local mocks | Completed | `86d5936` |
-| Task 10 — Propagate generation metadata into messages | Implemented | Pending commit |
+| Task 10 — Propagate generation metadata into messages | Completed | `ce5f76a` |
+| Maintenance — Enforce run/message metadata consistency | Implemented | Pending commit |
 
 ## Remaining work
 
@@ -184,10 +189,12 @@ speaker order and fixture ownership are therefore independent. The cyclic
 `RoundRobinMockProvider` and its global call counter have been removed.
 
 Provider and model names must be uniform within one conversation so the
-unchanged `ConversationRun.provider` and `ConversationRun.model` fields remain
-unambiguous. The engine delegates every turn to its required `SpeakerSelector`,
-resolves the validated character ID to the participant binding, and then uses
-that participant's provider. The application service explicitly constructs
+participant declarations remain unambiguous. The engine delegates every turn
+to its required `SpeakerSelector`, resolves the validated character ID to the
+participant binding, and then uses that participant's provider. After
+generation it derives one effective provider/model from the messages and
+rejects divergence. A configured model remains the fallback only when provider
+metadata omits it. The application service explicitly constructs
 `RoundRobinSelector` for normal calls.
 
 ### Investigation domain

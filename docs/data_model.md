@@ -404,6 +404,14 @@ does not construct an error message after failure. New `run.json` and
 `messages.jsonl` records include nested metadata automatically, while
 `transcript.md` remains human-readable and does not print it.
 
+An error-bearing message is a failed legacy record and must not contain
+successful `generation_metadata`. For every message stored in a
+`ConversationRun`, the top-level provider and model must equal the run-level
+provider and model. Participant declarations provide the expected provider and
+configured model; provider metadata provides reported values. A configured
+model is used only as a fallback when metadata omits the model, and the uniform
+effective message model becomes the run model.
+
 ### Relationships
 
 - Each `Message` belongs to one `ConversationRun`.

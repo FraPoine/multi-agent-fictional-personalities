@@ -12,7 +12,7 @@ NOW = datetime(2026, 8, 4, tzinfo=timezone.utc)
 
 def run_with_texts(run_id: str, texts: list[tuple[str, str]]) -> ConversationRun:
     messages = tuple(Message(message_id=f"{run_id}_message_{i}", run_id=run_id, turn_index=i, speaker_character_id=character, speaker_name="Hidden Name", text=text, provider="mock", model="mock", timestamp=NOW) for i, (character, text) in enumerate(texts))
-    return ConversationRun(run_id=run_id, topic="Neutral topic", character_ids=("sherlock_holmes", "hercule_poirot"), turn_count=len(messages), seed=42, provider="mock", created_at=NOW, status="completed", messages=messages)
+    return ConversationRun(run_id=run_id, topic="Neutral topic", character_ids=("sherlock_holmes", "hercule_poirot"), turn_count=len(messages), seed=42, provider="mock", model="mock", created_at=NOW, status="completed", messages=messages)
 
 
 def test_trials_are_balanced_stable_and_deterministic() -> None:

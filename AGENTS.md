@@ -56,12 +56,12 @@ runtime character, real investigation game, or final human/LLM-judge study.
 
 Sprint 5 remains fully offline and requires no provider account, API key,
 network access, real token/cost data, genuine rater response, or real game.
-It will generalize application/configuration boundaries for a configurable
-number of participants, isolate speaker choice behind a `SpeakerSelector`
-contract while preserving deterministic `RoundRobinSelector` behavior,
-introduce structured successful generation results with deterministic mock
-metadata, model investigation-domain entities and partial session states, and
-finish with a complete offline regression.
+It has generalized application/configuration boundaries for configurable
+participants, isolated speaker choice behind `SpeakerSelector` with default
+deterministic `RoundRobinSelector` behavior, and introduced structured
+successful generation metadata with runtime/message propagation. Remaining
+Sprint 5 work models investigation-domain entities and partial session states,
+then finishes with a complete offline regression.
 
 The practical conversation-engine boundary may remain `simulate_chat()`; no
 concrete `ConversationEngine` class is currently implemented or mandated.

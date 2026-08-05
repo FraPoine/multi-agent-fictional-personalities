@@ -25,15 +25,26 @@ FIXED_TIME = datetime(2026, 8, 3, 12, 0, tzinfo=timezone.utc)
 
 
 class RecordingProvider:
-    def __init__(self, response: str) -> None:
+    def __init__(
+        self,
+        response: str,
+        *,
+        provider_name: str = "recording",
+        model_name: str | None = None,
+    ) -> None:
         self.response = response
+        self.provider_name = provider_name
+        self.model_name = model_name
         self.prompts: list[str] = []
 
     def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.prompts.append(prompt)
         return GenerationResult(
             text=self.response,
-            metadata=GenerationMetadata(provider="recording"),
+            metadata=GenerationMetadata(
+                provider=self.provider_name,
+                model=self.model_name,
+            ),
         )
 
 
@@ -291,6 +302,89 @@ def test_completed_run_and_messages_have_consistent_metadata(
     assert run.created_at == FIXED_TIME
     assert [message.run_id for message in run.messages] == ["run_fixed"] * 4
     assert [message.turn_index for message in run.messages] == list(range(4))
+    assert all(message.provider == run.provider for message in run.messages)
+    assert all(message.model == run.model for message in run.messages)
+    assert all(
+        message.generation_metadata is not None
+        and message.generation_metadata.model is None
+        for message in run.messages
+    )
+
+
+def test_uniform_reported_model_becomes_effective_run_model(
+    participants: list[ConversationParticipant],
+) -> None:
+    selected = [
+        replace(
+            item,
+            provider=RecordingProvider(
+                f"response-from-{item.character_id}",
+                model_name="reported-model",
+            ),
+            model_name=None,
+        )
+        for item in participants[:2]
+    ]
+
+    run = simulate(selected, turn_count=4)
+
+    assert run.model == "reported-model"
+    assert all(message.model == "reported-model" for message in run.messages)
+    assert all(
+        message.generation_metadata is not None
+        and message.generation_metadata.model == "reported-model"
+        for message in run.messages
+    )
+
+
+def test_no_reported_or_configured_model_keeps_run_model_absent(
+    participants: list[ConversationParticipant],
+) -> None:
+    selected = [replace(item, model_name=None) for item in participants[:2]]
+    run = simulate(selected, turn_count=2)
+    assert run.model is None
+    assert all(message.model is None for message in run.messages)
+
+
+def test_differing_reported_models_fail_after_selected_provider_calls(
+    participants: list[ConversationParticipant],
+) -> None:
+    selected = [
+        replace(
+            participants[0],
+            provider=RecordingProvider("alpha", model_name="model-a"),
+            model_name=None,
+        ),
+        replace(
+            participants[1],
+            provider=RecordingProvider("beta", model_name="model-b"),
+            model_name=None,
+        ),
+    ]
+
+    with pytest.raises(ValueError, match="one uniform model"):
+        simulate(selected, turn_count=2)
+
+    assert [len(item.provider.prompts) for item in selected] == [1, 1]  # type: ignore[attr-defined]
+
+
+def test_reported_provider_mismatch_prevents_completed_run(
+    participants: list[ConversationParticipant],
+) -> None:
+    selected = [
+        replace(
+            participants[0],
+            provider=RecordingProvider(
+                "alpha",
+                provider_name="unexpected-provider",
+            ),
+        ),
+        participants[1],
+    ]
+    with pytest.raises(ValueError, match="declared provider does not match"):
+        simulate(selected, turn_count=2)
+    assert len(selected[0].provider.prompts) == 1  # type: ignore[attr-defined]
+    assert len(selected[1].provider.prompts) == 0  # type: ignore[attr-defined]
 
 
 def test_result_and_contained_messages_are_immutable(

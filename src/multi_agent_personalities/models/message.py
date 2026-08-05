@@ -62,6 +62,10 @@ class Message(BaseModel):
         """Validate successful text and compatibility metadata mirrors."""
         if self.error is None and not self.text.strip():
             raise ValueError("text must not be empty when error is None")
+        if self.error is not None and self.generation_metadata is not None:
+            raise ValueError(
+                "failed messages must not contain successful generation metadata"
+            )
         if self.generation_metadata is None:
             return self
         if self.provider != self.generation_metadata.provider:

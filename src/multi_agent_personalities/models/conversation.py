@@ -71,6 +71,12 @@ class ConversationRun(BaseModel):
         if any(message.run_id != self.run_id for message in self.messages):
             raise ValueError("all messages must belong to the conversation run_id")
 
+        if any(message.provider != self.provider for message in self.messages):
+            raise ValueError("all messages must match the conversation provider")
+
+        if any(message.model != self.model for message in self.messages):
+            raise ValueError("all messages must match the conversation model")
+
         turn_indexes = [message.turn_index for message in self.messages]
         if any(
             not 0 <= turn_index < self.turn_count
