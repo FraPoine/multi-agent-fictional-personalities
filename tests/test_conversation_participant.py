@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 from multi_agent_personalities.llm import MockProvider
-from multi_agent_personalities.models import Persona
+from multi_agent_personalities.models import GenerationResult, Persona
 from multi_agent_personalities.simulation.participant import (
     ConversationParticipant,
     generate_participant_reply,
@@ -77,7 +77,7 @@ class CountingMockProvider(MockProvider):
         super().__init__({"agent_reply": response_path})
         self.calls = 0
 
-    def generate(self, prompt: str, *, task_name: str) -> str:
+    def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.calls += 1
         return super().generate(prompt, task_name=task_name)
 

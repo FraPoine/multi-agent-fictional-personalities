@@ -287,11 +287,13 @@ status, cost, provider-SDK object, or provider-specific metadata field.
 Generation failures continue to be exceptions. No persisted total-token or
 cost field exists, and no pricing calculation is defined.
 
-Task 8 implements only these schemas and their validation. Current providers
-still return plain text, and no provider, `generate_reply()` runtime consumer,
-message, simulation, persistence, or evaluation path constructs or consumes a
-`GenerationResult` yet. Metadata collection and runtime propagation remain
-future work; `Message`, `ConversationRun`, and artifact schemas are unchanged.
+Task 8 implemented these schemas and validation. Task 9 migrates
+`LLMProvider.generate()` and the file-backed `MockProvider` to return
+`GenerationResult`. Mock metadata is deterministic: provider `mock`, no model
+or usage, finish reason `completed`, no request ID or latency, and retry count
+zero. Persona extraction and `generate_reply()` consume only `result.text`.
+Metadata propagation remains future work; `Message`, `ConversationRun`, and
+artifact schemas are unchanged.
 
 ## 5. ConversationRun
 

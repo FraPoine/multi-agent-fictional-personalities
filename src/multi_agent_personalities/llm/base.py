@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from multi_agent_personalities.models import GenerationResult
+
 
 class LLMProvider(Protocol):
     """Common interface for all LLM providers."""
@@ -9,6 +11,6 @@ class LLMProvider(Protocol):
         prompt: str,
         *,
         task_name: str,
-    ) -> str:
-        """Generate and return a textual response."""
+    ) -> GenerationResult:
+        """Generate and return one validated successful result."""
         ...

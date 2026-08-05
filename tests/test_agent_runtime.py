@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 import pytest
 
 from multi_agent_personalities.agent_runtime import generate_reply
+from multi_agent_personalities.models import GenerationMetadata, GenerationResult
 from multi_agent_personalities.models.message import Message
 from multi_agent_personalities.models.persona import Persona
 
@@ -15,13 +16,20 @@ FIXED_TIME = datetime(2026, 7, 30, 12, 0, tzinfo=timezone.utc)
 class SpyProvider:
     """Record deterministic provider calls for runtime assertions."""
 
-    def __init__(self, response: object = "The facts suggest one answer.") -> None:
+    def __init__(self, response: str = "The facts suggest one answer.") -> None:
         self.response = response
         self.calls: list[tuple[str, str]] = []
 
-    def generate(self, prompt: str, *, task_name: str) -> str:
+    def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.calls.append((prompt, task_name))
-        return self.response  # type: ignore[return-value]
+        return GenerationResult(
+            text=self.response,
+            metadata=GenerationMetadata(
+                provider="test-provider",
+                model="test-model",
+                finish_reason="completed",
+            ),
+        )
 
 
 @pytest.fixture
@@ -99,6 +107,8 @@ def test_valid_call_returns_expected_message_and_calls_provider_once(
     assert message.error is None
     assert len(provider.calls) == 1
     assert provider.calls[0][1] == "agent_reply"
+    assert message.provider != "test-provider"
+    assert message.model != "test-model"
 
 
 def test_prompt_contains_persona_topic_and_ordered_history(
@@ -286,22 +296,9 @@ def test_duplicate_history_turn_indexes_are_rejected(
         call_runtime(sherlock, provider, history=history, turn_index=1)
 
 
-@pytest.mark.parametrize("response", ["", " \n\t", None, 42])
-def test_invalid_provider_response_is_rejected(
-    sherlock: Persona,
-    response: object,
-) -> None:
-    provider = SpyProvider(response)
-
-    with pytest.raises(ValueError, match="non-empty string"):
-        call_runtime(sherlock, provider)
-
-    assert len(provider.calls) == 1
-
-
 def test_provider_exception_is_not_swallowed(sherlock: Persona) -> None:
     class FailingProvider:
-        def generate(self, prompt: str, *, task_name: str) -> str:
+        def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
             raise RuntimeError("provider unavailable")
 
     with pytest.raises(RuntimeError, match="provider unavailable"):

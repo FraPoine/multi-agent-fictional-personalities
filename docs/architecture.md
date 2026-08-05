@@ -122,10 +122,10 @@ Wrap LLM calls and produce one in-character reply at a time.
 
 ### Output
 
-- `Message`
-- currently, provider text incorporated into `Message` with top-level provider
-  and model fields;
-- in Sprint 5, a `GenerationResult` with structured metadata.
+- providers return a validated `GenerationResult`;
+- agent runtime consumes `result.text` to construct `Message` with the existing
+  top-level provider and model fields;
+- structured metadata propagation remains pending.
 
 ### Notes
 
@@ -227,8 +227,7 @@ selection are all outside Sprint 5.
 
 ## Sprint 5 generation-result target
 
-The current `LLMProvider.generate()` returns a string. Sprint 5 will introduce
-this conceptual success boundary:
+`LLMProvider.generate()` now returns this validated success boundary:
 
 ```text
 GenerationResult
@@ -252,9 +251,14 @@ Existing top-level `Message.provider` and `Message.model` fields may remain for
 compatibility when optional structured metadata is added. Any duplicated
 provider/model values must be validated for consistency.
 
-Sprint 5 mock metadata is deterministic. Real token counts, latency, request
-IDs, retry observations, and monetary costs are not collected in mock
-execution; live measurements and cost calculation are future work.
+The file-backed `MockProvider`, currently the only production provider, returns
+the exact file content with deterministic metadata: provider `mock`, no model
+or usage, finish reason `completed`, no request ID or latency, and retry count
+zero. Persona extraction and agent runtime consume `result.text`; they do not
+yet propagate metadata into `Persona`, `Message`, or artifacts. Provider and
+validation failures remain exceptions. Real token counts, latency, request IDs,
+retry observations, and monetary costs are not collected in mock execution;
+live measurements and cost calculation are future work.
 
 ## Participant-owned provider bindings
 

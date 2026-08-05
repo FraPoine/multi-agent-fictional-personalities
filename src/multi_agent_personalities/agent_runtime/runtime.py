@@ -117,14 +117,10 @@ def generate_reply(
         topic=topic,
         history=history,
     )
-    response = provider.generate(
+    result = provider.generate(
         resolved_prompt,
         task_name="agent_reply",
     )
-    if not isinstance(response, str) or not response.strip():
-        raise ValueError(
-            "provider response must be a non-empty string"
-        )
 
     return Message(
         message_id=f"{run_id}_message_{turn_index:04d}",
@@ -132,7 +128,7 @@ def generate_reply(
         turn_index=turn_index,
         speaker_character_id=persona.character_id,
         speaker_name=persona.display_name,
-        text=response,
+        text=result.text,
         provider=provider_name,
         model=model_name,
         timestamp=created_at,

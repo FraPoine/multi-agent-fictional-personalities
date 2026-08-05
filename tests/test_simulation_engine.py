@@ -8,7 +8,12 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
-from multi_agent_personalities.models import Message, Persona
+from multi_agent_personalities.models import (
+    GenerationMetadata,
+    GenerationResult,
+    Message,
+    Persona,
+)
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
     RoundRobinSelector,
@@ -24,9 +29,12 @@ class RecordingProvider:
         self.response = response
         self.prompts: list[str] = []
 
-    def generate(self, prompt: str, *, task_name: str) -> str:
+    def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.prompts.append(prompt)
-        return self.response
+        return GenerationResult(
+            text=self.response,
+            metadata=GenerationMetadata(provider="recording"),
+        )
 
 
 class SequenceSelector:
@@ -362,7 +370,7 @@ def test_provider_exception_is_propagated(
     participants: list[ConversationParticipant],
 ) -> None:
     class FailingProvider:
-        def generate(self, prompt: str, *, task_name: str) -> str:
+        def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
             raise RuntimeError("provider unavailable")
 
     selected = [

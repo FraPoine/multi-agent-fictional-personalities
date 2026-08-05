@@ -1,6 +1,11 @@
 from pathlib import Path
 from typing import Mapping
 
+from multi_agent_personalities.models import (
+    GenerationMetadata,
+    GenerationResult,
+)
+
 
 class MockProvider:
     """LLM provider that returns deterministic responses from local files."""
@@ -13,7 +18,7 @@ class MockProvider:
         prompt: str,
         *,
         task_name: str,
-    ) -> str:
+    ) -> GenerationResult:
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty")
 
@@ -29,4 +34,16 @@ class MockProvider:
                 f"Mock response file not found: {response_path}"
             )
 
-        return response_path.read_text(encoding="utf-8")
+        response_text = response_path.read_text(encoding="utf-8")
+        return GenerationResult(
+            text=response_text,
+            metadata=GenerationMetadata(
+                provider="mock",
+                model=None,
+                usage=None,
+                finish_reason="completed",
+                request_id=None,
+                latency_ms=None,
+                retry_count=0,
+            ),
+        )

@@ -60,8 +60,9 @@ investigation.
 - The two-character blind-evaluation pilot is technical, mock-only, and
   offline; it cannot establish recognizability.
 - Tests require no API key or network access.
-- Providers currently return plain text. Each mock participant owns a distinct
-  file-backed provider associated with its response fixture.
+- Providers return validated `GenerationResult` values. Each mock participant
+  owns a distinct file-backed provider associated with its response fixture;
+  immediate consumers use `result.text`, while propagation remains pending.
 - `ConversationParticipant` is an immutable runtime binding, and the former
   call-counter-based `RoundRobinMockProvider` has been removed.
 - No live provider, dynamic manager, investigation domain or workflow, third
@@ -78,12 +79,14 @@ investigation.
 | Task 5 — Define `SpeakerSelector` and `RoundRobinSelector` | Completed | `5140ba8` |
 | Task 6 — Bind deterministic mock providers to participants | Completed | `a118ea7` |
 | Task 7 — Inject `SpeakerSelector` into the simulation engine | Completed | `1477dfb` |
-| Task 8 — Define structured generation-result schemas | Implemented | Pending commit |
+| Task 8 — Define structured generation-result schemas | Completed | `8ff99c6` |
+| Task 9 — Migrate provider contract and local mocks | Implemented | Pending commit |
 
 ## Remaining work
 
-- Migrate providers and consumers to structured `GenerationResult` values and
-  propagate deterministic mock metadata. Task 8 defines the schemas only.
+- Propagate deterministic generation metadata into runtime messages and
+  artifacts while preserving compatibility. Task 9 migrates provider returns
+  and immediate text consumers only.
 - Add investigation-domain models with valid partial states.
 - Run the complete offline regression and reconcile final Sprint 5
   documentation.

@@ -9,6 +9,7 @@ import pytest
 
 import multi_agent_personalities.pipeline as pipeline_module
 from multi_agent_personalities.llm import MockProvider
+from multi_agent_personalities.models import GenerationResult
 from multi_agent_personalities.models.persona import Persona
 from multi_agent_personalities.pipeline import (
     default_pipeline_paths,
@@ -39,7 +40,7 @@ def test_mock_pipeline_runs_end_to_end_without_openai(
     provider_tasks: list[str] = []
 
     class TrackingMockProvider(MockProvider):
-        def generate(self, prompt: str, *, task_name: str) -> str:
+        def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
             provider_tasks.append(task_name)
             return super().generate(prompt, task_name=task_name)
 

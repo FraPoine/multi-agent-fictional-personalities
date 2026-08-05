@@ -76,8 +76,10 @@ application boundaries, a data-driven conversation UI, the standalone speaker-
 selector contract, and participant-bound deterministic mock providers. The
 application service supplies `RoundRobinSelector` by default, while the engine
 requires a `SpeakerSelector` and resolves its validated character ID to the
-participant-owned provider. Provider generation still returns plain text, so
-structured generation metadata remains pending.
+participant-owned provider. The provider boundary now returns validated
+`GenerationResult` values with deterministic mock metadata. Persona extraction
+and agent runtime consume only `result.text`; metadata propagation into messages
+and artifacts remains pending.
 
 ## Technical blind-evaluation pilot
 

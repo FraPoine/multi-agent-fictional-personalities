@@ -11,7 +11,13 @@ from pydantic import ValidationError
 
 import multi_agent_personalities.artifacts.conversation_writer as writer_module
 from multi_agent_personalities.artifacts import save_conversation_run
-from multi_agent_personalities.models import ConversationRun, Message, Persona
+from multi_agent_personalities.models import (
+    ConversationRun,
+    GenerationMetadata,
+    GenerationResult,
+    Message,
+    Persona,
+)
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
     RoundRobinSelector,
@@ -26,8 +32,11 @@ class LocalProvider:
     def __init__(self, response: str) -> None:
         self.response = response
 
-    def generate(self, prompt: str, *, task_name: str) -> str:
-        return self.response
+    def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
+        return GenerationResult(
+            text=self.response,
+            metadata=GenerationMetadata(provider="mock"),
+        )
 
 
 def make_persona(character_id: str, display_name: str) -> Persona:

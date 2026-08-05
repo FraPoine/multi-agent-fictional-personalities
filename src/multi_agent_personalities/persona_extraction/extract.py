@@ -10,9 +10,9 @@ def extract_persona(
 ) -> Persona:
     """Generate and validate a persona from a persona-extraction prompt."""
 
-    raw_output = provider.generate(
+    result = provider.generate(
         prompt,
         task_name="persona_extraction",
     )
 
-    return Persona.model_validate_json(raw_output)
+    return Persona.model_validate_json(result.text)
