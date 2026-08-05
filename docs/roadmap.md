@@ -36,14 +36,36 @@ Poirot.
 
 ## Sprint 5
 
-- Implemented only the mock technical foundation: balanced trial generation,
-  leakage filtering, a separate rater-interface dry run, response persistence,
-  synthetic development checks, and basic analysis.
-- Sprint 5 is not complete. Live-provider generation, diverse real outputs,
-  measured token/cost usage, genuine human responses, and the controlled
-  Sherlock/Poirot pilot remain pending. See the [Sprint 5 plan](sprint_5_plan.md).
+- Realign the two final goals and active documentation.
+- Generalize configuration and application boundaries for a configurable
+  participant sequence of at least two, without adding a character.
+- Isolate deterministic round-robin speaker choice behind `SpeakerSelector`
+  and `RoundRobinSelector`; leave a dynamic manager for later.
+- Introduce `GenerationResult` and deterministic offline generation metadata.
+- Model investigation sessions, clues, analyses, evidence, hypotheses,
+  decisions, final theories, and partial session states without orchestration.
+- Finish with a complete offline regression. See the
+  [Sprint 5 plan](sprint_5_plan.md).
+
+The previously implemented two-character mock pilot remains technical
+foundation. Sprint 5 requires no API key, network access, live provider, real
+token/cost collection, genuine human response, LLM-judge panel, real pilot, or
+real investigation game.
+
+## Later provider and experimental work
+
+- Integrate and verify a real configurable LLM provider.
+- Collect real provider metadata and add cost calculation where supported.
+- Finalize and implement characters three and four.
+- Pre-register the final human-versus-LLM-judge methodology, sample size,
+  candidate design, chance baseline, and analysis.
+- Generate real experimental material, collect the chosen ratings, and report
+  scientifically interpretable recognizability results.
+- Implement investigation orchestration and persistence, then run moderated
+  real investigation sessions.
 
 ## Presentation sprint
 
-Run and report the full four-character human evaluation, including confidence
-intervals, limitations, and the final presentation.
+Run and report the pre-registered four-character evaluation using the selected
+rater methodology, including confidence intervals, limitations, and the final
+presentation.

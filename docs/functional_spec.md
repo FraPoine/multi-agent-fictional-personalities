@@ -4,14 +4,19 @@
 
 This document describes what the system should do from the point of view of its users.
 
-The system supports the creation, simulation, and evaluation of persona-seeded fictional-character agents.
+The system supports the creation, simulation, and blind recognizability
+evaluation of persona-seeded fictional-character agents. It also plans a
+user-moderated *Sherlock Holmes: Consulting Detective* capability in which the
+project user controls case information. Recognizability is the primary
+quantitative experiment; investigation behavior is secondary and exploratory.
 
 This is an individual Track B project. The CLI is the first implemented
 interface and remains supported. Sprint 4 completed an additional minimal local
 FastAPI/Jinja web interface that uses the same conversation functionality and
 is mock-only.
-The initial MVB exposes Sherlock Holmes and Hercule Poirot; L and Professor
-Layton are later extensions.
+The working runtime exposes only Sherlock Holmes and Hercule Poirot. The final
+study aims for four characters, but characters three and four are not finalized
+or implemented. L and Professor Layton are historical candidates.
 
 ## User types
 
@@ -31,6 +36,8 @@ The project user needs to:
 - inspect transcripts and logs;
 - export evaluation trials;
 - analyze results.
+- act as investigation game master by supplying an introduction and revealing
+  clues progressively in future investigation sessions.
 
 ### 2. Rater
 
@@ -160,6 +167,11 @@ The system instantiates one LLM agent from each persona profile.
 - one generated message;
 - metadata about the generation call.
 
+The current provider contract returns plain text. Sprint 5 will target a
+successful `GenerationResult` containing required text and deterministic
+structured metadata. Provider failures continue to propagate as exceptions,
+not as a nullable error inside a success result.
+
 ### Acceptance criteria
 
 - The agent reply function has a clear input/output interface.
@@ -172,6 +184,10 @@ The system instantiates one LLM agent from each persona profile.
 ### Description
 
 The system runs a group conversation between multiple persona-seeded agents.
+The current `simulate_chat()` boundary accepts a configurable ordered sequence
+of at least two unique personas and schedules them deterministically in
+round-robin order. Only Sherlock and Poirot have working runtime fixtures and
+interfaces.
 
 ### Inputs
 
@@ -195,7 +211,15 @@ The system runs a group conversation between multiple persona-seeded agents.
 - Each message has a speaker, turn index, and text.
 - Each run has a unique run ID.
 - Every agent reply is logged.
-- Errors are stored in the log rather than silently ignored.
+- Provider failures fail loudly rather than being silently ignored.
+- Speaker selection can be replaced without giving the selector ownership of
+  response generation, prompts, history, investigation reasoning, or
+  persistence.
+
+Sprint 5 will isolate current behavior behind `SpeakerSelector` and
+`RoundRobinSelector`. A future `ConversationManager` may choose speakers
+dynamically, but rule-based, LLM-based, content-dependent, and investigation-
+specific scheduling are outside Sprint 5.
 
 ## F6 — Evaluation trial generation
 
@@ -285,7 +309,7 @@ separate from the Sprint 4 conversation UI and is not a scientific evaluation.
 
 A completed local web interface exposes the existing deterministic mock
 multi-agent simulation to a project user. It is an additional interface and
-does not replace the existing CLI or the separate future blind-rater
+does not replace the existing CLI or the separate technical-pilot blind-rater
 interface.
 
 ### Inputs
@@ -336,6 +360,35 @@ and must be documented and applied consistently when selected.
 - No API key or network access is required.
 - The existing CLI continues to work.
 
+## F10 — Moderated investigation domain (future)
+
+### Description
+
+The future system will support a game of *Sherlock Holmes: Consulting
+Detective*. The project user is the game master: they manually provide the case
+introduction, progressively reveal clues, control their order, and prevent
+agents from accessing unrevealed material.
+
+Sprint 5 models the domain and partial session states only. It does not
+implement the investigation loop, investigation persistence, scheduling,
+reasoning prompts, UI, or a playable game.
+
+### Future inputs and records
+
+- case introduction and ordered revealed clues;
+- individual analyses separating facts and deductions;
+- evidence references and supporting or contradicting evidence;
+- active and discarded hypotheses;
+- proposed next leads;
+- group decisions;
+- final theory and session status.
+
+Conceptual entities include `InvestigationSession`, `Clue`,
+`EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
+`FinalTheory`. Partial states similar to `setup`, `active`, `ready_for_final`,
+`completed`, and `abandoned` must be representable. Only a completed session
+requires a final theory.
+
 ## Non-functional requirements
 
 ## Reproducibility
@@ -351,6 +404,10 @@ Every run should include:
 - outputs;
 - errors.
 
+Real token counts, latency, request IDs, retry observations, and cost are not
+currently collected. Sprint 5 mock metadata must remain deterministic; cost
+calculation and real provider observability are future work.
+
 ## Modularity
 
 The project should keep separate modules for:
@@ -362,6 +419,7 @@ The project should keep separate modules for:
 - evaluation;
 - logging;
 - analysis.
+- investigation-domain models (planned in Sprint 5, without orchestration).
 
 ## Prompt versioning
 
@@ -384,6 +442,10 @@ The system should:
 - log malformed outputs;
 - validate structured JSON outputs.
 
+Sprint 5 does not introduce real API calls or retries. Its planned successful
+generation result has no nullable `error`; a separate failure entity may be
+added later if persistent failure records become necessary.
+
 ## Usability
 
 The existing CLI supports configuring and saving local deterministic mock
@@ -396,9 +458,9 @@ The implemented page distinguishes empty, loading, completed, and error states.
 It does not require a dashboard, authentication, database, history browser,
 evaluation statistics, or live-provider configuration.
 
-The future rater interface remains separate: it will present anonymized
-evaluation trials and collect guesses without exposing ground truth. It is not
-the Sprint 4 conversation UI.
+The implemented technical-pilot rater interface remains separate: it presents
+anonymized mock evaluation trials and collects local responses without exposing
+ground truth. It is not the Sprint 4 conversation UI or a final experiment.
 
 ## Security and ethics
 
@@ -406,4 +468,7 @@ The project should avoid private personal data unless explicit consent and cours
 
 ## Memory and scheduling
 
-Agents use explicit per-run conversation history as working memory and no persistent memory. Multi-agent simulation uses deterministic round-robin turn taking in the first implementation.
+Agents use explicit complete per-run conversation history as working memory and
+no persistent memory. Multi-agent simulation currently uses deterministic
+round-robin turn taking. Sprint 5 will preserve that behavior behind a
+replaceable selector; the future dynamic manager is not part of the sprint.

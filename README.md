@@ -2,14 +2,17 @@
 
 ## Project summary
 
-This project builds a multi-agent system that turns fictional characters into
-persona-seeded LLM agents, lets them interact in controlled group-chat
-simulations, and evaluates whether generated messages preserve recognizable
-character identity and group-level dynamics.
+This project builds fictional-detective agents for two connected goals. The
+primary quantitative goal is to test whether blind raters can attribute their
+generated messages to the intended character above chance. The second goal is
+to let the agents participate in a user-moderated game of *Sherlock Holmes:
+Consulting Detective*, providing a structured setting for individual behavior
+and qualitative or exploratory group-dynamics observations.
 
 The project does not try to prove that an LLM "is" a character. It studies
 whether conditioning an LLM on structured persona profiles produces outputs
-that human raters can identify above chance.
+that blind raters can identify above chance. It does not claim that a model
+authentically is, understands, or reproduces a fictional character's identity.
 
 **Profile:** Individual Track B, mixed project.
 
@@ -17,11 +20,11 @@ The project has two distinct parts:
 
 - a build component for persona extraction, conversation simulation, logging,
   web and CLI interaction, and evaluation tooling;
-- a study component for controlled human evaluation of persona recognizability
-  and agent behavior.
+- a study component for controlled blind evaluation of persona recognizability
+  and secondary investigation-session observations.
 
 The currently implemented work mostly covers the build and local
-reproducibility components. The human study has not been completed.
+reproducibility components. The final study has not been completed.
 
 ## Current implementation status
 
@@ -52,8 +55,14 @@ they do not demonstrate real LLM persona quality or validate character
 recognizability. OpenAI-backed conversation execution is not implemented or
 verified. A two-character technical mock pilot now exercises blind trial
 generation, local rating, response persistence, and analysis. It verifies the
-pipeline only; L, Professor Layton, and a scientifically interpretable human
-evaluation remain future work.
+pipeline only. The final study targets four characters, but characters three
+and four are not finalized or implemented; L and Professor Layton are previous
+candidates. A scientifically interpretable evaluation remains future work.
+
+Development follows an offline-first order: complete the technical mock
+foundation, integrate a real LLM provider later, then run experiments and real
+investigation sessions. Sprint 5 remains network-free and does not require an
+API key, genuine rater responses, or live-provider measurements.
 
 ## Technical blind-evaluation pilot
 
@@ -211,13 +220,29 @@ critical-path tests reject attempted network access.
 - Conversation execution currently supports only the local `mock` provider.
 - Synthetic fixtures do not establish persona quality or recognizability.
 - OpenAI-backed conversation execution is not implemented or verified.
-- L and Professor Layton are not yet supported by the working conversation
-  interfaces.
+- Only Sherlock Holmes and Hercule Poirot are supported by the working runtime;
+  the third and fourth final characters remain undecided.
 - The technical mock pilot cannot establish persona recognizability or support
-  scientific conclusions; a real provider and genuine human responses are
-  required before making persona-quality claims.
+  scientific conclusions; real-provider outputs and responses from the
+  pre-registered rater methodology are required before making persona-quality
+  claims.
 - The web interface is local and has no authentication, deployment, or run
   history browser.
+- Speaker scheduling is fixed round-robin. There is no dynamic conversation
+  manager or content-dependent speaker priority.
+- There is no investigation workflow, session persistence, investigation UI,
+  or playable investigation game.
+- Real token usage, latency, request IDs, retries, and monetary costs are not
+  collected.
+
+## Future work
+
+Sprint 5 prepares offline boundaries for configurable participant sequences,
+a replaceable speaker selector, structured generation metadata, and
+investigation-domain models. Later work will integrate a real provider, select
+and implement characters three and four, fix and pre-register the final human
+versus LLM-judge methodology, collect experimental data, and run moderated
+investigation sessions.
 
 ## Repository structure
 

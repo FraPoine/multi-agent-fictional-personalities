@@ -2,11 +2,32 @@
 
 ## Purpose
 
-This document defines how the project will measure whether persona-seeded LLM agents preserve recognizable fictional-character identity.
+This document defines how the project will measure whether blind raters can
+recognize persona-seeded fictional-character outputs. Recognizability is the
+primary quantitative question; the project does not test authentic character
+identity or understanding.
 
 The evaluation is designed before the main experiment to avoid changing metrics after seeing results.
 
-The final experiment evaluates Sherlock Holmes, Hercule Poirot, L, and Professor Layton. The initial Sherlock/Poirot pilot is a development check for the pipeline and must be reported separately.
+The final experiment aims to evaluate four characters. Sherlock Holmes and
+Hercule Poirot are the only currently supported characters; characters three
+and four are not finalized or implemented. L and Professor Layton were earlier
+candidates. The implemented Sherlock/Poirot mock pilot is a development check
+and must be reported separately.
+
+## Unresolved final rater methodology
+
+The final rater design has not yet been selected. Human blind evaluation
+remains the preferred direct interpretation of recognizability. An LLM-as-judge
+panel is a possible course-aligned or feasibility alternative, but it introduces
+shared-model, training-data, and correlated-judgment biases.
+
+Before main data collection, the project will pre-register the choice of human
+raters, LLM judges, or a predefined combination; the finalized characters and
+candidate presentation; sample size; chance baseline; primary metric; and
+analysis plan. Technical-pilot, human, and LLM-judge results will not be pooled
+unless that combination is specified in advance. This decision is future
+experimental work and is not part of Sprint 5.
 
 ## Implemented technical pilot
 
@@ -29,11 +50,13 @@ response-source option.
 
 ## Primary research question
 
-Can human raters identify which fictional character generated a message produced by a persona-seeded LLM agent?
+Can blind raters identify which fictional character generated a message
+produced by a persona-seeded LLM agent?
 
 ## Primary hypothesis
 
-Persona-seeded LLM agents based on 4 fictional characters will be identifiable by blind human raters at above-chance accuracy.
+Persona-seeded LLM agents based on four finalized fictional characters will be
+identifiable by blind raters at above-chance accuracy.
 
 Since the study uses 4 personas, chance accuracy is:
 
@@ -51,7 +74,7 @@ accuracy = number of correct rater guesses / total number of rater guesses
 
 Chance accuracy depends on the number of candidate characters.
 
-For the initial 4-character setup:
+For a four-choice setup, subject to final pre-registration:
 
 ```txt
 chance accuracy = 1 / 4 = 25%
@@ -106,12 +129,12 @@ They choose exactly one character.
 
 ## Candidate characters
 
-Final experiment:
+Final experiment target:
 
 1. Sherlock Holmes
 2. Hercule Poirot
-3. L
-4. Professor Layton
+3. character to be finalized
+4. character to be finalized
 
 The initial development pilot includes only Sherlock Holmes and Hercule Poirot. Its chance accuracy is 1 / 2 = 50%; it is not evidence for the final four-persona hypothesis.
 
@@ -137,7 +160,7 @@ For the development pilot:
 - 50% chance baseline;
 - goal: test whether the pipeline and evaluation materials work, not draw final conclusions.
 
-For the main small study:
+For the main small study, provisional until pre-registration:
 
 - 4 characters;
 - 5–10 messages per character;
@@ -307,11 +330,21 @@ The project uses fictional characters in the first version to reduce privacy and
 
 The report should avoid claiming that the system captures real personality, consciousness, or authentic identity. The project only evaluates recognizability under controlled conditions.
 
+## Investigation observations
+
+Future moderated investigation sessions may provide qualitative or exploratory
+observations about clue analysis, fact/deduction separation, hypothesis
+revision, contradictions, lead proposals, and group decisions. They are a
+secondary use of the system and do not replace the blind attribution test.
+Investigation observations will not be pooled into the primary recognizability
+outcome.
+
 ## Pre-registration statement
 
 Before running the main evaluation, Francesco will record:
 
 - character set;
+- final rater methodology and judge-specific limitations;
 - number of trials;
 - rater recruitment plan;
 - primary metric;

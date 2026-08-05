@@ -4,15 +4,17 @@
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.
 
-The architecture is intentionally simple for Sprint 1. It should be updated whenever the implementation diverges from this design.
+This document distinguishes the implemented baseline, the Sprint 5 offline
+target, and later provider, experiment, and investigation work.
 
 The first delivered interface was the CLI. Sprint 4 completed an additional
 minimal local FastAPI/Jinja web interface over the same importable conversation
 logic. The currently
 implemented conversation provider is the network-free mock provider; live
-OpenAI-backed conversation execution remains future work. Provider and model
-selection remain behind configurable boundaries, Pydantic schemas validate
-structured boundaries, and JSONL is an execution-log format.
+provider execution remains future work. Pydantic schemas validate structured
+boundaries, and JSONL is an execution-log format. The repository is following
+an offline-first sequence: finish the technical mock foundation, integrate a
+real provider later, then run experiments and investigation sessions.
 
 ## High-level architecture
 
@@ -24,13 +26,17 @@ Character metadata → Corpus documents → Persona extraction → Persona profi
 Browser / web page → Web route or controller → Application service ← CLI
                                                                │
                                                                ▼
-                                                      Simulation engine
+                                            `simulate_chat()` engine boundary
+                                      Sprint 5: replaceable `SpeakerSelector`
+                                        (`RoundRobinSelector` preserves order)
+                              future: dynamic `ConversationManager` outside Sprint 5
                                                                │
                                                                ▼
                                                         Agent runtime
                                                                │
                                                                ▼
                                              Deterministic mock provider
+                                      Sprint 5: participant-owned responses
                                                                │
                                                                ▼
                                                  Conversation persistence
@@ -49,10 +55,13 @@ Browser / web page → Web route or controller → Application service ← CLI
 ```
 
 The browser, FastAPI route, framework-independent application service, and
-rendered-result path were implemented and verified in Sprint 4. Both the CLI
-and browser path reuse the agent runtime, deterministic round-robin simulation,
-and atomic conversation persistence for local mock conversations. Evaluation
-and analysis remain future components.
+rendered-result path were implemented and verified in Sprint 4. Both delivery
+paths reuse the agent runtime, deterministic round-robin simulation, and atomic
+conversation persistence. A two-character mock evaluation builder, rater app,
+and analyzer are also implemented as technical tooling, not a scientific
+experiment. Selector abstractions, structured generation results,
+participant-bound mocks, and investigation models are Sprint 5 targets; a
+dynamic manager and live provider remain later work.
 
 ## Main components
 
@@ -113,7 +122,9 @@ Wrap LLM calls and produce one in-character reply at a time.
 ### Output
 
 - `Message`
-- structured generation metadata
+- currently, provider text incorporated into `Message` with top-level provider
+  and model fields;
+- in Sprint 5, a `GenerationResult` with structured metadata.
 
 ### Notes
 
@@ -162,6 +173,92 @@ round_robin
 ```
 
 Each agent speaks in a fixed order until the configured number of turns is reached.
+
+The existing `simulate_chat()` function is the practical conversation-engine
+boundary and already accepts an ordered sequence of at least two unique
+personas. No concrete `ConversationEngine` class exists, and Sprint 5 need not
+introduce one. Only Sherlock Holmes and Hercule Poirot have working runtime
+fixtures despite the simulation core's sequence support.
+
+## Sprint 5 speaker-selection target
+
+```text
+`simulate_chat()` engine boundary
+              │
+              ▼
+      `SpeakerSelector`
+          ├── `RoundRobinSelector`
+          └── future `ConversationManager`
+```
+
+`SpeakerSelector` will be the replaceable contract for choosing the next
+speaker. `RoundRobinSelector` will preserve current deterministic order for any
+configured participant sequence of at least two. The selector must not own
+response generation, prompt construction, investigation reasoning,
+persistence, or conversation history. The engine remains responsible for
+passing the complete ordered history.
+
+A future `ConversationManager` may implement dynamic selection. Rule-based,
+LLM-based, content-dependent, priority-based, and investigation-specific
+selection are all outside Sprint 5.
+
+## Sprint 5 generation-result target
+
+The current `LLMProvider.generate()` returns a string. Sprint 5 will introduce
+this conceptual success boundary:
+
+```text
+GenerationResult
+├── text: required
+└── metadata: GenerationMetadata
+    ├── provider: required
+    ├── model: optional
+    ├── usage: TokenUsage | None
+    │   ├── input_tokens: optional, non-negative
+    │   └── output_tokens: optional, non-negative
+    ├── finish_reason: optional
+    ├── request_id: optional
+    ├── latency_ms: optional, non-negative
+    └── retry_count: required, non-negative, default 0
+```
+
+`GenerationResult` represents success and therefore has no nullable `error`.
+Provider failures continue to fail loudly through exceptions; a separate
+failure entity can be added later if persistent failures become necessary.
+Existing top-level `Message.provider` and `Message.model` fields may remain for
+compatibility when optional structured metadata is added. Any duplicated
+provider/model values must be validated for consistency.
+
+Sprint 5 mock metadata is deterministic. Real token counts, latency, request
+IDs, retry observations, and monetary costs are not collected in mock
+execution; live measurements and cost calculation are future work.
+
+## Sprint 5 mock-provider direction
+
+The current `RoundRobinMockProvider` advances one provider-wide call counter.
+This couples speaker order to fixture order. Sprint 5 must associate responses
+with the participant that owns them, so changing the selector cannot give
+Sherlock's fixture to Poirot or vice versa. Speaker order and fixture order are
+separate concerns.
+
+A participant may conceptually bind persona, provider, provider name, and model
+name, but `ConversationParticipant` is not an implemented or mandatory class
+name. Sprint 5 may choose a smaller compatible design while preserving these
+responsibility boundaries.
+
+## Sprint 5 investigation-domain target
+
+Sprint 5 will model, but not orchestrate, `InvestigationSession`, `Clue`,
+`EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
+`FinalTheory`. The domain must represent a manually supplied case introduction,
+progressively revealed clues and clue order, individual facts and deductions,
+evidence references, supporting and contradicting evidence, active and
+discarded hypotheses, proposed leads, group decisions, and a final theory.
+
+Sessions must allow partial state. Conceptual statuses are `setup`, `active`,
+`ready_for_final`, `completed`, and `abandoned`; only `completed` requires a
+final theory. Investigation orchestration, persistence, prompts, UI, scheduling,
+and a real game are future work.
 
 `ConversationRun.created_at` identifies the start of a run. Mock-generated
 messages share this timestamp to keep simulation deterministic; real-provider
@@ -423,15 +520,15 @@ def analyze_responses(
 
 Configuration should live under `configs/`.
 
-Example:
+Offline development example:
 
 ```yaml
 project:
   name: multi_agent_fictional_personalities
 
 model:
-  provider: openai
-  name: ${OPENAI_MODEL}
+  provider: mock
+  name: mock-round-robin
   temperature: 0.7
   max_output_tokens: 300
 
@@ -441,7 +538,7 @@ simulation:
   seed: 42
 
 evaluation:
-  characters_per_trial: 4
+  characters_per_trial: 2  # technical pilot only
   trials_per_character: 5
   collect_confidence: true
 
@@ -526,11 +623,14 @@ Tradeoff:
 
 Reason:
 - Sherlock and Poirot keep the first pipeline small;
-- L and Professor Layton extend the final experiment to four characters;
-- the final four-way chance baseline is 25%.
+- the final experiment still targets four characters;
+- characters three and four are not finalized; L and Professor Layton were
+  earlier candidates;
+- the final chance baseline depends on the pre-registered candidate design.
 
 Tradeoff:
-- the two-character development pilot has a 50% chance baseline and cannot be interpreted as the final experiment.
+- the two-character technical pilot has a 50% chance baseline and cannot be
+  interpreted as the final experiment.
 
 ## ADR-003 — Use one model in the first version
 
@@ -549,6 +649,7 @@ Reason:
 
 Tradeoff:
 - less natural than free-form conversation.
+- Sprint 5 introduces a selector contract without implementing dynamic choice.
 
 ## ADR-005 — No persistent memory
 

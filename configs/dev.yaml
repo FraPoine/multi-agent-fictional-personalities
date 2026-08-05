@@ -2,9 +2,9 @@ project:
   name: multi_agent_fictional_personalities
 
 model:
-  provider: openai
-  # Set this to an OpenAI model available to the development environment.
-  name: ${OPENAI_MODEL}
+  # Offline deterministic development default. Live providers are future work.
+  provider: mock
+  name: mock-round-robin
   temperature: 0.7
   max_output_tokens: 300
 
@@ -20,7 +20,8 @@ characters:
   initial_set:
     - sherlock_holmes
     - hercule_poirot
-  extension_set:
+  # Historical candidates only; the final third and fourth characters are TBD.
+  extension_candidates:
     - l
     - professor_layton
 

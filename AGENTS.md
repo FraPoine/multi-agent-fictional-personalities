@@ -6,15 +6,28 @@ Multi-Agent Fictional Personalities
 
 ## Purpose
 
-This repository contains a multi-agent LLM system for simulating fictional characters and evaluating whether generated agent behavior remains recognizable to human raters.
+This repository contains a multi-agent LLM system with two connected goals:
+evaluate whether fictional-detective agents are recognizable in blind
+attribution, and let those agents participate in a user-moderated game of
+*Sherlock Holmes: Consulting Detective*. Recognizability remains the primary
+quantitative experiment. The investigation is a second system capability and
+an environment for qualitative or exploratory observations, not a replacement
+scientific hypothesis.
 
-This is an individual Track B project with both a system-building component and a behavioral-evaluation component. The initial provider is OpenAI, with the exact model selected through configuration rather than source code. The first interface is a CLI.
+This is an individual Track B project with system-building and behavioral-
+evaluation components. It measures observable recognizability under controlled
+conditions; it does not claim that an LLM authentically is, understands, or
+reproduces a fictional character's identity. Development is offline-first:
+complete the deterministic technical foundation, integrate a real provider
+later, and run experiments and investigation sessions afterward.
 
 ## Scope and schedule
 
-- Final character set: Sherlock Holmes, Hercule Poirot, L, and Professor Layton.
-- Initial Minimum Viable Build (MVB): Sherlock Holmes and Hercule Poirot only.
-- L and Professor Layton are extensions after the initial pipeline works.
+- Currently supported runtime characters: Sherlock Holmes and Hercule Poirot.
+- Final evaluation target: four characters, with characters three and four not
+  yet finalized or implemented. L and Professor Layton were earlier candidates.
+- Future participant configuration must support two or more agents; Sprint 5
+  does not add a character.
 - Basic working-version target: August 7, 2026.
 - Final course deadline: September 2026
 
@@ -33,9 +46,32 @@ The verified Sprint 4 provider is `mock`, requires no API key or network
 access, and does not establish real LLM persona quality or recognizability.
 OpenAI-backed conversation execution was not part of Sprint 4.
 
+The repository also contains a technical, two-character, mock-only blind-
+evaluation pilot. It verifies tooling rather than persona recognizability and
+does not provide scientifically interpretable results. There is no dynamic
+conversation manager, investigation workflow or persistence, third or fourth
+runtime character, real investigation game, or final human/LLM-judge study.
+
+## Sprint 5 direction
+
+Sprint 5 remains fully offline and requires no provider account, API key,
+network access, real token/cost data, genuine rater response, or real game.
+It will generalize application/configuration boundaries for a configurable
+number of participants, isolate speaker choice behind a `SpeakerSelector`
+contract while preserving deterministic `RoundRobinSelector` behavior,
+introduce structured successful generation results with deterministic mock
+metadata, model investigation-domain entities and partial session states, and
+finish with a complete offline regression.
+
+The practical conversation-engine boundary may remain `simulate_chat()`; no
+concrete `ConversationEngine` class is currently implemented or mandated.
+A future `ConversationManager` may select speakers dynamically, but it is
+outside Sprint 5. A selector owns only next-speaker choice: it must not own
+generation, prompts, history, investigation reasoning, or persistence.
+
 ## High-level architecture
 
-The system has five main stages:
+The system has six main stages:
 
 1. **Corpus preparation**
    - Collect character-specific text examples.
@@ -59,6 +95,13 @@ The system has five main stages:
    - Collect rater guesses.
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
+6. **Investigation (planned)**
+   - Let the project user act as game master, manually provide the case
+     introduction, and reveal clues progressively.
+   - Keep unrevealed information unavailable to agents.
+   - Record analyses, evidence, hypotheses, leads, decisions, and a final
+     theory through future investigation-domain models.
+
 ## Coding conventions
 
 - Keep reusable code under `src/`.
@@ -81,6 +124,9 @@ The system has five main stages:
 - `Message`: one generated chat message.
 - `EvaluationTrial`: one anonymized rater task.
 - `RaterResponse`: one rater answer.
+- Future investigation entities include `InvestigationSession`, `Clue`,
+  `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
+  `FinalTheory`; none is currently implemented.
 
 ## Minimal success criterion
 
