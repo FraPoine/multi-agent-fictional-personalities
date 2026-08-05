@@ -458,7 +458,48 @@ the clue text. Deductions, explanations, and agent interpretations belong to
 future investigation models. Investigation-session persistence, UI loading,
 and automatic clue disclosure are not implemented.
 
-## 8. EvaluationTrial
+## 8. Investigation reasoning and decisions
+
+The investigation reasoning layer uses three distinct immutable record types:
+
+```text
+AgentAnalysis
+├── agent-owned facts
+├── agent-owned deductions
+├── evidence references
+└── proposed leads
+
+Hypothesis
+├── statement
+├── active/discarded status
+├── evidence references
+└── optional previous hypothesis ID
+
+GroupDecision
+├── explicit decision type
+├── summary
+├── referenced analysis IDs
+├── referenced hypothesis IDs
+└── evidence references
+```
+
+Facts and deductions remain separate and each analysis belongs to the agent
+identified by `agent_id`. Proposed leads are individual suggestions; they do
+not imply agreement and never become group decisions automatically.
+
+Hypotheses are append-only records. A revision receives a new ID and may point
+to the previous hypothesis ID; the old record is not mutated. Both active and
+discarded hypotheses remain part of the history.
+
+A `GroupDecision` must be created explicitly with one of `pursue_lead`,
+`adopt_hypothesis`, `discard_hypothesis`, or `request_information`. It does not
+result from a consensus algorithm. Evidence references contain only clue IDs
+and relations, while decisions reference analyses and hypotheses only by ID;
+complete entities are never nested or copied. Cross-record referential
+integrity belongs to a future investigation-session model. No persistence,
+automation, UI, or timestamps are implemented for these records.
+
+## 9. EvaluationTrial
 
 ### Definition
 
@@ -493,7 +534,7 @@ The private record adds `correct_character_id`, `source_run_id`, and
 - Each `EvaluationTrial` is derived from one `Message`.
 - Each `EvaluationTrial` can have many `RaterResponse` records.
 
-## 9. RaterResponse
+## 10. RaterResponse
 
 ### Definition
 
@@ -525,7 +566,7 @@ Development-only: `synthetic_responses.jsonl`
 - Each `RaterResponse` belongs to one `EvaluationTrial`.
 - Each response is compared with the correct character label during analysis.
 
-## 10. RunLogRecord
+## 11. RunLogRecord
 
 ### Definition
 

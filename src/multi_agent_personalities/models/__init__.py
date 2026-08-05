@@ -8,9 +8,14 @@ from multi_agent_personalities.models.generation import (
 )
 from multi_agent_personalities.models.identifiers import validate_run_id
 from multi_agent_personalities.models.investigation import (
+    AgentAnalysis,
     Clue,
     EvidenceReference,
     EvidenceRelation,
+    GroupDecision,
+    GroupDecisionType,
+    Hypothesis,
+    HypothesisStatus,
     validate_unique_clue_ids,
 )
 from multi_agent_personalities.models.message import Message
@@ -23,8 +28,10 @@ from multi_agent_personalities.models.evaluation import (
 from multi_agent_personalities.models.persona import Persona
 
 __all__ = [
-    "Clue", "ConversationRun", "EvidenceReference", "EvidenceRelation",
-    "GenerationMetadata", "GenerationResult", "Message", "Persona",
-    "PublicEvaluationTrial", "RaterResponse", "TokenUsage", "TrialAnswer",
-    "EvaluationTrial", "validate_run_id", "validate_unique_clue_ids",
+    "AgentAnalysis", "Clue", "ConversationRun", "EvidenceReference",
+    "EvidenceRelation", "GenerationMetadata", "GenerationResult",
+    "GroupDecision", "GroupDecisionType", "Hypothesis", "HypothesisStatus",
+    "Message", "Persona", "PublicEvaluationTrial", "RaterResponse",
+    "TokenUsage", "TrialAnswer", "EvaluationTrial", "validate_run_id",
+    "validate_unique_clue_ids",
 ]

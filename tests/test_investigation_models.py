@@ -4,9 +4,14 @@ import pytest
 from pydantic import ValidationError
 
 from multi_agent_personalities.models import (
+    AgentAnalysis,
     Clue,
     EvidenceReference,
     EvidenceRelation,
+    GroupDecision,
+    GroupDecisionType,
+    Hypothesis,
+    HypothesisStatus,
     validate_unique_clue_ids,
 )
 
@@ -165,3 +170,332 @@ def test_unique_clue_validation_does_not_mutate_input() -> None:
     assert clues == original
     assert result == tuple(original)
     assert result is not clues
+
+
+def make_evidence(
+    relation: EvidenceRelation = EvidenceRelation.SUPPORTS,
+) -> EvidenceReference:
+    return EvidenceReference(clue_id="clue_001", relation=relation)
+
+
+def test_valid_analysis_keeps_facts_deductions_and_leads_separate() -> None:
+    analysis = AgentAnalysis(
+        analysis_id="analysis_001",
+        agent_id="sherlock",
+        facts=("The window is open.",),
+        deductions=("The intruder used the window.",),
+        evidence=(make_evidence(),),
+        proposed_leads=("Inspect the garden.",),
+    )
+
+    assert analysis.agent_id == "sherlock"
+    assert analysis.facts == ("The window is open.",)
+    assert analysis.deductions == ("The intruder used the window.",)
+    assert analysis.proposed_leads == ("Inspect the garden.",)
+    assert not isinstance(analysis, GroupDecision)
+
+
+@pytest.mark.parametrize("agent_id", ["", "   "])
+def test_analysis_requires_non_empty_agent_id(agent_id: str) -> None:
+    with pytest.raises(ValidationError):
+        AgentAnalysis(
+            analysis_id="analysis_001",
+            agent_id=agent_id,
+            facts=("A fact",),
+        )
+
+
+def test_analysis_requires_fact_deduction_or_proposed_lead() -> None:
+    with pytest.raises(ValidationError, match="at least one"):
+        AgentAnalysis(
+            analysis_id="analysis_001",
+            agent_id="sherlock",
+            evidence=(make_evidence(),),
+        )
+
+
+@pytest.mark.parametrize("status", list(HypothesisStatus))
+def test_active_and_discarded_hypotheses(status: HypothesisStatus) -> None:
+    hypothesis = Hypothesis(
+        hypothesis_id=f"hypothesis_{status.value}",
+        statement="  The visitor entered through the window.  ",
+        status=status,
+    )
+
+    assert hypothesis.status is status
+    assert hypothesis.statement == "  The visitor entered through the window.  "
+
+
+def test_hypothesis_accepts_every_evidence_relation() -> None:
+    evidence = tuple(make_evidence(relation) for relation in EvidenceRelation)
+
+    hypothesis = Hypothesis(
+        hypothesis_id="hypothesis_001",
+        statement="The visitor entered through the window.",
+        status=HypothesisStatus.ACTIVE,
+        evidence=evidence,
+    )
+
+    assert tuple(item.relation for item in hypothesis.evidence) == tuple(
+        EvidenceRelation
+    )
+
+
+def test_hypothesis_revision_references_previous_record_by_id() -> None:
+    revision = Hypothesis(
+        hypothesis_id="hypothesis_002",
+        statement="The visitor left through the window.",
+        status=HypothesisStatus.ACTIVE,
+        previous_hypothesis_id="hypothesis_001",
+    )
+
+    assert revision.previous_hypothesis_id == "hypothesis_001"
+
+
+def test_hypothesis_cannot_reference_itself() -> None:
+    with pytest.raises(ValidationError, match="itself"):
+        Hypothesis(
+            hypothesis_id="hypothesis_001",
+            statement="A theory.",
+            status=HypothesisStatus.ACTIVE,
+            previous_hypothesis_id="hypothesis_001",
+        )
+
+
+@pytest.mark.parametrize("decision_type", list(GroupDecisionType))
+def test_all_group_decision_types_are_supported(
+    decision_type: GroupDecisionType,
+) -> None:
+    decision = GroupDecision(
+        decision_id=f"decision_{decision_type.value}",
+        decision_type=decision_type,
+        summary="  The group explicitly adopted this action.  ",
+    )
+
+    assert decision.decision_type is decision_type
+    assert decision.summary == "  The group explicitly adopted this action.  "
+
+
+def test_group_decision_references_records_only_by_id() -> None:
+    decision = GroupDecision(
+        decision_id="decision_001",
+        decision_type=GroupDecisionType.ADOPT_HYPOTHESIS,
+        summary="Adopt the window hypothesis.",
+        analysis_ids=("analysis_001",),
+        hypothesis_ids=("hypothesis_001",),
+        evidence=(make_evidence(),),
+    )
+
+    assert decision.analysis_ids == ("analysis_001",)
+    assert decision.hypothesis_ids == ("hypothesis_001",)
+    assert set(decision.model_dump()) == {
+        "decision_id",
+        "decision_type",
+        "summary",
+        "analysis_ids",
+        "hypothesis_ids",
+        "evidence",
+    }
+
+
+@pytest.mark.parametrize("field_name", ["facts", "deductions", "proposed_leads"])
+def test_analysis_rejects_duplicate_text_entries(field_name: str) -> None:
+    payload = {
+        "analysis_id": "analysis_001",
+        "agent_id": "sherlock",
+        "facts": ["A fact"],
+        field_name: ["Repeated", "Repeated"],
+    }
+
+    with pytest.raises(ValidationError, match="duplicates"):
+        AgentAnalysis.model_validate(payload)
+
+
+@pytest.mark.parametrize("field_name", ["analysis_ids", "hypothesis_ids"])
+def test_group_decision_rejects_duplicate_ids(field_name: str) -> None:
+    payload = {
+        "decision_id": "decision_001",
+        "decision_type": "pursue_lead",
+        "summary": "Pursue the lead.",
+        field_name: ["record_001", "record_001"],
+    }
+
+    with pytest.raises(ValidationError, match="duplicates"):
+        GroupDecision.model_validate(payload)
+
+
+@pytest.mark.parametrize("model", [AgentAnalysis, Hypothesis, GroupDecision])
+def test_reasoning_models_reject_duplicate_evidence_references(
+    model: type[AgentAnalysis] | type[Hypothesis] | type[GroupDecision],
+) -> None:
+    evidence = [
+        {"clue_id": "clue_001", "relation": "supports"},
+        {"clue_id": "clue_001", "relation": "supports"},
+    ]
+    if model is AgentAnalysis:
+        payload = {
+            "analysis_id": "analysis_001",
+            "agent_id": "sherlock",
+            "facts": ["A fact"],
+            "evidence": evidence,
+        }
+    elif model is Hypothesis:
+        payload = {
+            "hypothesis_id": "hypothesis_001",
+            "statement": "A theory.",
+            "status": "active",
+            "evidence": evidence,
+        }
+    else:
+        payload = {
+            "decision_id": "decision_001",
+            "decision_type": "pursue_lead",
+            "summary": "Pursue it.",
+            "evidence": evidence,
+        }
+
+    with pytest.raises(ValidationError, match="duplicate references"):
+        model.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("model", "payload"),
+    [
+        (
+            Hypothesis,
+            {
+                "hypothesis_id": "hypothesis_001",
+                "statement": "A theory.",
+                "status": "unknown",
+            },
+        ),
+        (
+            GroupDecision,
+            {
+                "decision_id": "decision_001",
+                "decision_type": "finish_investigation",
+                "summary": "Finish.",
+            },
+        ),
+    ],
+)
+def test_unsupported_reasoning_enum_values_are_rejected(
+    model: type[Hypothesis] | type[GroupDecision],
+    payload: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        model.model_validate(payload)
+
+
+@pytest.mark.parametrize("statement", ["", "  \t\n"])
+def test_blank_hypothesis_statement_is_rejected(statement: str) -> None:
+    with pytest.raises(ValidationError):
+        Hypothesis(
+            hypothesis_id="hypothesis_001",
+            statement=statement,
+            status=HypothesisStatus.ACTIVE,
+        )
+
+
+@pytest.mark.parametrize("summary", ["", "  \t\n"])
+def test_blank_group_decision_summary_is_rejected(summary: str) -> None:
+    with pytest.raises(ValidationError):
+        GroupDecision(
+            decision_id="decision_001",
+            decision_type=GroupDecisionType.REQUEST_INFORMATION,
+            summary=summary,
+        )
+
+
+@pytest.mark.parametrize(
+    ("model", "payload"),
+    [
+        (
+            AgentAnalysis,
+            {
+                "analysis_id": "analysis_001",
+                "agent_id": "sherlock",
+                "facts": ["A fact"],
+                "confidence": 0.9,
+            },
+        ),
+        (
+            Hypothesis,
+            {
+                "hypothesis_id": "hypothesis_001",
+                "statement": "A theory.",
+                "status": "active",
+                "updated_at": "now",
+            },
+        ),
+        (
+            GroupDecision,
+            {
+                "decision_id": "decision_001",
+                "decision_type": "request_information",
+                "summary": "Ask for details.",
+                "consensus": True,
+            },
+        ),
+    ],
+)
+def test_reasoning_models_forbid_extra_fields(
+    model: type[AgentAnalysis] | type[Hypothesis] | type[GroupDecision],
+    payload: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        model.model_validate(payload)
+
+
+def test_reasoning_models_are_frozen() -> None:
+    analysis = AgentAnalysis(
+        analysis_id="analysis_001",
+        agent_id="sherlock",
+        facts=("A fact",),
+    )
+    hypothesis = Hypothesis(
+        hypothesis_id="hypothesis_001",
+        statement="A theory.",
+        status=HypothesisStatus.DISCARDED,
+    )
+    decision = GroupDecision(
+        decision_id="decision_001",
+        decision_type=GroupDecisionType.DISCARD_HYPOTHESIS,
+        summary="Discard the theory.",
+    )
+
+    with pytest.raises(ValidationError):
+        analysis.facts = ("Changed",)
+    with pytest.raises(ValidationError):
+        hypothesis.status = HypothesisStatus.ACTIVE
+    with pytest.raises(ValidationError):
+        decision.summary = "Changed"
+
+
+def test_list_inputs_become_ordered_tuples_and_json_round_trips() -> None:
+    payload = {
+        "decision_id": "decision_001",
+        "decision_type": "adopt_hypothesis",
+        "summary": "Adopt the theory.",
+        "analysis_ids": ["analysis_002", "analysis_001"],
+        "hypothesis_ids": ["hypothesis_002", "hypothesis_001"],
+        "evidence": [
+            {"clue_id": "clue_002", "relation": "context"},
+            {"clue_id": "clue_001", "relation": "contradicts"},
+        ],
+    }
+
+    decision = GroupDecision.model_validate(payload)
+    restored = GroupDecision.model_validate_json(decision.model_dump_json())
+
+    assert decision.analysis_ids == ("analysis_002", "analysis_001")
+    assert decision.hypothesis_ids == ("hypothesis_002", "hypothesis_001")
+    assert tuple(item.clue_id for item in decision.evidence) == (
+        "clue_002",
+        "clue_001",
+    )
+    assert tuple(item.relation for item in decision.evidence) == (
+        EvidenceRelation.CONTEXT,
+        EvidenceRelation.CONTRADICTS,
+    )
+    assert restored == decision
