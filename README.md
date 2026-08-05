@@ -71,6 +71,13 @@ The existing mock persona and response assets remain under `tests/fixtures/`
 temporarily; moving runtime assets into a production-owned directory is future
 cleanup rather than part of the catalog refactor.
 
+Sprint 5 has implemented the validated catalog, configurable participant
+application boundaries, a data-driven conversation UI, the standalone speaker-
+selector contract, and participant-bound deterministic mock providers. The
+engine still performs round-robin scheduling inline; selector integration is
+pending. Provider generation still returns plain text, so structured
+generation metadata is also pending.
+
 ## Technical blind-evaluation pilot
 
 Prepare the fixed pilot (three neutral topics, three six-turn conversations,
@@ -128,7 +135,7 @@ The implemented web flow is:
 
 ```text
 open page
-→ select Sherlock Holmes and Hercule Poirot
+→ select at least two available characters
 → enter an investigation topic
 → choose 2–12 turns
 → submit
@@ -137,9 +144,12 @@ open page
 → inspect the run ID and artifact paths
 ```
 
-Both `sherlock` and `poirot` are required by the Sprint 4 web form. The topic
-must not be blank, and the turn count must be a whole number from `2` through
-`12`. The provider is fixed to `mock`, the seed is fixed to `42`, and output is
+The form renders every character in the validated catalog and selects all
+currently available characters by default. A submission must contain at least
+two unique supported character slugs. Because the production catalog currently
+contains only Sherlock and Poirot, both are initially selected. The topic must
+not be blank, and the turn count must be a whole number from `2` through `12`.
+The provider is fixed to `mock`, the seed is fixed to `42`, and output is
 written beneath the repository's `outputs/` directory. There is no provider
 dropdown or API-key input.
 
@@ -244,12 +254,13 @@ critical-path tests reject attempted network access.
 
 ## Future work
 
-Sprint 5 prepares offline boundaries for configurable participant sequences,
-a replaceable speaker selector, structured generation metadata, and
-investigation-domain models. Later work will integrate a real provider, select
-and implement characters three and four, fix and pre-register the final human
-versus LLM-judge methodology, collect experimental data, and run moderated
-investigation sessions.
+Sprint 5 has delivered the catalog, N-participant application boundary, data-
+driven UI, selector contract, and participant-provider binding. Selector
+integration, structured generation metadata, investigation-domain models, and
+the final offline regression remain. Later work will integrate a real provider,
+select and implement characters three and four, fix and pre-register the final
+human versus LLM-judge methodology, collect experimental data, and run
+moderated investigation sessions.
 
 ## Repository structure
 
@@ -269,8 +280,11 @@ project-root/
 │   ├── llm/
 │   ├── models/
 │   ├── persona_extraction/
-│   ├── pipeline/
+│   ├── character_catalog.py
+│   ├── pipeline.py
 │   ├── simulation/
+│   │   ├── participant.py
+│   │   └── speaker_selector.py
 │   └── web/
 └── tests/
 ```

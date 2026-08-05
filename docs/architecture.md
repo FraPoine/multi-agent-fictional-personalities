@@ -59,9 +59,10 @@ rendered-result path were implemented and verified in Sprint 4. Both delivery
 paths reuse the agent runtime, deterministic round-robin simulation, and atomic
 conversation persistence. A two-character mock evaluation builder, rater app,
 and analyzer are also implemented as technical tooling, not a scientific
-experiment. Selector abstractions, structured generation results,
-participant-bound mocks, and investigation models are Sprint 5 targets; a
-dynamic manager and live provider remain later work.
+experiment. Selector abstractions and participant-bound mocks are implemented
+Sprint 5 work. Selector injection, structured generation results, and
+investigation models remain Sprint 5 targets; a dynamic manager and live
+provider remain later work.
 
 ## Main components
 
@@ -307,8 +308,8 @@ between the CLI or web delivery layer and the existing conversation
 components. It:
 
 - accept validated conversation parameters;
-- resolve supported Sherlock Holmes and Hercule Poirot personas and the local
-  mock provider;
+- resolve requested supported personas and their participant-owned local mock
+  providers from the configured project root;
 - invoke the existing simulation engine;
 - invoke the existing conversation persistence layer;
 - return a structured result suitable for CLI or web presentation.
@@ -319,6 +320,28 @@ this importable service instead of duplicating conversation orchestration. The
 service reuses the simulation engine and conversation writer, the simulation
 engine remains independent of web concerns, and the existing CLI remains
 supported.
+
+## Current configuration and runtime layers
+
+`CharacterCatalogEntry` is the persistent validated declaration loaded from
+`configs/characters.yaml`; it owns character metadata and resolved local asset
+paths. `CharacterConfig` is the current compatibility adapter used by pipeline
+and application boundaries. It maps catalog fields to the existing pipeline
+API, is not a provider binding, and is retained intentionally for compatibility.
+`ConversationParticipant` is the immutable runtime-only binding of a validated
+`Persona`, provider instance, provider name, and model name. It is never
+serialized and does not select turns.
+
+These layers have distinct responsibilities. Consolidation may be evaluated
+later, but no layer is removed as part of the current documentation cleanup.
+
+The web application builds its character registry when the application is
+created. The conversation service resolves a registry again from its configured
+project root when it executes a run. In normal immutable-configuration usage
+this is not a correctness failure, but catalog edits require restarting the web
+application so rendered options refresh predictably. Passing one already-loaded
+registry through both boundaries is a possible future dependency-injection
+cleanup.
 
 ## Minimal web UI
 
@@ -334,7 +357,8 @@ The implemented Sprint 4 web interface does the following:
 - present readable validation, simulation, and persistence errors.
 
 It also provides loading feedback while a request is in progress. The form
-requires Sherlock Holmes and Hercule Poirot, accepts a nonblank topic and a
+renders every catalog entry, selects all available characters by default, and
+requires at least two unique supported slugs. It accepts a nonblank topic and a
 bounded turn count from 2 through 12, and renders the completed run ID plus the
 paths for `run.json`, `messages.jsonl`, and `transcript.md`.
 

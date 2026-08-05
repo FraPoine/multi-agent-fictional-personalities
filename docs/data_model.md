@@ -9,15 +9,63 @@ The goal is to avoid ad-hoc dictionaries and make the system easier to test, log
 ## Entity overview
 
 ```txt
-Character
-  └── CorpusDocument
-        └── PersonaProfile
-              └── Agent
+CharacterCatalog
+  └── CharacterCatalogEntry
+        └── CharacterConfig
+              └── ConversationParticipant
                     └── ConversationRun
                           └── Message
                                 └── EvaluationTrial
                                       └── RaterResponse
 ```
+
+`Character`, `CorpusDocument`, `PersonaProfile`, and `Agent` below describe the
+conceptual source and persona domain. The catalog-to-participant chain above is
+the currently implemented configuration and conversation-runtime flow; these
+layers are related adapters and bindings, not interchangeable domain entities.
+
+## Character catalog configuration
+
+```text
+CharacterCatalog
+└── characters: ordered tuple of CharacterCatalogEntry
+```
+
+`CharacterCatalog` is an immutable, validated, non-empty catalog loaded from
+YAML. It preserves declaration order and is the source of supported runtime-
+character declarations. The production catalog is `configs/characters.yaml`;
+Sherlock Holmes and Hercule Poirot are currently its only entries.
+
+Each immutable `CharacterCatalogEntry` contains:
+
+```text
+slug
+character_id
+display_name
+description
+corpus_path
+persona_fixture_path
+mock_response_fixture_path
+```
+
+All string values are required and non-empty, and slugs use a validated
+lowercase alphanumeric format with optional hyphen or underscore separators.
+Slugs and `character_id` values must each be unique. Every declared path is
+resolved relative to the catalog file, must exist, and must be a regular file.
+The persona fixture's character ID and display name must match the catalog
+entry. Declaration order is preserved.
+
+Persona and mock-response fixtures temporarily remain under `tests/fixtures/`.
+Moving runtime assets to a production-owned location is future cleanup.
+
+The three implemented representation layers have separate responsibilities:
+
+- `CharacterCatalogEntry` is persistent validated configuration with metadata
+  and resolved local asset paths.
+- `CharacterConfig` is the pipeline/application compatibility adapter that maps
+  catalog fields to the existing pipeline API.
+- `ConversationParticipant` is the immutable, runtime-only binding of a
+  validated `Persona` and its provider plus provider/model declarations.
 
 ## Evaluation pilot records
 
@@ -47,7 +95,9 @@ A fictional character selected for simulation and evaluation.
 
 ### Storage
 
-`data/characters.json`
+Conceptual target: `data/characters.json`. This file is not currently
+implemented; supported runtime declarations instead live in
+`configs/characters.yaml` as `CharacterCatalogEntry` records.
 
 ### Fields
 
@@ -109,7 +159,9 @@ A structured representation of a character used to condition an LLM agent.
 
 ### Storage
 
-`data/personas/{character_id}_persona_v{version}.json`
+Conceptual target: `data/personas/{character_id}_persona_v{version}.json`. That
+production store is not currently implemented; validated mock persona fixtures
+temporarily live under `tests/fixtures/`.
 
 ### Fields
 
@@ -239,8 +291,8 @@ from the Sprint 2 single-agent writer described below.
   ],
   "turn_count": 12,
   "seed": 42,
-  "provider": "openai",
-  "model": "configured_model_name",
+  "provider": "mock",
+  "model": "mock-round-robin",
   "created_at": "2026-05-05T00:00:00Z",
   "status": "completed",
   "messages": []
@@ -288,8 +340,8 @@ to remain deterministic. Distinct real-provider timing can be added later.
   "speaker_character_id": "sherlock_holmes",
   "speaker_name": "Sherlock Holmes",
   "text": "A generated response is stored here at runtime.",
-  "provider": "openai",
-  "model": "configured_model_name",
+  "provider": "mock",
+  "model": "mock-round-robin",
   "timestamp": "2026-05-05T00:00:00Z",
   "error": null
 }

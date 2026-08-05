@@ -40,11 +40,19 @@ investigation.
 ## Current implementation baseline
 
 - Sherlock Holmes and Hercule Poirot are the only supported runtime characters.
+- `configs/characters.yaml` is loaded as a validated, ordered catalog. Slugs and
+  character IDs are unique, and catalog-relative asset paths resolve
+  deterministically.
 - Persona and response fixtures are deterministic and local.
 - `Message` and `ConversationRun` are immutable validated models.
 - Each complete run contains explicit, ordered per-run history.
 - `simulate_chat()` supports an ordered sequence of at least two unique runtime
   participant bindings and directly schedules deterministic round-robin turns.
+- The application service supports configurable participant sequences, with
+  three-participant synthetic coverage at the application boundary.
+- The conversation UI renders participant choices from the catalog.
+- The public `SpeakerSelector` contract and stateless `RoundRobinSelector` are
+  implemented, but selector injection into `simulate_chat()` remains pending.
 - The CLI and local conversation UI reuse application/runtime logic.
 - Conversation persistence atomically writes `run.json`, `messages.jsonl`, and
   `transcript.md`.
@@ -53,8 +61,33 @@ investigation.
 - Tests require no API key or network access.
 - Providers currently return plain text. Each mock participant owns a distinct
   file-backed provider associated with its response fixture.
+- `ConversationParticipant` is an immutable runtime binding, and the former
+  call-counter-based `RoundRobinMockProvider` has been removed.
 - No live provider, dynamic manager, investigation domain or workflow, third
   or fourth runtime character, real game, or final experiment exists.
+
+## Progress
+
+| Task | Status | Commit |
+|---|---|---|
+| Task 1 — Realign project goals and Sprint 5 scope | Completed | `20ddfab` |
+| Task 2 — Introduce a validated supported-character catalog | Completed | `6cabf10` |
+| Task 3 — Verify application boundaries with N participants | Completed | `254fe7d` |
+| Task 4 — Make the conversation web UI data-driven | Completed | `f963673` |
+| Task 5 — Define `SpeakerSelector` and `RoundRobinSelector` | Completed | `5140ba8` |
+| Task 6 — Bind deterministic mock providers to participants | Completed | `a118ea7` |
+
+## Remaining work
+
+- Integrate `SpeakerSelector` into the simulation engine while preserving the
+  current round-robin behavior.
+- Introduce structured `GenerationResult` values and deterministic mock
+  metadata.
+- Add investigation-domain models with valid partial states.
+- Run the complete offline regression and reconcile final Sprint 5
+  documentation.
+- After Sprint 5, integrate a live provider and conduct the planned experiment
+  and investigation work.
 
 ## In-scope objectives
 
@@ -164,22 +197,6 @@ hypotheses, proposed leads, group decisions, final theory, and session status.
 Partial sessions must be valid. Statuses may be conceptually similar to
 `setup`, `active`, `ready_for_final`, `completed`, and `abandoned`. Only a
 completed session requires a final theory.
-
-## Ordered task plan
-
-1. Realign active goals, scope, roadmap, and Sprint 5 documentation.
-2. Generalize configuration and application inputs for configurable
-   participants while preserving the two working characters.
-3. Add and test the speaker-selection contract and deterministic selector.
-4. Separate mock fixture ownership from speaker order.
-5. Add and propagate structured successful generation results and deterministic
-   mock metadata.
-6. Add and validate investigation-domain models and partial session states.
-7. Run focused checks throughout, then the complete offline regression and
-   reconcile active documentation.
-
-Each later task should remain independently reviewable and must validate its
-design against the implementation present at that time.
 
 ## Compatibility requirements
 
