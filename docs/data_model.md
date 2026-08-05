@@ -259,6 +259,40 @@ across all bindings. `ConversationRun` remains unchanged and stores those
 validated values once at run level, while each generated `Message` retains its
 compatible top-level provider and model fields.
 
+## Successful generation result schemas
+
+```text
+GenerationResult
+├── text: required non-empty string
+└── metadata: GenerationMetadata
+    ├── provider: required non-empty string
+    ├── model: optional non-empty string
+    ├── usage: TokenUsage | None
+    │   ├── input_tokens: optional non-negative integer
+    │   └── output_tokens: optional non-negative integer
+    ├── finish_reason: optional non-empty string
+    ├── request_id: optional non-empty string
+    ├── latency_ms: optional non-negative number
+    └── retry_count: non-negative integer, default 0
+```
+
+`TokenUsage`, `GenerationMetadata`, and `GenerationResult` are immutable
+provider-neutral Pydantic models, and all forbid undeclared fields. Token usage
+may be absent; when present, either counter may independently be absent or
+zero. `GenerationResult.text` must contain non-whitespace content, but
+validation preserves the supplied text rather than stripping it.
+
+`GenerationResult` represents successful generation only. It has no error,
+status, cost, provider-SDK object, or provider-specific metadata field.
+Generation failures continue to be exceptions. No persisted total-token or
+cost field exists, and no pricing calculation is defined.
+
+Task 8 implements only these schemas and their validation. Current providers
+still return plain text, and no provider, `generate_reply()` runtime consumer,
+message, simulation, persistence, or evaluation path constructs or consumes a
+`GenerationResult` yet. Metadata collection and runtime propagation remain
+future work; `Message`, `ConversationRun`, and artifact schemas are unchanged.
+
 ## 5. ConversationRun
 
 ### Definition

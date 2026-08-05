@@ -77,12 +77,13 @@ investigation.
 | Task 4 — Make the conversation web UI data-driven | Completed | `f963673` |
 | Task 5 — Define `SpeakerSelector` and `RoundRobinSelector` | Completed | `5140ba8` |
 | Task 6 — Bind deterministic mock providers to participants | Completed | `a118ea7` |
-| Task 7 — Inject `SpeakerSelector` into the simulation engine | Implemented | Pending commit |
+| Task 7 — Inject `SpeakerSelector` into the simulation engine | Completed | `1477dfb` |
+| Task 8 — Define structured generation-result schemas | Implemented | Pending commit |
 
 ## Remaining work
 
-- Introduce structured `GenerationResult` values and deterministic mock
-  metadata.
+- Migrate providers and consumers to structured `GenerationResult` values and
+  propagate deterministic mock metadata. Task 8 defines the schemas only.
 - Add investigation-domain models with valid partial states.
 - Run the complete offline regression and reconcile final Sprint 5
   documentation.
