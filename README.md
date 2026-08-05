@@ -64,6 +64,13 @@ foundation, integrate a real LLM provider later, then run experiments and real
 investigation sessions. Sprint 5 remains network-free and does not require an
 API key, genuine rater responses, or live-provider measurements.
 
+Supported runtime characters are declared in `configs/characters.yaml`. The
+validated loader preserves declaration order and resolves every asset path
+relative to that catalog file, independently of the current working directory.
+The existing mock persona and response assets remain under `tests/fixtures/`
+temporarily; moving runtime assets into a production-owned directory is future
+cleanup rather than part of the catalog refactor.
+
 ## Technical blind-evaluation pilot
 
 Prepare the fixed pilot (three neutral topics, three six-turn conversations,

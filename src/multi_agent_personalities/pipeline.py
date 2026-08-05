@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
+from multi_agent_personalities.character_catalog import (
+    default_character_catalog_path,
+    load_character_catalog,
+)
 from multi_agent_personalities.agent_runtime import (
     build_system_prompt,
     generate_reply,
@@ -30,51 +34,20 @@ class CharacterConfig:
 
 
 def character_registry(project_root: Path) -> dict[str, CharacterConfig]:
-    """Build the supported-character registry relative to the repository."""
+    """Build the supported-character registry from the validated catalog."""
 
-    fixture_directory = project_root / "tests" / "fixtures"
+    catalog = load_character_catalog(default_character_catalog_path(project_root))
     return {
-        "poirot": CharacterConfig(
-            slug="poirot",
-            character_id="hercule_poirot",
-            display_name="Hercule Poirot",
-            description=(
-                "A fictional Belgian private detective known for psychological "
-                "insight, method and order, attention to detail, politeness, "
-                "confidence, vanity, and frequent French expressions."
-            ),
-            corpus_paths=(
-                project_root
-                / "characters"
-                / "poirot"
-                / "corpus"
-                / "persona_corpus.jsonl",
-            ),
-            persona_fixture=fixture_directory / "poirot_persona_response.json",
-            agent_response_fixture=fixture_directory
-            / "poirot_agent_response.txt",
-        ),
-        "sherlock": CharacterConfig(
-            slug="sherlock",
-            character_id="sherlock_holmes",
-            display_name="Sherlock Holmes",
-            description=(
-                "A fictional consulting detective known for acute observation, "
-                "deductive reasoning, scientific habits, confidence, emotional "
-                "reserve, and concise explanations of seemingly hidden facts."
-            ),
-            corpus_paths=(
-                project_root
-                / "characters"
-                / "sherlock"
-                / "corpus"
-                / "persona_corpus.jsonl",
-            ),
-            persona_fixture=fixture_directory
-            / "sherlock_persona_response.json",
-            agent_response_fixture=fixture_directory
-            / "sherlock_agent_response.txt",
-        ),
+        entry.slug: CharacterConfig(
+            slug=entry.slug,
+            character_id=entry.character_id,
+            display_name=entry.display_name,
+            description=entry.description,
+            corpus_paths=(entry.corpus_path,),
+            persona_fixture=entry.persona_fixture_path,
+            agent_response_fixture=entry.mock_response_fixture_path,
+        )
+        for entry in catalog.characters
     }
 
 

@@ -1,0 +1,25 @@
+# Supported runtime characters, in canonical display order.
+# Paths are resolved relative to this file. Runtime mock assets remain under
+# tests/fixtures temporarily; moving them is a separate future task.
+characters:
+  - slug: sherlock
+    character_id: sherlock_holmes
+    display_name: Sherlock Holmes
+    description: >-
+      A fictional consulting detective known for acute observation, deductive
+      reasoning, scientific habits, confidence, emotional reserve, and concise
+      explanations of seemingly hidden facts.
+    corpus_path: ../characters/sherlock/corpus/persona_corpus.jsonl
+    persona_fixture_path: ../tests/fixtures/sherlock_persona_response.json
+    mock_response_fixture_path: ../tests/fixtures/sherlock_agent_response.txt
+
+  - slug: poirot
+    character_id: hercule_poirot
+    display_name: Hercule Poirot
+    description: >-
+      A fictional Belgian private detective known for psychological insight,
+      method and order, attention to detail, politeness, confidence, vanity,
+      and frequent French expressions.
+    corpus_path: ../characters/poirot/corpus/persona_corpus.jsonl
+    persona_fixture_path: ../tests/fixtures/poirot_persona_response.json
+    mock_response_fixture_path: ../tests/fixtures/poirot_agent_response.txt
