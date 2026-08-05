@@ -311,9 +311,13 @@ used to construct new snapshots.
 - messages: `<output_root>/conversations/runs/{run_id}/messages.jsonl`
 - transcript: `<output_root>/conversations/runs/{run_id}/transcript.md`
 
-`run.json` is the canonical complete `ConversationRun`; JSONL and Markdown are
-ordered message and human-readable views. Conversation persistence is separate
-from the Sprint 2 single-agent writer described below.
+`run.json` is the canonical complete `ConversationRun` snapshot.
+`messages.jsonl` is the canonical ordered per-turn generation trace, with one
+complete `Message` per line. Both structured artifacts include identical
+nested generation metadata for new messages. Artifacts created before that
+optional field existed remain deserializable. `transcript.md` is the ordered
+human-readable view and does not duplicate technical metadata. Conversation
+persistence is separate from the Sprint 2 single-agent writer described below.
 
 ### Fields
 
@@ -403,6 +407,11 @@ Provider and consistency failures remain exceptions, and `generate_reply()`
 does not construct an error message after failure. New `run.json` and
 `messages.jsonl` records include nested metadata automatically, while
 `transcript.md` remains human-readable and does not print it.
+
+Mock metadata is deterministic and mostly contains `null`: it does not measure
+real token counts, latency, or request identifiers. Those values require a
+future provider. Persistence currently defines neither monetary cost fields
+nor a broader logging system.
 
 An error-bearing message is a failed legacy record and must not contain
 successful `generation_metadata`. For every message stored in a

@@ -668,6 +668,15 @@ This structure is distinct from the older Sprint 2 single-agent structure at
 `system_prompt.txt`, `response.txt`, and `metadata.json`. Conversation
 persistence does not create `steps.jsonl`.
 
+`run.json` is the canonical complete run snapshot. `messages.jsonl` is the
+canonical ordered per-turn generation trace, with one complete `Message` per
+line. For new messages, both structured artifacts contain the same nested
+generation metadata; legacy artifacts that omit it remain readable.
+`transcript.md` intentionally excludes technical metadata. Mock metadata is
+deterministic and mostly `null`; real token, latency, and request values depend
+on future providers. There is no cost calculation or broader event-logging
+system.
+
 ## Planned smoke test path
 
 The planned smoke test should exercise the current critical path:

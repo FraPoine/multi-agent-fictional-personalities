@@ -18,6 +18,7 @@ from multi_agent_personalities.models import (
     GenerationResult,
     Message,
     Persona,
+    TokenUsage,
 )
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
@@ -80,6 +81,64 @@ def make_run(turn_count: int = 2) -> ConversationRun:
     )
 
 
+def make_observable_run() -> ConversationRun:
+    """Build a deterministic run with complete and partial turn metadata."""
+    messages = (
+        Message(
+            message_id="message_0000",
+            run_id="observable_run",
+            turn_index=0,
+            speaker_character_id="sherlock",
+            speaker_name="Sherlock Holmes",
+            text="The trace is complete.",
+            provider="test-provider",
+            model="test-model",
+            generation_metadata=GenerationMetadata(
+                provider="test-provider",
+                model="test-model",
+                usage=TokenUsage(input_tokens=120, output_tokens=35),
+                finish_reason="completed",
+                request_id="request-001",
+                latency_ms=14.5,
+                retry_count=1,
+            ),
+            timestamp=CREATED_AT,
+        ),
+        Message(
+            message_id="message_0001",
+            run_id="observable_run",
+            turn_index=1,
+            speaker_character_id="poirot",
+            speaker_name="Hercule Poirot",
+            text="The partial trace remains valid.",
+            provider="test-provider",
+            model="test-model",
+            generation_metadata=GenerationMetadata(
+                provider="test-provider",
+                model=None,
+                usage=TokenUsage(input_tokens=None, output_tokens=0),
+                finish_reason=None,
+                request_id=None,
+                latency_ms=None,
+                retry_count=0,
+            ),
+            timestamp=CREATED_AT,
+        ),
+    )
+    return ConversationRun(
+        run_id="observable_run",
+        topic="Artifact observability",
+        character_ids=("sherlock", "poirot"),
+        turn_count=2,
+        seed=42,
+        provider="test-provider",
+        model="test-model",
+        created_at=CREATED_AT,
+        status="completed",
+        messages=messages,
+    )
+
+
 def test_writes_exact_files_and_round_trippable_models(tmp_path: Path) -> None:
     run = make_run()
     original_dump = run.model_dump_json()
@@ -126,6 +185,113 @@ def test_writes_exact_files_and_round_trippable_models(tmp_path: Path) -> None:
     )
 
     assert run.model_dump_json() == original_dump
+
+
+def test_structured_artifacts_preserve_ordered_generation_metadata(
+    tmp_path: Path,
+) -> None:
+    run = make_observable_run()
+    directory = save_conversation_run(output_root=tmp_path, run=run)
+
+    run_payload = json.loads(
+        (directory / "run.json").read_text(encoding="utf-8")
+    )
+    jsonl_payloads = [
+        json.loads(line)
+        for line in (directory / "messages.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+
+    assert [row["turn_index"] for row in jsonl_payloads] == [0, 1]
+    assert [row["message_id"] for row in jsonl_payloads] == [
+        "message_0000",
+        "message_0001",
+    ]
+    run_messages = {
+        message["message_id"]: message for message in run_payload["messages"]
+    }
+    for row in jsonl_payloads:
+        assert row["generation_metadata"] == run_messages[row["message_id"]][
+            "generation_metadata"
+        ]
+
+    complete = jsonl_payloads[0]["generation_metadata"]
+    assert complete == {
+        "provider": "test-provider",
+        "model": "test-model",
+        "usage": {"input_tokens": 120, "output_tokens": 35},
+        "finish_reason": "completed",
+        "request_id": "request-001",
+        "latency_ms": 14.5,
+        "retry_count": 1,
+    }
+    partial = jsonl_payloads[1]["generation_metadata"]
+    assert partial == {
+        "provider": "test-provider",
+        "model": None,
+        "usage": {"input_tokens": None, "output_tokens": 0},
+        "finish_reason": None,
+        "request_id": None,
+        "latency_ms": None,
+        "retry_count": 0,
+    }
+    assert ConversationRun.model_validate(run_payload) == run
+    assert [Message.model_validate(row) for row in jsonl_payloads] == list(
+        run.messages
+    )
+
+
+def test_legacy_artifacts_without_generation_metadata_remain_readable(
+    tmp_path: Path,
+) -> None:
+    run = make_observable_run()
+    run_payload = run.model_dump(mode="json")
+    for message in run_payload["messages"]:
+        message.pop("generation_metadata")
+
+    legacy_run = ConversationRun.model_validate(run_payload)
+    assert all(
+        message.generation_metadata is None for message in legacy_run.messages
+    )
+
+    directory = save_conversation_run(output_root=tmp_path, run=legacy_run)
+    legacy_rows = [
+        json.loads(line)
+        for line in (directory / "messages.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    for row in legacy_rows:
+        row.pop("generation_metadata")
+    assert all(
+        Message.model_validate(row).generation_metadata is None
+        for row in legacy_rows
+    )
+
+
+def test_same_validated_run_produces_deterministic_artifact_content(
+    tmp_path: Path,
+) -> None:
+    run = make_observable_run()
+    first = save_conversation_run(output_root=tmp_path / "first", run=run)
+    second = save_conversation_run(output_root=tmp_path / "second", run=run)
+
+    for artifact_name in ("run.json", "messages.jsonl", "transcript.md"):
+        assert (first / artifact_name).read_bytes() == (
+            second / artifact_name
+        ).read_bytes()
+
+    transcript = (first / "transcript.md").read_text(encoding="utf-8")
+    for technical_value in (
+        "generation_metadata",
+        "input_tokens",
+        "finish_reason",
+        "request-001",
+        "14.5",
+        "retry_count",
+    ):
+        assert technical_value not in transcript
 
 
 def test_transcript_preserves_metadata_speakers_and_text(tmp_path: Path) -> None:

@@ -88,6 +88,7 @@ investigation.
 | Task 9 — Migrate provider contract and local mocks | Completed | `86d5936` |
 | Task 10 — Propagate generation metadata into messages | Completed | `ce5f76a` |
 | Maintenance — Enforce run/message metadata consistency | Implemented | Pending commit |
+| Task 11 — Persist generation metadata in conversation artifacts | Implemented | Pending commit |
 
 ## Remaining work
 

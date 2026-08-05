@@ -205,9 +205,17 @@ outputs/conversations/runs/<run-id>/
 └── transcript.md
 ```
 
-- `run.json` is the complete validated conversation run.
-- `messages.jsonl` stores one serialized message per line.
-- `transcript.md` is the human-readable Markdown transcript.
+- `run.json` is the canonical complete validated run snapshot, including
+  nested generation metadata on new messages.
+- `messages.jsonl` is the canonical ordered per-turn generation trace. Each
+  line contains one complete serialized message with the same nested metadata.
+- `transcript.md` is the human-readable Markdown transcript and deliberately
+  omits technical generation metadata.
+
+Artifacts created before generation metadata was introduced remain readable.
+Current mock metadata is deterministic and mostly contains `null` values. Real
+token counts, latency, request IDs, and retry observations require a future
+provider; no cost calculation or broader logging system exists yet.
 
 Persistence atomically reserves each run ID with a per-run lock file, writes
 through a temporary sibling directory, and publishes only after all files are
