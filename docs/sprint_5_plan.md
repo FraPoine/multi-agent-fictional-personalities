@@ -91,10 +91,10 @@ investigation.
 | Task 11 — Persist generation metadata in conversation artifacts | Implemented | Pending commit |
 | Task 12 — Model Clue and EvidenceReference | Implemented | Pending commit |
 | Task 13 — Model analyses, hypotheses, and group decisions | Implemented | Pending commit |
+| Task 14 — Model FinalTheory and InvestigationSession | Implemented | Pending commit |
 
 ## Remaining work
 
-- Add investigation-domain models with valid partial states.
 - Run the complete offline regression and reconcile final Sprint 5
   documentation.
 - After Sprint 5, integrate a live provider and conduct the planned experiment

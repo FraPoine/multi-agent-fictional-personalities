@@ -295,19 +295,25 @@ provider objects are distinct. The validated uniform values populate the
 unchanged run-level and message-level fields; heterogeneous provider/model
 conversations remain future work.
 
-## Sprint 5 investigation-domain target
+## Sprint 5 investigation domain
 
-Sprint 5 will model, but not orchestrate, `InvestigationSession`, `Clue`,
+Sprint 5 models, but does not orchestrate, `InvestigationSession`, `Clue`,
 `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
 `FinalTheory`. The domain must represent a manually supplied case introduction,
 progressively revealed clues and clue order, individual facts and deductions,
 evidence references, supporting and contradicting evidence, active and
 discarded hypotheses, proposed leads, group decisions, and a final theory.
 
-Sessions must allow partial state. Conceptual statuses are `setup`, `active`,
+`InvestigationSession` is the aggregate root: it validates collection IDs,
+participant ownership, contiguous clue order, stable-ID references, and
+append-only hypothesis history without executing agents. Clues contain only
+game-master-revealed information, and complete nested entities are not copied
+into references.
+
+Sessions allow partial state. Statuses are `setup`, `active`,
 `ready_for_final`, `completed`, and `abandoned`; only `completed` requires a
 final theory. Investigation orchestration, persistence, prompts, UI, scheduling,
-and a real game are future work.
+automatic disclosure, controllers, game loops, and a real game are future work.
 
 `ConversationRun.created_at` identifies the start of a run. Mock-generated
 messages share this timestamp to keep simulation deterministic; real-provider

@@ -496,8 +496,34 @@ A `GroupDecision` must be created explicitly with one of `pursue_lead`,
 result from a consensus algorithm. Evidence references contain only clue IDs
 and relations, while decisions reference analyses and hypotheses only by ID;
 complete entities are never nested or copied. Cross-record referential
-integrity belongs to a future investigation-session model. No persistence,
-automation, UI, or timestamps are implemented for these records.
+integrity is enforced when records are assembled into an
+`InvestigationSession`. No persistence, automation, UI, or timestamps are
+implemented for these records.
+
+### InvestigationSession aggregate
+
+```text
+InvestigationSession
+├── case introduction
+├── participant IDs
+├── status
+├── ordered revealed clues
+├── agent analyses
+├── append-only hypotheses
+├── group decisions
+└── optional final theory
+```
+
+`InvestigationSession` is the immutable aggregate root. It validates entity
+IDs, participant ownership, clue and record references, contiguous clue reveal
+order, and backward-only hypothesis revision links without executing agents.
+Clues still contain only information explicitly revealed by the game master,
+and nested references use stable IDs rather than copies of complete entities.
+
+Partial `setup`, `active`, `ready_for_final`, and `abandoned` sessions are valid
+without clues, analyses, hypotheses, decisions, or a final theory. Only a
+`completed` session requires a `FinalTheory`. No controller, game loop,
+persistence, UI, status-transition API, or automatic clue disclosure exists.
 
 ## 9. EvaluationTrial
 

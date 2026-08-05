@@ -47,6 +47,16 @@ class GroupDecisionType(str, Enum):
     REQUEST_INFORMATION = "request_information"
 
 
+class InvestigationStatus(str, Enum):
+    """Explicit lifecycle labels for investigation session snapshots."""
+
+    SETUP = "setup"
+    ACTIVE = "active"
+    READY_FOR_FINAL = "ready_for_final"
+    COMPLETED = "completed"
+    ABANDONED = "abandoned"
+
+
 class Clue(BaseModel):
     """Information explicitly revealed by the game master."""
 
@@ -200,6 +210,145 @@ class GroupDecision(BaseModel):
         value: tuple[EvidenceReference, ...],
     ) -> tuple[EvidenceReference, ...]:
         return _reject_duplicate_evidence(value)
+
+
+class FinalTheory(BaseModel):
+    """The group's immutable concluding theory, expressed through references."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    final_theory_id: NonEmptyStr
+    summary: StrictStr
+    hypothesis_ids: tuple[NonEmptyStr, ...] = ()
+    evidence: tuple[EvidenceReference, ...] = ()
+
+    @field_validator("summary")
+    @classmethod
+    def validate_summary(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("final theory summary must not be empty")
+        return value
+
+    @field_validator("hypothesis_ids")
+    @classmethod
+    def validate_unique_hypothesis_ids(
+        cls,
+        value: tuple[str, ...],
+    ) -> tuple[str, ...]:
+        return _reject_duplicate_strings(value, "hypothesis_ids")
+
+    @field_validator("evidence")
+    @classmethod
+    def validate_unique_evidence(
+        cls,
+        value: tuple[EvidenceReference, ...],
+    ) -> tuple[EvidenceReference, ...]:
+        return _reject_duplicate_evidence(value)
+
+
+class InvestigationSession(BaseModel):
+    """Validated immutable aggregate for one investigation snapshot."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    session_id: NonEmptyStr
+    case_introduction: StrictStr
+    participant_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
+    status: InvestigationStatus
+    clues: tuple[Clue, ...] = ()
+    analyses: tuple[AgentAnalysis, ...] = ()
+    hypotheses: tuple[Hypothesis, ...] = ()
+    decisions: tuple[GroupDecision, ...] = ()
+    final_theory: FinalTheory | None = None
+
+    @field_validator("case_introduction")
+    @classmethod
+    def validate_case_introduction(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("case introduction must not be empty")
+        return value
+
+    @field_validator("participant_ids")
+    @classmethod
+    def validate_unique_participants(
+        cls,
+        value: tuple[str, ...],
+    ) -> tuple[str, ...]:
+        return _reject_duplicate_strings(value, "participant_ids")
+
+    @model_validator(mode="after")
+    def validate_investigation_graph(self) -> "InvestigationSession":
+        """Validate ordering and references across the aggregate snapshot."""
+        collection_ids = (
+            ("clue_id", [clue.clue_id for clue in self.clues]),
+            ("analysis_id", [item.analysis_id for item in self.analyses]),
+            ("hypothesis_id", [item.hypothesis_id for item in self.hypotheses]),
+            ("decision_id", [item.decision_id for item in self.decisions]),
+        )
+        for field_name, values in collection_ids:
+            if len(values) != len(set(values)):
+                raise ValueError(f"{field_name} values must be unique")
+
+        reveal_orders = [clue.reveal_order for clue in self.clues]
+        if reveal_orders != list(range(len(self.clues))):
+            raise ValueError(
+                "clues must be ordered contiguously by reveal_order from zero"
+            )
+
+        participant_ids = set(self.participant_ids)
+        if any(item.agent_id not in participant_ids for item in self.analyses):
+            raise ValueError("all analyses must belong to session participants")
+
+        clue_ids = {clue.clue_id for clue in self.clues}
+        evidence_groups = [
+            item.evidence
+            for item in (*self.analyses, *self.hypotheses, *self.decisions)
+        ]
+        if self.final_theory is not None:
+            evidence_groups.append(self.final_theory.evidence)
+        if any(
+            reference.clue_id not in clue_ids
+            for evidence in evidence_groups
+            for reference in evidence
+        ):
+            raise ValueError("all evidence must reference session clues")
+
+        hypothesis_positions = {
+            item.hypothesis_id: index
+            for index, item in enumerate(self.hypotheses)
+        }
+        for index, hypothesis in enumerate(self.hypotheses):
+            previous_id = hypothesis.previous_hypothesis_id
+            if previous_id is not None and previous_id not in hypothesis_positions:
+                raise ValueError("previous hypothesis must exist in the session")
+            if (
+                previous_id is not None
+                and hypothesis_positions[previous_id] >= index
+            ):
+                raise ValueError("previous hypothesis must appear earlier")
+
+        analysis_ids = {item.analysis_id for item in self.analyses}
+        hypothesis_ids = set(hypothesis_positions)
+        for decision in self.decisions:
+            if any(item not in analysis_ids for item in decision.analysis_ids):
+                raise ValueError("decision references an unknown analysis")
+            if any(
+                item not in hypothesis_ids for item in decision.hypothesis_ids
+            ):
+                raise ValueError("decision references an unknown hypothesis")
+
+        if self.final_theory is not None and any(
+            item not in hypothesis_ids
+            for item in self.final_theory.hypothesis_ids
+        ):
+            raise ValueError("final theory references an unknown hypothesis")
+
+        if (
+            self.status is InvestigationStatus.COMPLETED
+            and self.final_theory is None
+        ):
+            raise ValueError("completed sessions require a final theory")
+        return self
 
 
 def validate_unique_clue_ids(clues: Sequence[Clue]) -> tuple[Clue, ...]:
