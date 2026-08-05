@@ -49,60 +49,35 @@
                 >
                     <legend class="field-label">Characters</legend>
                     <div class="character-list">
+                        {% for character in available_characters %}
                         <div class="character-option">
                             <input
-                                id="character-sherlock"
+                                id="character-{{ character.slug }}"
                                 type="checkbox"
                                 name="characters"
-                                value="sherlock"
-                                required
+                                value="{{ character.slug }}"
                                 aria-describedby="characters-help{% if field_errors.get('characters') %} characters-error{% endif %}"
                                 {% if field_errors.get("characters") %}aria-invalid="true"{% endif %}
-                                {% if "sherlock" in selected_characters %}checked{% endif %}
+                                {% if character.selected %}checked{% endif %}
                             >
                             <label
-                                for="character-sherlock"
-                                class="character-card character-card--sherlock"
+                                for="character-{{ character.slug }}"
+                                class="character-card {{ character.presentation_class }}"
                             >
-                                <span class="character-initials" aria-hidden="true">SH</span>
+                                <span class="character-initials" aria-hidden="true">{{ character.initials }}</span>
                                 <span class="character-copy">
-                                    <span class="character-name">Sherlock Holmes</span>
+                                    <span class="character-name">{{ character.display_name }}</span>
                                     <span class="character-description">
-                                        Analytical, observational, and deductive.
+                                        {{ character.description }}
                                     </span>
                                 </span>
                                 <span class="selection-mark" aria-hidden="true">✓</span>
                             </label>
                         </div>
-
-                        <div class="character-option">
-                            <input
-                                id="character-poirot"
-                                type="checkbox"
-                                name="characters"
-                                value="poirot"
-                                required
-                                aria-describedby="characters-help{% if field_errors.get('characters') %} characters-error{% endif %}"
-                                {% if field_errors.get("characters") %}aria-invalid="true"{% endif %}
-                                {% if "poirot" in selected_characters %}checked{% endif %}
-                            >
-                            <label
-                                for="character-poirot"
-                                class="character-card character-card--poirot"
-                            >
-                                <span class="character-initials" aria-hidden="true">HP</span>
-                                <span class="character-copy">
-                                    <span class="character-name">Hercule Poirot</span>
-                                    <span class="character-description">
-                                        Methodical, psychological, and orderly.
-                                    </span>
-                                </span>
-                                <span class="selection-mark" aria-hidden="true">✓</span>
-                            </label>
-                        </div>
+                        {% endfor %}
                     </div>
                     <p class="field-note" id="characters-help">
-                        Both detectives are selected by default and required for this sprint.
+                        All available characters are selected by default. Choose at least two.
                     </p>
                     {% if field_errors.get("characters") %}
                         <p class="field-error" id="characters-error">
@@ -213,25 +188,25 @@
             <div class="transcript-body" data-transcript-body>
                 {% if conversation_result %}
                     <ol class="transcript-list" aria-label="Conversation messages">
-                        {% for message in conversation_result.run.messages %}
+                        {% for presented in message_presentations %}
                             <li class="transcript-item">
-                                <article class="message-card{% if message.speaker_character_id == 'sherlock_holmes' %} message-card--sherlock{% elif message.speaker_character_id == 'hercule_poirot' %} message-card--poirot{% endif %}">
+                                <article class="message-card {{ presented.presentation_class }}">
                                     <header class="message-header">
                                         <span class="message-avatar" aria-hidden="true">
-                                            {% if message.speaker_character_id == "sherlock_holmes" %}SH{% elif message.speaker_character_id == "hercule_poirot" %}HP{% endif %}
+                                            {{ presented.initials }}
                                         </span>
                                         <div class="message-identity">
-                                            <h3 class="message-speaker">{{ message.speaker_name }}</h3>
-                                            <p class="message-turn">Turn {{ message.turn_index + 1 }}</p>
+                                            <h3 class="message-speaker">{{ presented.message.speaker_name }}</h3>
+                                            <p class="message-turn">Turn {{ presented.message.turn_index + 1 }}</p>
                                         </div>
                                     </header>
                                     <div class="message-content">
-                                        <p>{{ message.text }}</p>
+                                        <p>{{ presented.message.text }}</p>
                                     </div>
-                                    {% if message.error %}
+                                    {% if presented.message.error %}
                                         <div class="message-error">
                                             <strong>Generation error</strong>
-                                            <p>{{ message.error }}</p>
+                                            <p>{{ presented.message.error }}</p>
                                         </div>
                                     {% endif %}
                                 </article>
@@ -250,7 +225,7 @@
                         <h3>No conversation yet</h3>
                         <p>
                             Configure the investigation to prepare a deterministic
-                            mock conversation between Sherlock and Poirot.
+                            mock conversation between the selected characters.
                         </p>
                     </div>
                 {% endif %}

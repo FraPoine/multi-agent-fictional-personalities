@@ -9,7 +9,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from tests.asgi_client import ASGITestClient
+
+from multi_agent_personalities.models import Persona
 
 
 web_module = importlib.import_module("multi_agent_personalities.web.app")
@@ -42,26 +45,83 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture
 def web_client(
     tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
 ) -> Iterator[tuple[ASGITestClient, Path]]:
     """Provide a client whose real mock runs persist only beneath tmp_path."""
     output_root = tmp_path / "outputs"
-    real_run_mock_conversation = web_module.run_mock_conversation
+    application = web_module.create_app(
+        project_root=REPOSITORY_ROOT,
+        output_root=output_root,
+    )
+    with ASGITestClient(application) as client:
+        yield client, output_root
 
-    def isolated_run_mock_conversation(**kwargs: Any) -> Any:
-        kwargs["output_root"] = output_root
-        kwargs["project_root"] = REPOSITORY_ROOT
-        return real_run_mock_conversation(**kwargs)
 
-    monkeypatch.setattr(web_module, "PROJECT_ROOT", tmp_path)
-    monkeypatch.setattr(web_module, "OUTPUT_ROOT", output_root)
-    monkeypatch.setattr(
-        web_module,
-        "run_mock_conversation",
-        isolated_run_mock_conversation,
+def create_synthetic_web_project(project_root: Path) -> None:
+    """Create three catalog characters and mock assets under a temporary root."""
+
+    config_directory = project_root / "configs"
+    assets_directory = project_root / "assets"
+    config_directory.mkdir(parents=True)
+    characters = (
+        ("alpha", "agent-alpha", "Agent Alpha"),
+        ("beta", "agent-beta", "Beta"),
+        ("gamma", "agent-gamma", "Agent Gamma"),
+    )
+    entries: list[dict[str, str]] = []
+    for slug, character_id, display_name in characters:
+        character_directory = assets_directory / slug
+        character_directory.mkdir(parents=True)
+        (character_directory / "corpus.jsonl").write_text(
+            '{"text":"Synthetic web evidence."}\n',
+            encoding="utf-8",
+        )
+        persona = Persona(
+            character_id=character_id,
+            display_name=display_name,
+            description="Synthetic web-test persona.",
+            speaking_style=["Neutral"],
+            reasoning_style=["Deterministic"],
+            personality_traits=["Test-only"],
+            behavior_rules=["Use test data"],
+            example_messages=[f"response-from-{slug}"],
+        )
+        (character_directory / "persona.json").write_text(
+            persona.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
+        (character_directory / "response.txt").write_text(
+            f"response-from-{slug}\n",
+            encoding="utf-8",
+        )
+        entries.append(
+            {
+                "slug": slug,
+                "character_id": character_id,
+                "display_name": display_name,
+                "description": f"Synthetic description for {display_name}.",
+                "corpus_path": f"../assets/{slug}/corpus.jsonl",
+                "persona_fixture_path": f"../assets/{slug}/persona.json",
+                "mock_response_fixture_path": f"../assets/{slug}/response.txt",
+            }
+        )
+    (config_directory / "characters.yaml").write_text(
+        yaml.safe_dump({"characters": entries}, sort_keys=False),
+        encoding="utf-8",
     )
 
-    with ASGITestClient(web_module.create_app()) as client:
+
+@pytest.fixture
+def synthetic_web_client(
+    tmp_path: Path,
+) -> Iterator[tuple[ASGITestClient, Path]]:
+    project_root = tmp_path / "synthetic_project"
+    output_root = project_root / "outputs"
+    create_synthetic_web_project(project_root)
+    application = web_module.create_app(
+        project_root=project_root,
+        output_root=output_root,
+    )
+    with ASGITestClient(application) as client:
         yield client, output_root
 
 
@@ -127,6 +187,165 @@ def test_main_page_renders_without_creating_output(
     assert 'class="message-card' not in response.text
     assert "Run ID" not in response.text
     assert "outputs/conversations/runs/" not in response.text
+    assert_no_completed_run(output_root)
+
+
+def test_default_catalog_controls_are_accessible_and_selected(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = web_client
+
+    response = client.get("/")
+    controls = re.findall(
+        r'<input\s+[^>]*id="(character-[^"]+)"[^>]*name="characters"'
+        r'[^>]*value="([^"]+)"[^>]*>',
+        response.text,
+    )
+
+    assert controls == [
+        ("character-sherlock", "sherlock"),
+        ("character-poirot", "poirot"),
+    ]
+    assert len({control_id for control_id, _ in controls}) == len(controls)
+    for control_id, _ in controls:
+        input_tag = re.search(
+            rf'<input\s+[^>]*id="{control_id}"[^>]*>',
+            response.text,
+        )
+        assert input_tag is not None and "checked" in input_tag.group()
+        assert f'for="{control_id}"' in response.text
+    assert ">SH</span>" in response.text
+    assert ">HP</span>" in response.text
+    assert "participant-tone-1" in response.text
+    assert "participant-tone-2" in response.text
+
+
+def test_three_character_catalog_renders_in_order_with_generic_metadata(
+    synthetic_web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, output_root = synthetic_web_client
+
+    response = client.get("/")
+
+    assert_html_response(response, 200)
+    assert response.text.index("Agent Alpha") < response.text.index("Beta")
+    assert response.text.index("Beta") < response.text.index("Agent Gamma")
+    for slug, initials, tone in (
+        ("alpha", "AA", 1),
+        ("beta", "B", 2),
+        ("gamma", "AG", 3),
+    ):
+        input_tag = re.search(
+            rf'<input\s+[^>]*id="character-{slug}"[^>]*>',
+            response.text,
+        )
+        assert input_tag is not None and "checked" in input_tag.group()
+        assert f'for="character-{slug}"' in response.text
+        assert f'value="{slug}"' in input_tag.group()
+        assert f">{initials}</span>" in response.text
+        assert f"participant-tone-{tone}" in response.text
+    assert "Sherlock" not in response.text
+    assert "Poirot" not in response.text
+    assert_no_completed_run(output_root)
+
+
+def test_two_of_three_selection_uses_catalog_form_order(
+    synthetic_web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = synthetic_web_client
+
+    response = client.post(
+        "/conversations",
+        data={
+            "characters": ["alpha", "gamma"],
+            "topic": TOPIC,
+            "turn_count": "4",
+        },
+    )
+
+    assert_html_response(response, 200)
+    transcript = response.text.split(
+        '<ol class="transcript-list"',
+        maxsplit=1,
+    )[1].split("</ol>", maxsplit=1)[0]
+    markers = [
+        "response-from-alpha",
+        "response-from-gamma",
+        "response-from-alpha",
+        "response-from-gamma",
+    ]
+    cursor = 0
+    for marker in markers:
+        cursor = transcript.index(marker, cursor) + len(marker)
+    assert "response-from-beta" not in transcript
+    beta_input = re.search(
+        r'<input\s+[^>]*id="character-beta"[^>]*>',
+        response.text,
+    )
+    assert beta_input is not None and "checked" not in beta_input.group()
+
+
+def test_three_participant_submission_preserves_message_order(
+    synthetic_web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = synthetic_web_client
+
+    response = client.post(
+        "/conversations",
+        data={
+            "characters": ["alpha", "beta", "gamma"],
+            "topic": TOPIC,
+            "turn_count": "5",
+        },
+    )
+
+    assert_html_response(response, 200)
+    transcript = response.text.split(
+        '<ol class="transcript-list"',
+        maxsplit=1,
+    )[1].split("</ol>", maxsplit=1)[0]
+    expected = [
+        "response-from-alpha",
+        "response-from-beta",
+        "response-from-gamma",
+        "response-from-alpha",
+        "response-from-beta",
+    ]
+    cursor = 0
+    for marker in expected:
+        cursor = transcript.index(marker, cursor) + len(marker)
+    assert transcript.count('class="message-card') == 5
+
+
+@pytest.mark.parametrize(
+    ("characters", "error"),
+    [
+        ([], "Select at least two characters."),
+        (["alpha"], "Select at least two characters."),
+        (
+            ["alpha", "beta", "alpha"],
+            "Select each available character only once.",
+        ),
+        (
+            ["alpha", "beta", "unknown"],
+            "Select only currently available characters.",
+        ),
+    ],
+)
+def test_synthetic_invalid_participants_fail_before_persistence(
+    synthetic_web_client: tuple[ASGITestClient, Path],
+    characters: list[str],
+    error: str,
+) -> None:
+    client, output_root = synthetic_web_client
+
+    response = client.post(
+        "/conversations",
+        data={"characters": characters, "topic": TOPIC, "turn_count": "5"},
+    )
+
+    assert_failed_without_result(response, 400)
+    assert error in response.text
     assert_no_completed_run(output_root)
 
 
@@ -251,11 +470,11 @@ def test_read_only_routes_create_no_conversation_output(
 INVALID_SUBMISSIONS = (
     (
         {"topic": TOPIC, "turn_count": "4"},
-        "Select both Sherlock Holmes and Hercule Poirot.",
+        "Select at least two characters.",
     ),
     (
         {"characters": ["sherlock"], "topic": TOPIC, "turn_count": "4"},
-        "Select both Sherlock Holmes and Hercule Poirot.",
+        "Select at least two characters.",
     ),
     (
         {
@@ -263,7 +482,7 @@ INVALID_SUBMISSIONS = (
             "topic": TOPIC,
             "turn_count": "4",
         },
-        "Select each supported detective only once.",
+        "Select each available character only once.",
     ),
     (
         {
@@ -271,7 +490,7 @@ INVALID_SUBMISSIONS = (
             "topic": TOPIC,
             "turn_count": "4",
         },
-        "Select each supported detective only once.",
+        "Select only currently available characters.",
     ),
     (
         {
@@ -384,7 +603,7 @@ def test_invalid_submission_preserves_safe_values(
     assert poirot_input is not None and "checked" not in poirot_input.group()
     assert ">A preserved topic</textarea>" in response.text
     assert 'value="abc"' in response.text
-    assert "Select both Sherlock Holmes and Hercule Poirot." in response.text
+    assert "Select at least two characters." in response.text
     assert "Enter a whole number between 2 and 12." in response.text
     assert_no_completed_run(output_root)
 

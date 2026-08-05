@@ -58,8 +58,7 @@ function initializeConversationLoading() {
 
         const description = document.createElement("p");
         description.textContent = (
-            "Sherlock Holmes and Hercule Poirot are investigating " +
-            "the case locally."
+            "The selected characters are investigating the case locally."
         );
 
         loadingState.append(spinner, heading, description);
