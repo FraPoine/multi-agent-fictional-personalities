@@ -1419,6 +1419,13 @@ def test_complete_json_round_trip_and_serialization_are_deterministic() -> None:
     )
 
 
+def test_non_completed_session_cannot_contain_final_theory() -> None:
+    payload = complete_payload()
+    payload["status"] = "active"
+    with pytest.raises(ValidationError, match="non-completed sessions"):
+        InvestigationSession.model_validate(payload)
+
+
 def lifecycle_payload(status: str) -> dict[str, object]:
     payload = completed_decision_session_payload()
     investigation_round = payload["rounds"][0]

@@ -604,6 +604,16 @@ the pre-decision snapshot. Recording a decision completes its round while the
 session remains active; clue revelation, subsequent rounds, and finalization
 remain explicit caller actions.
 
+Explicit finalization requires an active session whose rounds and decisions are
+complete, plus at least one hypothesis and structured evidence reference. The
+final prompt is bounded by the last completed round's visibility snapshot and
+the provider result traverses the same structured adapter. The service owns
+`session_NNN_final_theory` identity and atomically adds the theory together
+with `completed` status. The aggregate enforces both directions: completed
+sessions require a final theory, and non-completed sessions cannot contain one.
+`ready_for_final` does not trigger generation. No official-solution scoring,
+persistence, or web route is implemented.
+
 Prompt context comes from four version-1 files under `prompts/`. Their closed
 placeholder contracts are loaded and rendered in the application layer, while
 record helpers preserve supplied collection order. These facilities do not

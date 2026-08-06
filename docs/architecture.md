@@ -414,7 +414,25 @@ immutable pre-decision snapshot. A successful operation attaches exactly one
 decision, marks only the round `completed`, leaves the session `active`, and
 returns control. It does not execute the decision, reveal a clue, open another
 round, persist records, or finalize the investigation; those actions remain
-caller-controlled and finalization remains unimplemented.
+caller-controlled.
+
+## Explicit investigation finalization
+
+`finalize_investigation()` is the sole workflow operation that creates a
+`FinalTheory` and changes a session from `active` directly to `completed`. The
+caller must invoke it explicitly after every round is completed and at least
+one valid decision and hypothesis exist. `ready_for_final` remains a compatible
+domain label but is neither generated nor accepted as an operational trigger.
+
+The service renders the versioned final-theory prompt from the last completed
+round's maximum clue visibility, all session hypotheses in stored order, and
+completed decisions in round order. It calls one explicitly supplied provider
+with the stable provider-neutral `investigation.final_theory` task, parses the
+result through the shared structured adapter, validates nonempty hypothesis and
+evidence references, and assigns the service-owned deterministic final-theory
+ID. The theory and completed status are inserted in one aggregate rebuild.
+There is no automatic finalization, official-solution scoring, persistence, or
+investigation web exposure.
 
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves

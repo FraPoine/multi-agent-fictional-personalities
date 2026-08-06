@@ -13,6 +13,7 @@ from multi_agent_personalities.application.investigation_ids import (
 from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
     investigation_decision_task_name,
+    investigation_final_theory_task_name,
 )
 from multi_agent_personalities.application.investigation_prompts import (
     InvestigationPromptName,
@@ -28,6 +29,7 @@ from multi_agent_personalities.application.investigation_prompts import (
 from multi_agent_personalities.application.investigation_structured_output import (
     GeneratedAnalysisPayload,
     GeneratedDecisionPayload,
+    GeneratedFinalTheoryPayload,
     StructuredGenerationResult,
     parse_structured_generation,
 )
@@ -37,6 +39,7 @@ from multi_agent_personalities.models import (
     Clue,
     ConversationRun,
     GroupDecision,
+    FinalTheory,
     Hypothesis,
     InvestigationRound,
     InvestigationRoundStatus,
@@ -81,6 +84,15 @@ class GroupDecisionResult:
     session: InvestigationSession
     decision: GroupDecision
     generation: StructuredGenerationResult[GeneratedDecisionPayload]
+
+
+@dataclass(frozen=True)
+class FinalizationResult:
+    """One explicit atomic session completion and its generation provenance."""
+
+    session: InvestigationSession
+    final_theory: FinalTheory
+    generation: StructuredGenerationResult[GeneratedFinalTheoryPayload]
 
 
 def _completed_history_context(
@@ -727,5 +739,116 @@ def create_group_decision(
     return GroupDecisionResult(
         session=updated_session,
         decision=decision,
+        generation=structured,
+    )
+
+
+def finalize_investigation(
+    session: InvestigationSession,
+    *,
+    final_theory_provider: LLMProvider,
+    id_factory: DeterministicInvestigationIdFactory,
+) -> FinalizationResult:
+    """Explicitly generate a final theory and complete an active session."""
+    if not isinstance(session, InvestigationSession):
+        raise ValueError("session must be a validated InvestigationSession")
+    snapshot = InvestigationSession.model_validate(
+        session.model_dump(mode="python")
+    )
+    if snapshot.status is not InvestigationStatus.ACTIVE:
+        raise ValueError("finalization may run only in an active session")
+    if not snapshot.rounds:
+        raise ValueError("finalization requires at least one investigation round")
+    if any(
+        item.status is not InvestigationRoundStatus.COMPLETED
+        for item in snapshot.rounds
+    ):
+        raise ValueError("all investigation rounds must be completed")
+    if not snapshot.decisions:
+        raise ValueError("finalization requires at least one group decision")
+    if not snapshot.hypotheses:
+        raise ValueError("finalization requires at least one hypothesis")
+    if not snapshot.clues:
+        raise ValueError("finalization requires at least one revealed clue")
+    if snapshot.final_theory is not None:
+        raise ValueError("investigation already contains a final theory")
+    if not callable(getattr(final_theory_provider, "generate", None)):
+        raise ValueError(
+            "final_theory_provider must implement the LLMProvider boundary"
+        )
+    if not isinstance(id_factory, DeterministicInvestigationIdFactory):
+        raise ValueError(
+            "id_factory must be a DeterministicInvestigationIdFactory"
+        )
+    if id_factory.session_id != snapshot.session_id:
+        raise ValueError("id_factory session_id must match the investigation session")
+
+    final_round = snapshot.rounds[-1]
+    final_visible_clue_ids = final_round.visible_clue_ids
+    decision_by_round = {item.round_id: item for item in snapshot.decisions}
+    completed_decisions = tuple(
+        decision_by_round[item.round_id] for item in snapshot.rounds
+    )
+    prompt = render_investigation_prompt(
+        load_investigation_prompt(InvestigationPromptName.FINAL_THEORY),
+        {
+            "session_id": snapshot.session_id,
+            "case_introduction": snapshot.case_introduction,
+            "visible_clues": render_visible_clues(
+                snapshot, final_visible_clue_ids
+            ),
+            "hypotheses": render_hypotheses(snapshot.hypotheses),
+            "decisions": render_decisions(completed_decisions),
+        },
+    )
+    generation = final_theory_provider.generate(
+        prompt,
+        task_name=investigation_final_theory_task_name(),
+    )
+    structured = parse_structured_generation(
+        generation,
+        GeneratedFinalTheoryPayload,
+    )
+    generated = structured.value
+    if not generated.hypothesis_ids:
+        raise ValueError("final theory requires at least one hypothesis reference")
+    if not generated.evidence:
+        raise ValueError("final theory requires at least one evidence reference")
+
+    round_by_id = {item.round_id: item for item in snapshot.rounds}
+    hypothesis_by_id = {
+        item.hypothesis_id: item for item in snapshot.hypotheses
+    }
+    for hypothesis_id in generated.hypothesis_ids:
+        if hypothesis_id not in hypothesis_by_id:
+            raise ValueError("final theory references an unknown hypothesis")
+        hypothesis = hypothesis_by_id[hypothesis_id]
+        if hypothesis.session_id != snapshot.session_id:
+            raise ValueError("final theory hypothesis belongs to another session")
+        if (
+            round_by_id[hypothesis.round_id].status
+            is not InvestigationRoundStatus.COMPLETED
+        ):
+            raise ValueError("final theory hypothesis must belong to a completed round")
+
+    visible_clue_ids = set(final_visible_clue_ids)
+    if any(item.clue_id not in visible_clue_ids for item in generated.evidence):
+        raise ValueError("final theory evidence must reference final visible clues")
+
+    final_theory = FinalTheory(
+        final_theory_id=id_factory.final_theory_id(),
+        summary=generated.summary,
+        hypothesis_ids=generated.hypothesis_ids,
+        evidence=generated.evidence,
+    )
+    session_payload = snapshot.model_dump(mode="python")
+    session_payload.update(
+        status=InvestigationStatus.COMPLETED,
+        final_theory=final_theory,
+    )
+    completed_session = InvestigationSession.model_validate(session_payload)
+    return FinalizationResult(
+        session=completed_session,
+        final_theory=final_theory,
         generation=structured,
     )

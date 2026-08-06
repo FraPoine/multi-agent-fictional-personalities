@@ -95,3 +95,7 @@ class DeterministicInvestigationIdFactory:
         return validate_run_id(
             f"{self.session_id}_decision_{round_index:04d}"
         )
+
+    def final_theory_id(self) -> str:
+        """Return the canonical final-theory ID for this session."""
+        return validate_run_id(f"{self.session_id}_final_theory")

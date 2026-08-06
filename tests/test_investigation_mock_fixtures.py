@@ -20,6 +20,7 @@ from multi_agent_personalities.application import (
     investigation_analysis_task_name,
     investigation_decision_task_name,
     investigation_discussion_task_name,
+    investigation_final_theory_task_name,
     parse_structured_generation,
 )
 from multi_agent_personalities.models import GenerationResult
@@ -77,6 +78,7 @@ def test_provider_neutral_task_names_remain_backward_compatible() -> None:
     assert investigation_decision_task_name(1) == (
         "investigation.decision.round_0001"
     )
+    assert investigation_final_theory_task_name() == "investigation.final_theory"
 
 
 @pytest.mark.parametrize("value", [0, -1, True, 1.0, "1"])

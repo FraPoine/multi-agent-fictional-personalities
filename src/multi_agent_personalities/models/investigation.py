@@ -688,6 +688,11 @@ class InvestigationSession(BaseModel):
             and self.final_theory is None
         ):
             raise ValueError("completed sessions require a final theory")
+        if (
+            self.final_theory is not None
+            and self.status is not InvestigationStatus.COMPLETED
+        ):
+            raise ValueError("non-completed sessions must not contain a final theory")
         return self
 
 

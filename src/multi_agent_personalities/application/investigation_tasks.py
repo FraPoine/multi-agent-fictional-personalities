@@ -45,3 +45,8 @@ def investigation_decision_task_name(round_index: int) -> str:
     ):
         raise ValueError("round_index must be a positive integer")
     return f"investigation.decision.round_{round_index:04d}"
+
+
+def investigation_final_theory_task_name() -> str:
+    """Return the stable provider-neutral final-theory task name."""
+    return "investigation.final_theory"
