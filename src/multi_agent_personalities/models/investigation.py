@@ -15,12 +15,15 @@ from pydantic import (
     model_validator,
 )
 
+from multi_agent_personalities.models.conversation import ConversationRun
+
 
 NonEmptyStr = Annotated[
     str,
     StringConstraints(strip_whitespace=True, min_length=1, strict=True),
 ]
 NonNegativeStrictInt = Annotated[int, Field(strict=True, ge=0)]
+PositiveStrictInt = Annotated[int, Field(strict=True, ge=1)]
 
 
 class EvidenceRelation(str, Enum):
@@ -55,6 +58,15 @@ class InvestigationStatus(str, Enum):
     READY_FOR_FINAL = "ready_for_final"
     COMPLETED = "completed"
     ABANDONED = "abandoned"
+
+
+class InvestigationRoundStatus(str, Enum):
+    """Lifecycle states for one investigation clue-revelation cycle."""
+
+    AWAITING_ANALYSES = "awaiting_analyses"
+    AWAITING_DISCUSSION = "awaiting_discussion"
+    AWAITING_DECISION = "awaiting_decision"
+    COMPLETED = "completed"
 
 
 class Clue(BaseModel):
@@ -246,6 +258,22 @@ class FinalTheory(BaseModel):
         return _reject_duplicate_evidence(value)
 
 
+class InvestigationRound(BaseModel):
+    """Immutable structural record for one investigation cycle."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    session_id: NonEmptyStr
+    round_id: NonEmptyStr
+    round_index: PositiveStrictInt
+    revealed_clue_id: NonEmptyStr
+    visible_clue_ids: tuple[NonEmptyStr, ...]
+    analysis_ids: tuple[NonEmptyStr, ...] = ()
+    discussion_run: ConversationRun | None = None
+    decision_id: NonEmptyStr | None = None
+    status: InvestigationRoundStatus
+
+
 class InvestigationSession(BaseModel):
     """Validated immutable aggregate for one investigation snapshot."""
 
@@ -256,6 +284,7 @@ class InvestigationSession(BaseModel):
     participant_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
     status: InvestigationStatus
     clues: tuple[Clue, ...] = ()
+    rounds: tuple[InvestigationRound, ...] = ()
     analyses: tuple[AgentAnalysis, ...] = ()
     hypotheses: tuple[Hypothesis, ...] = ()
     decisions: tuple[GroupDecision, ...] = ()
@@ -281,6 +310,7 @@ class InvestigationSession(BaseModel):
         """Validate ordering and references across the aggregate snapshot."""
         collection_ids = (
             ("clue_id", [clue.clue_id for clue in self.clues]),
+            ("round_id", [item.round_id for item in self.rounds]),
             ("analysis_id", [item.analysis_id for item in self.analyses]),
             ("hypothesis_id", [item.hypothesis_id for item in self.hypotheses]),
             ("decision_id", [item.decision_id for item in self.decisions]),
@@ -293,6 +323,18 @@ class InvestigationSession(BaseModel):
         if reveal_orders != list(range(len(self.clues))):
             raise ValueError(
                 "clues must be ordered contiguously by reveal_order from zero"
+            )
+
+        round_indexes = [item.round_index for item in self.rounds]
+        if len(round_indexes) != len(set(round_indexes)):
+            raise ValueError("round_index values must be unique")
+        if round_indexes != list(range(1, len(self.rounds) + 1)):
+            raise ValueError(
+                "rounds must be ordered contiguously by round_index from one"
+            )
+        if any(item.session_id != self.session_id for item in self.rounds):
+            raise ValueError(
+                "all rounds must belong to the investigation session"
             )
 
         participant_ids = set(self.participant_ids)

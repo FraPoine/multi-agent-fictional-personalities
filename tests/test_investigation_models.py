@@ -1,17 +1,22 @@
 """Tests for immutable investigation building-block models."""
 
+from datetime import datetime, timezone
+
 import pytest
 from pydantic import ValidationError
 
 from multi_agent_personalities.models import (
     AgentAnalysis,
     Clue,
+    ConversationRun,
     EvidenceReference,
     EvidenceRelation,
     GroupDecision,
     GroupDecisionType,
     Hypothesis,
     HypothesisStatus,
+    InvestigationRound,
+    InvestigationRoundStatus,
     validate_unique_clue_ids,
 )
 
@@ -499,3 +504,123 @@ def test_list_inputs_become_ordered_tuples_and_json_round_trips() -> None:
         EvidenceRelation.CONTRADICTS,
     )
     assert restored == decision
+
+
+def make_round(**updates: object) -> InvestigationRound:
+    payload: dict[str, object] = {
+        "session_id": "session_001",
+        "round_id": "session_001_round_0001",
+        "round_index": 1,
+        "revealed_clue_id": "session_001_clue_0001",
+        "visible_clue_ids": ["session_001_clue_0001"],
+        "status": "awaiting_analyses",
+    }
+    payload.update(updates)
+    return InvestigationRound.model_validate(payload)
+
+
+def test_minimal_investigation_round_uses_structural_defaults() -> None:
+    investigation_round = make_round()
+
+    assert investigation_round.round_index == 1
+    assert investigation_round.analysis_ids == ()
+    assert investigation_round.discussion_run is None
+    assert investigation_round.decision_id is None
+    assert (
+        investigation_round.status
+        is InvestigationRoundStatus.AWAITING_ANALYSES
+    )
+
+
+@pytest.mark.parametrize("status", list(InvestigationRoundStatus))
+def test_investigation_round_accepts_every_status(
+    status: InvestigationRoundStatus,
+) -> None:
+    assert make_round(status=status).status is status
+
+
+def test_investigation_round_converts_lists_to_ordered_tuples() -> None:
+    investigation_round = make_round(
+        visible_clue_ids=["clue_002", "clue_001"],
+        analysis_ids=["analysis_002", "analysis_001"],
+    )
+
+    assert investigation_round.visible_clue_ids == ("clue_002", "clue_001")
+    assert investigation_round.analysis_ids == ("analysis_002", "analysis_001")
+
+
+@pytest.mark.parametrize(
+    "updates",
+    [
+        {"session_id": ""},
+        {"round_id": "   "},
+        {"revealed_clue_id": ""},
+        {"visible_clue_ids": ["clue_001", " "]},
+        {"analysis_ids": [""]},
+        {"decision_id": "  "},
+    ],
+)
+def test_investigation_round_rejects_empty_identifiers(
+    updates: dict[str, object],
+) -> None:
+    with pytest.raises(ValidationError):
+        make_round(**updates)
+
+
+@pytest.mark.parametrize("round_index", [0, -1, True, False, 1.0])
+def test_investigation_round_rejects_invalid_indexes(
+    round_index: object,
+) -> None:
+    with pytest.raises(ValidationError):
+        make_round(round_index=round_index)
+
+
+def test_investigation_round_rejects_unsupported_status_and_extra_fields() -> None:
+    with pytest.raises(ValidationError):
+        make_round(status="failed")
+    with pytest.raises(ValidationError):
+        make_round(retry_count=1)
+
+
+def test_investigation_round_is_frozen() -> None:
+    investigation_round = make_round()
+
+    with pytest.raises(ValidationError):
+        investigation_round.status = InvestigationRoundStatus.COMPLETED
+
+
+def test_investigation_round_json_round_trip_preserves_tuple_order() -> None:
+    investigation_round = make_round(
+        visible_clue_ids=["clue_001", "clue_002"],
+        analysis_ids=["analysis_sherlock", "analysis_poirot"],
+    )
+
+    restored = InvestigationRound.model_validate_json(
+        investigation_round.model_dump_json()
+    )
+
+    assert restored == investigation_round
+    assert restored.visible_clue_ids == ("clue_001", "clue_002")
+    assert restored.analysis_ids == ("analysis_sherlock", "analysis_poirot")
+
+
+def test_investigation_round_accepts_existing_conversation_run() -> None:
+    discussion_run = ConversationRun(
+        run_id="session_001_round_0001_discussion",
+        topic="Discuss the first clue.",
+        character_ids=("sherlock", "poirot"),
+        turn_count=1,
+        seed=42,
+        provider="mock",
+        model="mock-round-robin",
+        created_at=datetime(2026, 8, 6, 12, 0, tzinfo=timezone.utc),
+        status="running",
+    )
+
+    investigation_round = make_round(discussion_run=discussion_run)
+    restored = InvestigationRound.model_validate_json(
+        investigation_round.model_dump_json()
+    )
+
+    assert investigation_round.discussion_run is discussion_run
+    assert restored.discussion_run == discussion_run

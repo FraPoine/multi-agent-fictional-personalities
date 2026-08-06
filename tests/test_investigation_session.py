@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from multi_agent_personalities.models import (
     FinalTheory,
+    InvestigationRound,
     InvestigationSession,
     InvestigationStatus,
 )
@@ -75,6 +76,25 @@ def complete_payload() -> dict[str, object]:
     }
 
 
+def round_payload(
+    round_index: int = 1,
+    *,
+    round_id: str | None = None,
+    session_id: str = "session_001",
+) -> dict[str, object]:
+    return {
+        "session_id": session_id,
+        "round_id": round_id or f"session_001_round_{round_index:04d}",
+        "round_index": round_index,
+        "revealed_clue_id": f"session_001_clue_{round_index:04d}",
+        "visible_clue_ids": [
+            f"session_001_clue_{index:04d}"
+            for index in range(1, round_index + 1)
+        ],
+        "status": "awaiting_analyses",
+    }
+
+
 def test_minimal_setup_session_is_valid_and_preserves_introduction() -> None:
     session = InvestigationSession.model_validate(minimal_payload())
 
@@ -82,7 +102,101 @@ def test_minimal_setup_session_is_valid_and_preserves_introduction() -> None:
     assert session.participant_ids == ("sherlock", "poirot")
     assert session.case_introduction == "  A visitor vanished from a locked room.  "
     assert session.clues == ()
+    assert session.rounds == ()
     assert session.final_theory is None
+
+
+def test_legacy_payload_without_rounds_deserializes_with_empty_tuple() -> None:
+    payload = minimal_payload()
+
+    from_dict = InvestigationSession.model_validate(payload)
+    from_json = InvestigationSession.model_validate_json(
+        '{"session_id":"session_001",'
+        '"case_introduction":"A case.",'
+        '"participant_ids":["sherlock","poirot"],'
+        '"status":"setup"}'
+    )
+
+    assert "rounds" not in payload
+    assert from_dict.rounds == ()
+    assert from_json.rounds == ()
+
+
+def test_session_accepts_one_round() -> None:
+    session = InvestigationSession.model_validate(
+        {**minimal_payload("active"), "rounds": [round_payload()]}
+    )
+
+    assert len(session.rounds) == 1
+    assert isinstance(session.rounds[0], InvestigationRound)
+    assert session.rounds[0].round_index == 1
+
+
+def test_session_accepts_multiple_contiguous_rounds_in_order() -> None:
+    session = InvestigationSession.model_validate(
+        {
+            **minimal_payload("active"),
+            "rounds": [round_payload(1), round_payload(2), round_payload(3)],
+        }
+    )
+
+    assert tuple(item.round_index for item in session.rounds) == (1, 2, 3)
+
+
+def test_session_rejects_duplicate_round_ids() -> None:
+    payload = {
+        **minimal_payload("active"),
+        "rounds": [
+            round_payload(1, round_id="same"),
+            round_payload(2, round_id="same"),
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="round_id"):
+        InvestigationSession.model_validate(payload)
+
+
+@pytest.mark.parametrize("indexes", [[1, 1], [2], [1, 3], [2, 1]])
+def test_session_rejects_invalid_round_index_sequences(
+    indexes: list[int],
+) -> None:
+    payload = {
+        **minimal_payload("active"),
+        "rounds": [
+            round_payload(index, round_id=f"round_{position}")
+            for position, index in enumerate(indexes)
+        ],
+    }
+
+    with pytest.raises(ValidationError, match="round_index"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_session_rejects_round_owned_by_another_session() -> None:
+    payload = {
+        **minimal_payload("active"),
+        "rounds": [round_payload(session_id="session_002")],
+    }
+
+    with pytest.raises(ValidationError, match="belong"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_session_round_json_round_trip_preserves_order() -> None:
+    session = InvestigationSession.model_validate(
+        {
+            **minimal_payload("active"),
+            "rounds": [round_payload(1), round_payload(2)],
+        }
+    )
+
+    restored = InvestigationSession.model_validate_json(session.model_dump_json())
+
+    assert restored == session
+    assert tuple(item.round_id for item in restored.rounds) == (
+        "session_001_round_0001",
+        "session_001_round_0002",
+    )
 
 
 @pytest.mark.parametrize("status", ["active", "ready_for_final", "abandoned"])
