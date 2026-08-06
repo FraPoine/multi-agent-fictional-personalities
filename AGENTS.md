@@ -31,9 +31,9 @@ later, and run experiments and investigation sessions afterward.
 - Basic working-version target: August 7, 2026.
 - Final course deadline: September 2026
 
-## Current Sprint 4 implementation
+## Current offline implementation
 
-Sprint 4 is complete. The repository provides both the existing conversation
+Sprint 5 is complete. The repository provides both the existing conversation
 CLI and a local FastAPI/Jinja web interface for deterministic mock
 conversations between Sherlock Holmes and Hercule Poirot. Both delivery layers
 reuse framework-independent application and runtime logic; the web path also
@@ -52,16 +52,16 @@ does not provide scientifically interpretable results. There is no dynamic
 conversation manager, investigation workflow or persistence, third or fourth
 runtime character, real investigation game, or final human/LLM-judge study.
 
-## Sprint 5 direction
+## Sprint 5 foundation
 
 Sprint 5 remains fully offline and requires no provider account, API key,
 network access, real token/cost data, genuine rater response, or real game.
-It has generalized application/configuration boundaries for configurable
+It generalized application/configuration boundaries for configurable
 participants, isolated speaker choice behind `SpeakerSelector` with default
 deterministic `RoundRobinSelector` behavior, and introduced structured
-successful generation metadata with runtime/message propagation. Remaining
-Sprint 5 work models investigation-domain entities and partial session states,
-then finishes with a complete offline regression.
+successful generation metadata with runtime/message propagation. It also added
+validated investigation-domain entities and immutable partial session states,
+and the complete offline regression passed.
 
 The practical conversation-engine boundary may remain `simulate_chat()`; no
 concrete `ConversationEngine` class is currently implemented or mandated.
@@ -95,12 +95,13 @@ The system has six main stages:
    - Collect rater guesses.
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
-6. **Investigation (planned)**
+6. **Investigation (models implemented; workflow planned)**
    - Let the project user act as game master, manually provide the case
      introduction, and reveal clues progressively.
    - Keep unrevealed information unavailable to agents.
    - Record analyses, evidence, hypotheses, leads, decisions, and a final
-     theory through future investigation-domain models.
+     theory through the implemented investigation-domain models once the
+     Sprint 6 workflow exists.
 
 ## Coding conventions
 
@@ -124,9 +125,10 @@ The system has six main stages:
 - `Message`: one generated chat message.
 - `EvaluationTrial`: one anonymized rater task.
 - `RaterResponse`: one rater answer.
-- Future investigation entities include `InvestigationSession`, `Clue`,
+- Investigation entities include `InvestigationSession`, `Clue`,
   `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
-  `FinalTheory`; none is currently implemented.
+  `FinalTheory`; their validated immutable models are implemented without
+  orchestration, persistence, or UI.
 
 ## Minimal success criterion
 
