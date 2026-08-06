@@ -10,9 +10,12 @@ from multi_agent_personalities.application.evaluation_service import (
     prepare_technical_pilot,
 )
 from multi_agent_personalities.application.investigation_service import (
+    GroupDiscussionResult,
     IndependentAnalysesResult,
+    MAX_DISCUSSION_TURNS,
     create_session,
     reveal_clue,
+    run_group_discussion,
     run_independent_analyses,
 )
 from multi_agent_personalities.application.investigation_ids import (
@@ -26,6 +29,7 @@ from multi_agent_personalities.application.investigation_mock import (
     InvestigationMockTask,
     build_investigation_mock_bindings,
     investigation_analysis_task_name,
+    investigation_discussion_task_name,
 )
 from multi_agent_personalities.application.investigation_prompts import (
     InvestigationPromptError,
@@ -54,17 +58,21 @@ __all__ = [
     "ConversationResult", "DeterministicInvestigationIdFactory",
     "GeneratedAnalysisPayload", "GeneratedDecisionPayload",
     "GeneratedFinalTheoryPayload", "GeneratedHypothesisPayload",
+    "GroupDiscussionResult",
     "HERCULE_POIROT_ID", "INVESTIGATION_FIXTURE_FILES",
     "IndependentAnalysesResult",
     "InvestigationPromptError", "InvestigationPromptName",
     "InvestigationPromptTemplate", "InvestigationMockBindings",
-    "InvestigationMockTask", "PilotPreparationResult", "SHERLOCK_HOLMES_ID",
+    "InvestigationMockTask", "MAX_DISCUSSION_TURNS", "PilotPreparationResult",
+    "SHERLOCK_HOLMES_ID",
     "StructuredGenerationResult", "StructuredOutputError", "create_session",
     "build_investigation_mock_bindings", "investigation_analysis_task_name",
+    "investigation_discussion_task_name",
     "load_investigation_prompt", "parse_structured_generation",
     "prepare_technical_pilot", "render_analyses", "render_decisions",
     "render_discussion_messages", "render_hypotheses",
     "render_investigation_prompt", "render_persona_context",
-    "render_visible_clues", "reveal_clue", "run_independent_analyses",
+    "render_visible_clues", "reveal_clue", "run_group_discussion",
+    "run_independent_analyses",
     "run_mock_conversation",
 ]

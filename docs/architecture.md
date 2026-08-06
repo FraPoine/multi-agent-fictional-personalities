@@ -227,9 +227,8 @@ construct the final run.
 The engine revalidates every returned message and requires its run ID, turn
 index, speaker, provider, and configured model to match the current selected
 turn before appending it. Generator, provider, selector, and validation errors
-propagate without retry or fallback. This extension permits a future
-investigation discussion strategy to reuse the conversation loop, but no
-investigation discussion orchestration is implemented yet.
+propagate without retry or fallback. The investigation discussion operation
+now uses this extension to reuse the conversation loop.
 
 The application service owns the normal default policy: it constructs
 `RoundRobinSelector` when callers do not inject a selector. CLI and web callers
@@ -311,8 +310,8 @@ session, round, analysis, hypothesis, decision, and final-theory IDs remain
 service-owned. The adapter retains the original immutable `GenerationResult`
 and all its metadata without reconstructing it. It does not call providers,
 retry, repair malformed JSON, remove Markdown fences, or extract JSON
-substrings. Analysis, discussion, decision, and final-theory orchestration are
-still unimplemented.
+substrings. Independent analysis and group discussion now use this
+infrastructure; decision and final-theory orchestration remain unimplemented.
 
 ## Deterministic investigation workflow fixtures
 
@@ -367,8 +366,33 @@ original text and metadata remain available.
 Only after all prompts, generations, payloads, domain records, and IDs validate
 does the service reconstruct the aggregate once and move the round to
 `awaiting_discussion`. Any participant failure raises without returning a
-partially updated session. Group discussion, decisions, and finalization remain
-unimplemented.
+partially updated session. Decisions and finalization remain unimplemented.
+
+## Investigation group discussion
+
+`run_group_discussion()` now implements the shared discussion phase for a
+round whose complete ordered participant analyses are present. It revalidates
+the immutable session, applies a strict 1–100 turn bound, and reuses
+`simulate_chat()` with its Task 9 reply-generation extension. The default
+selector is `RoundRobinSelector` in session participant order; callers may
+inject another valid `SpeakerSelector` without transferring history or loop
+ownership out of the engine.
+
+The application-layer `InvestigationDiscussionReplyGenerator` renders the
+versioned investigation discussion prompt on every selected turn. Its fixed
+round context contains the case introduction, exact visible-clue snapshot,
+all current-round analyses, permitted earlier completed history, and the
+selected participant's persona. Its changing context is the complete ordered
+message history supplied by the simulation engine. Each provider call uses an
+explicit participant, round, and one-based discussion-turn task name, while
+the conversation run uses the deterministic
+`session_001_round_0001_discussion` namespace and a short round topic.
+
+The complete validated `ConversationRun`, including per-message generation
+metadata, is attached only after every turn succeeds. The service then moves
+that round from `awaiting_discussion` to `awaiting_decision` in one aggregate
+reconstruction. A failure attaches no partial run. Decision generation,
+consensus behavior, persistence, and finalization remain unimplemented.
 
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves

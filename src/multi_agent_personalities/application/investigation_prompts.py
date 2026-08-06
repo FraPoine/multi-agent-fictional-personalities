@@ -60,8 +60,10 @@ _REQUIRED_PLACEHOLDERS = {
         "round_id",
         "case_introduction",
         "participant_id",
+        "persona_profile",
         "visible_clues",
         "analyses",
+        "completed_history",
         "discussion_history",
     ),
     InvestigationPromptName.DECISION: (

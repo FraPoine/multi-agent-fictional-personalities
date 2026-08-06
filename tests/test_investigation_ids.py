@@ -21,6 +21,9 @@ def test_factory_builds_valid_one_based_deterministic_ids() -> None:
         "session_001_analysis_sherlock_holmes_0001"
     )
     assert factory.hypothesis_id(1) == "session_001_hypothesis_0001"
+    assert factory.discussion_run_id(1) == (
+        "session_001_round_0001_discussion"
+    )
     assert factory == DeterministicInvestigationIdFactory(1)
 
 

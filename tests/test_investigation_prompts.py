@@ -39,7 +39,8 @@ EXPECTED_PLACEHOLDERS = {
     ),
     InvestigationPromptName.DISCUSSION: (
         "session_id", "round_id", "case_introduction", "participant_id",
-        "visible_clues", "analyses", "discussion_history",
+        "persona_profile", "visible_clues", "analyses", "completed_history",
+        "discussion_history",
     ),
     InvestigationPromptName.DECISION: (
         "session_id", "round_id", "case_introduction", "visible_clues",

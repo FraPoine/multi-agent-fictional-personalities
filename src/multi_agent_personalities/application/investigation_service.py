@@ -2,7 +2,11 @@
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 
+from multi_agent_personalities.application.investigation_discussion import (
+    InvestigationDiscussionReplyGenerator,
+)
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
@@ -28,6 +32,7 @@ from multi_agent_personalities.application.investigation_structured_output impor
 from multi_agent_personalities.models import (
     AgentAnalysis,
     Clue,
+    ConversationRun,
     Hypothesis,
     InvestigationRound,
     InvestigationRoundStatus,
@@ -37,6 +42,14 @@ from multi_agent_personalities.models import (
 from multi_agent_personalities.simulation.participant import (
     ConversationParticipant,
 )
+from multi_agent_personalities.simulation import (
+    RoundRobinSelector,
+    SpeakerSelector,
+    simulate_chat,
+)
+
+
+MAX_DISCUSSION_TURNS = 100
 
 
 @dataclass(frozen=True)
@@ -47,6 +60,14 @@ class IndependentAnalysesResult:
     generations: tuple[
         StructuredGenerationResult[GeneratedAnalysisPayload], ...
     ]
+
+
+@dataclass(frozen=True)
+class GroupDiscussionResult:
+    """One atomic round update and its completed discussion run."""
+
+    session: InvestigationSession
+    conversation_run: ConversationRun
 
 
 def _completed_history_context(
@@ -383,4 +404,124 @@ def run_independent_analyses(
     return IndependentAnalysesResult(
         session=updated_session,
         generations=tuple(structured_generations),
+    )
+
+
+def run_group_discussion(
+    session: InvestigationSession,
+    *,
+    participant_bindings: Sequence[ConversationParticipant],
+    id_factory: DeterministicInvestigationIdFactory,
+    turn_count: int,
+    selector: SpeakerSelector | None = None,
+    seed: int = 42,
+    timestamp: datetime | None = None,
+) -> GroupDiscussionResult:
+    """Run and atomically attach one complete current-round discussion."""
+    if not isinstance(session, InvestigationSession):
+        raise ValueError("session must be a validated InvestigationSession")
+    snapshot = InvestigationSession.model_validate(
+        session.model_dump(mode="python")
+    )
+    if snapshot.status is not InvestigationStatus.ACTIVE:
+        raise ValueError("discussion may run only in an active session")
+    if not snapshot.rounds:
+        raise ValueError("discussion requires a current investigation round")
+    if (
+        isinstance(turn_count, bool)
+        or not isinstance(turn_count, int)
+        or not 1 <= turn_count <= MAX_DISCUSSION_TURNS
+    ):
+        raise ValueError(
+            f"turn_count must be a strict integer from 1 to {MAX_DISCUSSION_TURNS}"
+        )
+
+    current_round = snapshot.rounds[-1]
+    if current_round.status is not InvestigationRoundStatus.AWAITING_DISCUSSION:
+        raise ValueError("current round must be awaiting discussion")
+    if current_round.discussion_run is not None:
+        raise ValueError("current round already contains a discussion")
+    if current_round.decision_id is not None:
+        raise ValueError("current round must not contain a decision")
+    if any(
+        item.status is not InvestigationRoundStatus.COMPLETED
+        for item in snapshot.rounds[:-1]
+    ):
+        raise ValueError("all previous rounds must be completed")
+
+    current_analyses = tuple(
+        item
+        for item in snapshot.analyses
+        if item.round_id == current_round.round_id
+    )
+    if tuple(item.agent_id for item in current_analyses) != snapshot.participant_ids:
+        raise ValueError(
+            "current-round analyses must match session participant order exactly"
+        )
+    if current_round.analysis_ids != tuple(
+        item.analysis_id for item in current_analyses
+    ):
+        raise ValueError(
+            "current-round analysis_ids must match current analyses exactly"
+        )
+    if any(
+        item.session_id != snapshot.session_id
+        or item.round_id != current_round.round_id
+        or item.visible_clue_ids != current_round.visible_clue_ids
+        for item in current_analyses
+    ):
+        raise ValueError("current-round analysis ownership or visibility is invalid")
+
+    if not isinstance(id_factory, DeterministicInvestigationIdFactory):
+        raise ValueError(
+            "id_factory must be a DeterministicInvestigationIdFactory"
+        )
+    if id_factory.session_id != snapshot.session_id:
+        raise ValueError("id_factory session_id must match the investigation session")
+    binding_by_id = _validate_participant_bindings(
+        snapshot.participant_ids,
+        participant_bindings,
+    )
+    ordered_bindings = tuple(
+        binding_by_id[item] for item in snapshot.participant_ids
+    )
+    reply_generator = InvestigationDiscussionReplyGenerator(
+        template=load_investigation_prompt(InvestigationPromptName.DISCUSSION),
+        session_id=snapshot.session_id,
+        round_id=current_round.round_id,
+        round_index=current_round.round_index,
+        case_introduction=snapshot.case_introduction,
+        visible_clues=render_visible_clues(
+            snapshot,
+            current_round.visible_clue_ids,
+        ),
+        analyses=render_analyses(current_analyses),
+        completed_history=_completed_history_context(snapshot),
+    )
+    conversation_run = simulate_chat(
+        participants=ordered_bindings,
+        speaker_selector=RoundRobinSelector() if selector is None else selector,
+        topic=f"Investigation discussion for round {current_round.round_index}",
+        turn_count=turn_count,
+        seed=seed,
+        run_id=id_factory.discussion_run_id(current_round.round_index),
+        timestamp=timestamp,
+        turn_reply_generator=reply_generator,
+    )
+    conversation_run = ConversationRun.model_validate(
+        conversation_run.model_dump(mode="python")
+    )
+
+    round_payload = current_round.model_dump(mode="python")
+    round_payload.update(
+        discussion_run=conversation_run,
+        status=InvestigationRoundStatus.AWAITING_DECISION,
+    )
+    updated_round = InvestigationRound.model_validate(round_payload)
+    session_payload = snapshot.model_dump(mode="python")
+    session_payload["rounds"] = (*snapshot.rounds[:-1], updated_round)
+    updated_session = InvestigationSession.model_validate(session_payload)
+    return GroupDiscussionResult(
+        session=updated_session,
+        conversation_run=conversation_run,
     )
