@@ -28,6 +28,8 @@ from multi_agent_personalities.application.investigation_mock import (
     InvestigationMockBindings,
     InvestigationMockTask,
     build_investigation_mock_bindings,
+)
+from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
     investigation_discussion_task_name,
 )

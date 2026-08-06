@@ -68,6 +68,10 @@ class ConversationRun(BaseModel):
     @model_validator(mode="after")
     def validate_messages(self) -> "ConversationRun":
         """Ensure stored messages are consistent with their parent run."""
+        message_ids = [message.message_id for message in self.messages]
+        if len(message_ids) != len(set(message_ids)):
+            raise ValueError("message_id values must be unique")
+
         if any(message.run_id != self.run_id for message in self.messages):
             raise ValueError("all messages must belong to the conversation run_id")
 

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 
-from multi_agent_personalities.application.investigation_mock import (
+from multi_agent_personalities.application.investigation_tasks import (
     investigation_discussion_task_name,
 )
 from multi_agent_personalities.application.investigation_prompts import (

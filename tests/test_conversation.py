@@ -58,6 +58,12 @@ def test_valid_conversation_is_accepted(valid_conversation: dict) -> None:
     assert all(isinstance(message, Message) for message in conversation.messages)
 
 
+def test_duplicate_message_ids_are_rejected(valid_conversation: dict) -> None:
+    valid_conversation["messages"][1]["message_id"] = "msg_000"
+    with pytest.raises(ValidationError, match="message_id values must be unique"):
+        ConversationRun.model_validate(valid_conversation)
+
+
 def test_fields_cannot_be_reassigned(valid_conversation: dict) -> None:
     conversation = ConversationRun.model_validate(valid_conversation)
 

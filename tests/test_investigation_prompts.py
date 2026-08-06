@@ -160,6 +160,18 @@ def test_rendered_value_braces_are_not_interpreted_again() -> None:
     assert "{{not_a_placeholder}}" in render_investigation_prompt(template, values)
 
 
+def test_known_placeholder_text_inside_values_remains_literal_in_single_pass() -> None:
+    template = load_investigation_prompt(InvestigationPromptName.ANALYSIS)
+    values = {name: name for name in template.required_placeholders}
+    literal = "Literal {{participant_id}} and {{session_id}} remain."
+    values["case_introduction"] = literal
+
+    rendered = render_investigation_prompt(template, values)
+
+    assert literal in rendered
+    assert rendered == render_investigation_prompt(template, values)
+
+
 @pytest.mark.parametrize("failure", ["missing_value", "empty_value", "wrong_type"])
 def test_renderer_rejects_invalid_required_values(failure: str) -> None:
     template = load_investigation_prompt(InvestigationPromptName.ANALYSIS)

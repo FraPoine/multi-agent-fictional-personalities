@@ -63,14 +63,55 @@ def complete_current_round(session: InvestigationSession) -> InvestigationSessio
         summary="Request the next clue.",
     )
     payload = session.model_dump(mode="python")
+    analysis_ids = tuple(
+        f"{investigation_round.round_id}_{participant}_analysis"
+        for participant in session.participant_ids
+    )
+    payload["analyses"] = (*payload["analyses"], *(
+        {
+            "analysis_id": analysis_id,
+            "session_id": session.session_id,
+            "round_id": investigation_round.round_id,
+            "agent_id": participant,
+            "visible_clue_ids": investigation_round.visible_clue_ids,
+            "facts": ("A fact.",),
+        }
+        for analysis_id, participant in zip(analysis_ids, session.participant_ids)
+    ))
+    discussion_id = f"{investigation_round.round_id}_discussion"
+    discussion = {
+        "run_id": discussion_id,
+        "topic": "Case discussion.",
+        "character_ids": session.participant_ids,
+        "turn_count": 2,
+        "seed": 42,
+        "provider": "mock",
+        "created_at": "2026-08-06T12:00:00Z",
+        "status": "completed",
+        "messages": tuple(
+            {
+                "message_id": f"{discussion_id}_message_{index + 1}",
+                "run_id": discussion_id,
+                "turn_index": index,
+                "speaker_character_id": participant,
+                "speaker_name": participant.title(),
+                "text": "A point.",
+                "provider": "mock",
+                "timestamp": "2026-08-06T12:00:00Z",
+            }
+            for index, participant in enumerate(session.participant_ids)
+        ),
+    }
     rounds = list(payload["rounds"])
     rounds[-1] = {
         **rounds[-1],
+        "analysis_ids": analysis_ids,
+        "discussion_run": discussion,
         "decision_id": decision.decision_id,
         "status": InvestigationRoundStatus.COMPLETED,
     }
     payload["rounds"] = rounds
-    payload["decisions"] = (*session.decisions, decision)
+    payload["decisions"] = (*session.decisions, decision.model_copy(update={"analysis_ids": analysis_ids}))
     return InvestigationSession.model_validate(payload)
 
 
@@ -218,7 +259,7 @@ def test_any_incomplete_historical_round_blocks_reveal() -> None:
     second = complete_current_round(reveal(first, "Second clue."))
     payload = second.model_dump(mode="python")
     payload["rounds"][0]["decision_id"] = None
-    payload["rounds"][0]["status"] = "awaiting_analyses"
+    payload["rounds"][0]["status"] = "awaiting_decision"
     payload["decisions"] = payload["decisions"][1:]
     inconsistent_progress = InvestigationSession.model_validate(payload)
 
@@ -238,7 +279,14 @@ def test_incomplete_round_blocks_another_reveal(
     status: InvestigationRoundStatus,
 ) -> None:
     first = reveal(new_session(), "First clue.")
-    payload = first.model_dump(mode="python")
+    if status is InvestigationRoundStatus.AWAITING_ANALYSES:
+        payload = first.model_dump(mode="python")
+    else:
+        payload = complete_current_round(first).model_dump(mode="python")
+        payload["rounds"][0]["decision_id"] = None
+        payload["decisions"] = ()
+        if status is InvestigationRoundStatus.AWAITING_DISCUSSION:
+            payload["rounds"][0]["discussion_run"] = None
     payload["rounds"][0]["status"] = status
     incomplete = InvestigationSession.model_validate(payload)
     before = incomplete.model_dump_json()

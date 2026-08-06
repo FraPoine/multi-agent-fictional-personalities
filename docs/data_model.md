@@ -559,6 +559,14 @@ contain revealed clues without corresponding rounds. Clues contain only
 information explicitly revealed by the game master, and nested references use
 stable IDs rather than copies of complete entities.
 
+Round lifecycle state is enforced by the aggregate. `awaiting_analyses`
+contains no analyses, discussion, or decision; `awaiting_discussion` contains
+exactly one analysis per participant in participant order and no discussion or
+decision; `awaiting_decision` additionally contains a completed discussion
+whose participant IDs exactly match the session; and `completed` additionally
+contains a resolving decision. Attached discussion run IDs are unique across
+rounds. Invalid snapshots are rejected rather than normalized.
+
 Partial `setup`, `active`, `ready_for_final`, and `abandoned` sessions are valid
 without clues, analyses, hypotheses, decisions, or a final theory. Only a
 `completed` session requires a `FinalTheory`. The first stateless operations

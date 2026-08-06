@@ -287,7 +287,8 @@ final-theory context boundaries. Each begins with `Prompt-Version: 1` and has a
 fixed, closed `{{placeholder_name}}` contract. The application-layer loader
 resolves those files from the repository rather than the process working
 directory. Rendering validates the complete contract, accepts string values
-only, and performs one deterministic replacement pass. Separate helpers render
+only, and performs one regex substitution pass over the original body, so
+placeholder-like text inserted by a value remains literal. Separate helpers render
 visible clues, analyses, hypotheses, decisions, and discussion messages in
 their supplied order. In particular, visible-clue rendering resolves only the
 explicit visibility tuple and fails on duplicates or unknown IDs, so later
@@ -355,11 +356,14 @@ clue tuple, and only completed history from earlier rounds. Current-round peer
 outputs, discussion, decisions, and later clues are excluded.
 
 Providers are then called once per `session.participant_ids` order with the
-explicit participant-and-round analysis task name. Every `GenerationResult`
+explicit participant-and-round analysis task name constructed by the
+provider-neutral `investigation_tasks` module. Every `GenerationResult`
 passes through `parse_structured_generation()` before the service assigns the
 canonical analysis ID, session, round, participant, and visibility fields.
 Analysis-phase hypotheses already permitted by the payload contract receive
-service-owned deterministic IDs in the same atomic operation. The immutable
+service-owned deterministic IDs in the same atomic operation. Revision links
+may target only hypotheses present in the pre-analysis snapshot, not hypotheses
+created during the operation. The immutable
 result returns the updated session plus the ordered structured generations, so
 original text and metadata remain available.
 
@@ -398,7 +402,9 @@ Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
 the effective message model, using configuration only when the provider omits
 a model. The engine derives one effective run-level provider/model from the
-generated messages and validates every message against it. Heterogeneous
+generated messages and validates every message against it. Custom replies must
+also match the selected participant's display name, and message IDs are unique
+during simulation and in the `ConversationRun` aggregate. Heterogeneous
 provider or model runs remain unsupported. Error-bearing legacy messages cannot
 carry successful generation metadata.
 

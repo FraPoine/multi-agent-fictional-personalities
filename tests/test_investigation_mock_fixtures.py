@@ -17,6 +17,8 @@ from multi_agent_personalities.application import (
     InvestigationMockTask,
     StructuredOutputError,
     build_investigation_mock_bindings,
+    investigation_analysis_task_name,
+    investigation_discussion_task_name,
     parse_structured_generation,
 )
 from multi_agent_personalities.models import GenerationResult
@@ -62,6 +64,23 @@ def test_fixture_inventory_is_complete_unique_and_explicit() -> None:
         assert sum(f"discussion.hercule_poirot.{round_id}" in item for item in names) == 1
         assert sum(f"decision.{round_id}" in item for item in names) == 1
     assert names.count("investigation.final_theory") == 1
+
+
+def test_provider_neutral_task_names_remain_backward_compatible() -> None:
+    assert investigation_analysis_task_name("sherlock_holmes", 1) == (
+        "investigation.analysis.sherlock_holmes.round_0001"
+    )
+    assert investigation_discussion_task_name("hercule_poirot", 2, 0) == (
+        "investigation.discussion.hercule_poirot.round_0002.turn_0001"
+    )
+
+
+def test_provider_neutral_service_does_not_import_mock_module() -> None:
+    source_root = Path(__file__).resolve().parents[1] / "src" / "multi_agent_personalities" / "application"
+    for filename in ("investigation_service.py", "investigation_discussion.py"):
+        assert "investigation_mock" not in (source_root / filename).read_text(
+            encoding="utf-8"
+        )
 
 
 def test_all_mapped_fixture_files_exist_and_are_nonempty() -> None:

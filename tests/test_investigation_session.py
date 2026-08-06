@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from multi_agent_personalities.models import (
     FinalTheory,
     InvestigationRound,
+    InvestigationRoundStatus,
     InvestigationSession,
     InvestigationStatus,
 )
@@ -36,7 +37,8 @@ def complete_payload() -> dict[str, object]:
                 "round_index": 1,
                 "revealed_clue_id": "clue_001",
                 "visible_clue_ids": ["clue_001"],
-                "analysis_ids": ["analysis_001"],
+                "analysis_ids": ["analysis_001", "analysis_poirot_001"],
+                "discussion_run": discussion_payload(1),
                 "decision_id": "decision_001",
                 "status": "completed",
             },
@@ -46,7 +48,8 @@ def complete_payload() -> dict[str, object]:
                 "round_index": 2,
                 "revealed_clue_id": "clue_002",
                 "visible_clue_ids": ["clue_001", "clue_002"],
-                "analysis_ids": ["analysis_002"],
+                "analysis_ids": ["analysis_002", "analysis_poirot_002"],
+                "discussion_run": discussion_payload(2),
                 "decision_id": "decision_002",
                 "status": "completed",
             }
@@ -70,7 +73,17 @@ def complete_payload() -> dict[str, object]:
                 "agent_id": "sherlock",
                 "visible_clue_ids": ["clue_001", "clue_002"],
                 "facts": ["Mud lies outside."],
-            }
+            },
+            {
+                **analysis_payload("analysis_poirot_001", agent_id="poirot"),
+                "facts": ["The window is open."],
+            },
+            {
+                **analysis_payload(
+                    "analysis_poirot_002", round_index=2, agent_id="poirot"
+                ),
+                "facts": ["Mud lies outside."],
+            },
         ],
         "hypotheses": [
             {
@@ -225,6 +238,45 @@ def decision_payload(
     }
 
 
+def discussion_payload(round_index: int = 1, *, status: str = "completed") -> dict[str, object]:
+    run_id = f"discussion_{round_index:03d}"
+    return {
+        "run_id": run_id,
+        "topic": "Case discussion.",
+        "character_ids": ["sherlock", "poirot"],
+        "turn_count": 2,
+        "seed": 42,
+        "provider": "mock",
+        "model": None,
+        "created_at": "2026-08-06T12:00:00Z",
+        "status": status,
+        "messages": [
+            {
+                "message_id": f"{run_id}_message_001",
+                "run_id": run_id,
+                "turn_index": 0,
+                "speaker_character_id": "sherlock",
+                "speaker_name": "Sherlock Holmes",
+                "text": "An observation.",
+                "provider": "mock",
+                "model": None,
+                "timestamp": "2026-08-06T12:00:00Z",
+            },
+            {
+                "message_id": f"{run_id}_message_002",
+                "run_id": run_id,
+                "turn_index": 1,
+                "speaker_character_id": "poirot",
+                "speaker_name": "Hercule Poirot",
+                "text": "A response.",
+                "provider": "mock",
+                "model": None,
+                "timestamp": "2026-08-06T12:00:00Z",
+            },
+        ],
+    }
+
+
 def analysis_session_payload(*, two_rounds: bool = False) -> dict[str, object]:
     round_count = 2 if two_rounds else 1
     return {
@@ -251,8 +303,16 @@ def completed_decision_session_payload(
     payload = analysis_session_payload(two_rounds=two_rounds)
     round_count = 2 if two_rounds else 1
     payload["analyses"] = [
-        analysis_payload(f"analysis_{index:03d}", round_index=index)
+        analysis
         for index in range(1, round_count + 1)
+        for analysis in (
+            analysis_payload(f"analysis_{index:03d}", round_index=index),
+            analysis_payload(
+                f"analysis_poirot_{index:03d}",
+                round_index=index,
+                agent_id="poirot",
+            ),
+        )
     ]
     payload["decisions"] = [
         decision_payload(
@@ -264,8 +324,10 @@ def completed_decision_session_payload(
     ]
     for index in range(round_count):
         payload["rounds"][index]["analysis_ids"] = [
-            f"analysis_{index + 1:03d}"
+            f"analysis_{index + 1:03d}",
+            f"analysis_poirot_{index + 1:03d}",
         ]
+        payload["rounds"][index]["discussion_run"] = discussion_payload(index + 1)
         payload["rounds"][index]["decision_id"] = (
             f"decision_{index + 1:03d}"
         )
@@ -459,8 +521,12 @@ def test_coordinated_future_clue_forgery_is_rejected_by_round_history() -> None:
 
 def test_valid_analysis_matches_session_round_and_visibility() -> None:
     payload = analysis_session_payload()
-    payload["analyses"] = [analysis_payload()]
-    payload["rounds"][0]["analysis_ids"] = ["analysis_001"]
+    payload["analyses"] = [
+        analysis_payload(),
+        analysis_payload("analysis_poirot", agent_id="poirot"),
+    ]
+    payload["rounds"][0]["analysis_ids"] = ["analysis_001", "analysis_poirot"]
+    payload["rounds"][0]["status"] = "awaiting_discussion"
 
     session = InvestigationSession.model_validate(payload)
 
@@ -550,15 +616,21 @@ def test_same_agent_can_have_one_analysis_in_each_round() -> None:
     payload = analysis_session_payload(two_rounds=True)
     payload["analyses"] = [
         analysis_payload("analysis_001", round_index=1),
+        analysis_payload("analysis_poirot_001", round_index=1, agent_id="poirot"),
         analysis_payload("analysis_002", round_index=2),
+        analysis_payload("analysis_poirot_002", round_index=2, agent_id="poirot"),
     ]
-    payload["rounds"][0]["analysis_ids"] = ["analysis_001"]
-    payload["rounds"][1]["analysis_ids"] = ["analysis_002"]
+    payload["rounds"][0]["analysis_ids"] = ["analysis_001", "analysis_poirot_001"]
+    payload["rounds"][1]["analysis_ids"] = ["analysis_002", "analysis_poirot_002"]
+    payload["rounds"][0]["status"] = "awaiting_discussion"
+    payload["rounds"][1]["status"] = "awaiting_discussion"
 
     session = InvestigationSession.model_validate(payload)
 
     assert tuple(item.round_id for item in session.analyses) == (
         "round_001",
+        "round_001",
+        "round_002",
         "round_002",
     )
 
@@ -573,6 +645,7 @@ def test_participants_in_same_round_share_exact_visibility_snapshot() -> None:
         "analysis_sherlock",
         "analysis_poirot",
     ]
+    payload["rounds"][0]["status"] = "awaiting_discussion"
 
     session = InvestigationSession.model_validate(payload)
 
@@ -633,10 +706,14 @@ def test_two_round_analysis_context_json_round_trip_is_deterministic() -> None:
     payload = analysis_session_payload(two_rounds=True)
     payload["analyses"] = [
         analysis_payload("analysis_001", round_index=1),
+        analysis_payload("analysis_poirot_001", round_index=1, agent_id="poirot"),
         analysis_payload("analysis_002", round_index=2),
+        analysis_payload("analysis_poirot_002", round_index=2, agent_id="poirot"),
     ]
-    payload["rounds"][0]["analysis_ids"] = ["analysis_001"]
-    payload["rounds"][1]["analysis_ids"] = ["analysis_002"]
+    payload["rounds"][0]["analysis_ids"] = ["analysis_001", "analysis_poirot_001"]
+    payload["rounds"][1]["analysis_ids"] = ["analysis_002", "analysis_poirot_002"]
+    payload["rounds"][0]["status"] = "awaiting_discussion"
+    payload["rounds"][1]["status"] = "awaiting_discussion"
     session = InvestigationSession.model_validate(payload)
 
     first = session.model_dump_json()
@@ -645,7 +722,7 @@ def test_two_round_analysis_context_json_round_trip_is_deterministic() -> None:
     assert restored == session
     assert restored.model_dump_json() == first
     assert restored.analyses[0].visible_clue_ids == ("clue_001",)
-    assert restored.analyses[1].visible_clue_ids == (
+    assert restored.analyses[2].visible_clue_ids == (
         "clue_001",
         "clue_002",
     )
@@ -860,7 +937,7 @@ def test_decision_analysis_must_be_listed_by_owning_round() -> None:
     payload = completed_decision_session_payload()
     payload["rounds"][0]["analysis_ids"] = []
 
-    with pytest.raises(ValidationError, match="match session analysis order"):
+    with pytest.raises(ValidationError, match="listed by the owning round"):
         InvestigationSession.model_validate(payload)
 
 
@@ -1025,7 +1102,7 @@ def test_complete_session_validates_full_graph() -> None:
 
     assert session.status is InvestigationStatus.COMPLETED
     assert len(session.clues) == 2
-    assert len(session.analyses) == 2
+    assert len(session.analyses) == 4
     assert len(session.hypotheses) == 2
     assert len(session.decisions) == 2
     assert session.final_theory is not None
@@ -1340,3 +1417,92 @@ def test_complete_json_round_trip_and_serialization_are_deterministic() -> None:
         "hypothesis_001",
         "hypothesis_002",
     )
+
+
+def lifecycle_payload(status: str) -> dict[str, object]:
+    payload = completed_decision_session_payload()
+    investigation_round = payload["rounds"][0]
+    investigation_round["status"] = status
+    if status != "completed":
+        investigation_round["decision_id"] = None
+        payload["decisions"] = []
+    if status == "awaiting_discussion":
+        investigation_round["discussion_run"] = None
+    return payload
+
+
+def test_round_lifecycle_valid_awaiting_states_and_json_round_trip() -> None:
+    awaiting_analyses = InvestigationSession.model_validate(analysis_session_payload())
+    awaiting_discussion = InvestigationSession.model_validate(
+        lifecycle_payload("awaiting_discussion")
+    )
+    awaiting_decision = InvestigationSession.model_validate(
+        lifecycle_payload("awaiting_decision")
+    )
+
+    assert awaiting_analyses.rounds[0].analysis_ids == ()
+    assert tuple(item.agent_id for item in awaiting_discussion.analyses) == (
+        "sherlock", "poirot",
+    )
+    assert awaiting_decision.rounds[0].discussion_run.status == "completed"
+    assert InvestigationSession.model_validate_json(
+        awaiting_decision.model_dump_json()
+    ) == awaiting_decision
+
+
+def test_round_lifecycle_rejects_missing_analysis_or_unexpected_discussion() -> None:
+    awaiting_analysis = analysis_session_payload()
+    awaiting_analysis["analyses"] = [analysis_payload()]
+    awaiting_analysis["rounds"][0]["analysis_ids"] = ["analysis_001"]
+    with pytest.raises(ValidationError, match="awaiting analyses"):
+        InvestigationSession.model_validate(awaiting_analysis)
+
+    missing = lifecycle_payload("awaiting_discussion")
+    missing["analyses"] = missing["analyses"][:1]
+    missing["rounds"][0]["analysis_ids"] = missing["rounds"][0]["analysis_ids"][:1]
+    with pytest.raises(ValidationError, match="one ordered analysis"):
+        InvestigationSession.model_validate(missing)
+
+    attached = lifecycle_payload("awaiting_discussion")
+    attached["rounds"][0]["discussion_run"] = discussion_payload()
+    with pytest.raises(ValidationError, match="must not contain a discussion"):
+        InvestigationSession.model_validate(attached)
+
+
+@pytest.mark.parametrize("discussion_status", [None, "running", "failed"])
+def test_awaiting_decision_requires_completed_discussion(
+    discussion_status: str | None,
+) -> None:
+    payload = lifecycle_payload("awaiting_decision")
+    payload["rounds"][0]["discussion_run"] = (
+        None if discussion_status is None else discussion_payload(status=discussion_status)
+    )
+    with pytest.raises(ValidationError, match="completed discussion"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_discussion_participants_and_run_ids_are_aggregate_invariants() -> None:
+    wrong_participants = lifecycle_payload("awaiting_decision")
+    wrong_participants["rounds"][0]["discussion_run"]["character_ids"] = [
+        "poirot", "sherlock",
+    ]
+    with pytest.raises(ValidationError, match="exact participants"):
+        InvestigationSession.model_validate(wrong_participants)
+
+    duplicate = completed_decision_session_payload(two_rounds=True)
+    duplicate["rounds"][1]["discussion_run"]["run_id"] = "discussion_001"
+    for message in duplicate["rounds"][1]["discussion_run"]["messages"]:
+        message["run_id"] = "discussion_001"
+    with pytest.raises(ValidationError, match="run_id values must be unique"):
+        InvestigationSession.model_validate(duplicate)
+
+
+def test_completed_round_requires_complete_discussion_and_decision() -> None:
+    missing = completed_decision_session_payload()
+    missing["rounds"][0]["discussion_run"] = None
+    with pytest.raises(ValidationError, match="completed discussion"):
+        InvestigationSession.model_validate(missing)
+
+    assert InvestigationSession.model_validate(
+        completed_decision_session_payload()
+    ).rounds[0].status is InvestigationRoundStatus.COMPLETED

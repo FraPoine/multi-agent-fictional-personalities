@@ -189,10 +189,10 @@ def render_investigation_prompt(
         if not value.strip():
             raise InvestigationPromptError(f"rendering value {name!r} must not be empty")
 
-    rendered = template.body
-    for name in template.required_placeholders:
-        rendered = rendered.replace(f"{{{{{name}}}}}", values[name])
-    return rendered
+    return _PLACEHOLDER_PATTERN.sub(
+        lambda match: values[match.group(1)],
+        template.body,
+    )
 
 
 def render_visible_clues(

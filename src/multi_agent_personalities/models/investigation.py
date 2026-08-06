@@ -582,6 +582,17 @@ class InvestigationSession(BaseModel):
                         "belonging to another round"
                     )
 
+        hypothesis_positions = self._validate_hypotheses(
+            clue_ids=clue_ids,
+            round_by_id=round_by_id,
+        )
+        self._validate_decisions(
+            clue_ids=clue_ids,
+            round_by_id=round_by_id,
+            analysis_by_id=analysis_by_id,
+            hypothesis_positions=hypothesis_positions,
+        )
+
         for investigation_round in self.rounds:
             expected_analysis_ids = tuple(
                 item.analysis_id
@@ -594,16 +605,66 @@ class InvestigationSession(BaseModel):
                     "match session analysis order"
                 )
 
-        hypothesis_positions = self._validate_hypotheses(
-            clue_ids=clue_ids,
-            round_by_id=round_by_id,
-        )
-        self._validate_decisions(
-            clue_ids=clue_ids,
-            round_by_id=round_by_id,
-            analysis_by_id=analysis_by_id,
-            hypothesis_positions=hypothesis_positions,
-        )
+            round_analyses = tuple(
+                item
+                for item in self.analyses
+                if item.round_id == investigation_round.round_id
+            )
+            complete_analyses = (
+                tuple(item.agent_id for item in round_analyses)
+                == self.participant_ids
+            )
+            discussion = investigation_round.discussion_run
+            complete_discussion = (
+                discussion is not None
+                and discussion.status == "completed"
+                and discussion.character_ids == self.participant_ids
+            )
+
+            if investigation_round.status is InvestigationRoundStatus.AWAITING_ANALYSES:
+                if round_analyses or investigation_round.analysis_ids:
+                    raise ValueError("rounds awaiting analyses must not contain analyses")
+                if discussion is not None:
+                    raise ValueError("rounds awaiting analyses must not contain a discussion")
+                if investigation_round.decision_id is not None:
+                    raise ValueError("rounds awaiting analyses must not contain a decision")
+            elif investigation_round.status is InvestigationRoundStatus.AWAITING_DISCUSSION:
+                if not complete_analyses:
+                    raise ValueError(
+                        "rounds awaiting discussion require one ordered analysis per participant"
+                    )
+                if discussion is not None:
+                    raise ValueError("rounds awaiting discussion must not contain a discussion")
+                if investigation_round.decision_id is not None:
+                    raise ValueError("rounds awaiting discussion must not contain a decision")
+            elif investigation_round.status is InvestigationRoundStatus.AWAITING_DECISION:
+                if not complete_analyses:
+                    raise ValueError(
+                        "rounds awaiting decision require one ordered analysis per participant"
+                    )
+                if not complete_discussion:
+                    raise ValueError(
+                        "rounds awaiting decision require a completed discussion with exact participants"
+                    )
+                if investigation_round.decision_id is not None:
+                    raise ValueError("rounds awaiting decision must not contain a decision")
+            elif investigation_round.status is InvestigationRoundStatus.COMPLETED:
+                if not complete_analyses:
+                    raise ValueError(
+                        "completed rounds require one ordered analysis per participant"
+                    )
+                if not complete_discussion:
+                    raise ValueError(
+                        "completed rounds require a completed discussion with exact participants"
+                    )
+
+        discussion_run_ids = [
+            item.discussion_run.run_id
+            for item in self.rounds
+            if item.discussion_run is not None
+        ]
+        if len(discussion_run_ids) != len(set(discussion_run_ids)):
+            raise ValueError("discussion run_id values must be unique across rounds")
 
         evidence_groups = []
         if self.final_theory is not None:

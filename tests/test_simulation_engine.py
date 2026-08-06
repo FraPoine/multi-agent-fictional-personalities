@@ -734,6 +734,7 @@ def test_provider_error_inside_custom_generator_propagates(
         ("run_id", "wrong_run", "run_id"),
         ("turn_index", 9, "turn_index"),
         ("speaker_character_id", "beta", "speaker"),
+        ("speaker_name", "Beta Detective", "speaker_name"),
         ("provider", "wrong-provider", "provider"),
         ("model", "wrong-model", "model"),
     ],
@@ -779,6 +780,22 @@ def test_engine_rejects_invalid_custom_message_ownership(
 def test_turn_reply_generator_protocol_accepts_callable() -> None:
     generator: TurnReplyGenerator = RecordingTurnReplyGenerator()
     assert callable(generator)
+
+
+def test_custom_generator_duplicate_message_ids_are_rejected(
+    participants: list[ConversationParticipant],
+) -> None:
+    class DuplicateIdGenerator(RecordingTurnReplyGenerator):
+        def __call__(self, **kwargs: object) -> Message:
+            message = super().__call__(**kwargs)  # type: ignore[arg-type]
+            return message.model_copy(update={"message_id": "duplicate"})
+
+    with pytest.raises(ValueError, match="message_id.*unique"):
+        simulate(
+            participants[:2],
+            turn_count=2,
+            turn_reply_generator=DuplicateIdGenerator(),
+        )
 
 
 @pytest.mark.parametrize(

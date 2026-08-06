@@ -10,7 +10,7 @@ from multi_agent_personalities.application.investigation_discussion import (
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
-from multi_agent_personalities.application.investigation_mock import (
+from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
 )
 from multi_agent_personalities.application.investigation_prompts import (
@@ -327,7 +327,9 @@ def run_independent_analyses(
     ] = []
     generated_analyses: list[AgentAnalysis] = []
     generated_hypotheses: list[Hypothesis] = []
-    existing_hypothesis_ids = {item.hypothesis_id for item in snapshot.hypotheses}
+    snapshot_hypothesis_ids = {
+        item.hypothesis_id for item in snapshot.hypotheses
+    }
     next_hypothesis_index = len(snapshot.hypotheses) + 1
     for binding, analysis_id, task_name, rendered_prompt in prompts:
         generation = binding.provider.generate(
@@ -365,9 +367,16 @@ def run_independent_analyses(
             )
         )
         for proposed in payload.hypotheses:
+            if (
+                proposed.previous_hypothesis_id is not None
+                and proposed.previous_hypothesis_id not in snapshot_hypothesis_ids
+            ):
+                raise ValueError(
+                    "previous_hypothesis_id must reference a hypothesis in the pre-analysis snapshot"
+                )
             hypothesis_id = id_factory.hypothesis_id(next_hypothesis_index)
             if (
-                hypothesis_id in existing_hypothesis_ids
+                hypothesis_id in snapshot_hypothesis_ids
                 or any(
                     item.hypothesis_id == hypothesis_id
                     for item in generated_hypotheses

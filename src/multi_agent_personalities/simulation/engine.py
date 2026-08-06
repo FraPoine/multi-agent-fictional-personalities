@@ -79,6 +79,7 @@ def simulate_chat(
     )
 
     history: list[Message] = []
+    generated_message_ids: set[str] = set()
     for turn_index in range(turn_count):
         selected_character_id = select_valid_speaker(
             speaker_selector,
@@ -111,6 +112,10 @@ def simulate_chat(
             raise ValueError(
                 "generated message speaker must match the selected participant"
             )
+        if generated_message.speaker_name != participant.display_name:
+            raise ValueError(
+                "generated message speaker_name must match the selected participant"
+            )
         if generated_message.provider != participant.provider_name:
             raise ValueError(
                 "generated message provider must match the selected participant"
@@ -122,6 +127,9 @@ def simulate_chat(
             raise ValueError(
                 "generated message model must match the selected participant"
             )
+        if generated_message.message_id in generated_message_ids:
+            raise ValueError("generated message_id values must be unique")
+        generated_message_ids.add(generated_message.message_id)
         history.append(generated_message)
 
     message_providers = {message.provider for message in history}

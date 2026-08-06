@@ -15,6 +15,7 @@ from multi_agent_personalities.application import (
     build_investigation_mock_bindings,
     create_session,
     reveal_clue,
+    run_group_discussion,
     run_independent_analyses,
 )
 from multi_agent_personalities.llm.base import LLMProvider
@@ -113,6 +114,12 @@ def awaiting_round() -> InvestigationSession:
 
 
 def complete_round_one(session: InvestigationSession) -> InvestigationSession:
+    session = run_group_discussion(
+        session,
+        participant_bindings=participant_bindings(),
+        id_factory=FACTORY,
+        turn_count=2,
+    ).session
     decision = GroupDecision(
         decision_id="session_001_decision_0001",
         session_id=session.session_id,
@@ -260,6 +267,98 @@ def test_invalid_participant_output_fails_atomically(
     assert original.rounds[-1].status is InvestigationRoundStatus.AWAITING_ANALYSES
 
 
+def generated_hypothesis(previous: str | None = None) -> dict[str, object]:
+    return {
+        "statement": "A generated theory.",
+        "status": "active",
+        "evidence": [],
+        "previous_hypothesis_id": previous,
+    }
+
+
+@pytest.mark.parametrize("same_participant", [False, True])
+def test_same_operation_hypothesis_revision_fails_atomically(
+    same_participant: bool,
+) -> None:
+    original = awaiting_round()
+    before = original.model_dump_json()
+    generated_id = FACTORY.hypothesis_id(1)
+    if same_participant:
+        sherlock_hypotheses = [
+            generated_hypothesis(),
+            generated_hypothesis(generated_id),
+        ]
+        poirot_hypotheses: list[dict[str, object]] = []
+    else:
+        sherlock_hypotheses = [generated_hypothesis()]
+        poirot_hypotheses = [generated_hypothesis(generated_id)]
+
+    with pytest.raises(ValueError, match="pre-analysis snapshot"):
+        run_independent_analyses(
+            original,
+            participant_bindings=participant_bindings(
+                (
+                    StaticProvider(analysis_text(hypotheses=sherlock_hypotheses)),
+                    StaticProvider(analysis_text(hypotheses=poirot_hypotheses)),
+                )
+            ),
+            id_factory=FACTORY,
+        )
+
+    assert original.model_dump_json() == before
+    assert original.analyses == ()
+    assert original.hypotheses == ()
+    assert original.rounds[-1].status is InvestigationRoundStatus.AWAITING_ANALYSES
+
+
+def test_unknown_previous_hypothesis_fails_atomically() -> None:
+    original = awaiting_round()
+    with pytest.raises(ValueError, match="pre-analysis snapshot"):
+        run_independent_analyses(
+            original,
+            participant_bindings=participant_bindings(
+                (
+                    StaticProvider(
+                        analysis_text(
+                            hypotheses=[generated_hypothesis("unknown_hypothesis")]
+                        )
+                    ),
+                    StaticProvider(analysis_text()),
+                )
+            ),
+            id_factory=FACTORY,
+        )
+
+
+def test_revision_of_pre_analysis_snapshot_hypothesis_succeeds() -> None:
+    analysed = run_independent_analyses(
+        awaiting_round(),
+        participant_bindings=participant_bindings(),
+        id_factory=FACTORY,
+    ).session
+    round_two = reveal_clue(
+        complete_round_one(analysed),
+        clue_text="A second clue.",
+        id_factory=FACTORY,
+    )
+    previous_id = round_two.hypotheses[0].hypothesis_id
+
+    result = run_independent_analyses(
+        round_two,
+        participant_bindings=participant_bindings(
+            (
+                StaticProvider(
+                    analysis_text(hypotheses=[generated_hypothesis(previous_id)])
+                ),
+                StaticProvider(analysis_text()),
+            )
+        ),
+        id_factory=FACTORY,
+    )
+
+    assert result.session.hypotheses[-1].previous_hypothesis_id == previous_id
+
+
 def test_future_clue_reference_fails_even_when_clue_exists_in_session() -> None:
     original = awaiting_round()
     payload = original.model_dump(mode="python")
@@ -346,18 +445,12 @@ def test_no_round_nonactive_wrong_status_and_rerun_are_rejected() -> None:
     with pytest.raises(ValueError, match="active session"):
         run_independent_analyses(InvestigationSession.model_validate(payload), participant_bindings=participant_bindings(), id_factory=FACTORY)
 
-    payload = awaiting_round().model_dump(mode="python")
-    payload["rounds"][0]["status"] = InvestigationRoundStatus.AWAITING_DISCUSSION
-    wrong_status = InvestigationSession.model_validate(payload)
-    with pytest.raises(ValueError, match="awaiting analyses"):
-        run_independent_analyses(wrong_status, participant_bindings=participant_bindings(), id_factory=FACTORY)
-
     completed_phase = run_independent_analyses(awaiting_round(), participant_bindings=participant_bindings(), id_factory=FACTORY).session
     with pytest.raises(ValueError, match="awaiting analyses"):
         run_independent_analyses(completed_phase, participant_bindings=participant_bindings(), id_factory=FACTORY)
 
 
-def test_existing_current_analysis_is_rejected() -> None:
+def test_awaiting_analyses_with_existing_current_analysis_is_rejected() -> None:
     original = awaiting_round()
     analysis = AgentAnalysis(
         analysis_id=FACTORY.analysis_id("sherlock_holmes", 1),
@@ -370,17 +463,11 @@ def test_existing_current_analysis_is_rejected() -> None:
     payload = original.model_dump(mode="python")
     payload["analyses"] = [analysis]
     payload["rounds"][0]["analysis_ids"] = [analysis.analysis_id]
-    existing = InvestigationSession.model_validate(payload)
-
-    with pytest.raises(ValueError, match="already contains analyses"):
-        run_independent_analyses(
-            existing,
-            participant_bindings=participant_bindings(),
-            id_factory=FACTORY,
-        )
+    with pytest.raises(ValidationError, match="awaiting analyses"):
+        InvestigationSession.model_validate(payload)
 
 
-def test_existing_discussion_is_rejected() -> None:
+def test_awaiting_analyses_with_existing_discussion_is_rejected() -> None:
     original = awaiting_round()
     discussion = ConversationRun(
         run_id="discussion",
@@ -394,14 +481,8 @@ def test_existing_discussion_is_rejected() -> None:
     )
     payload = original.model_dump(mode="python")
     payload["rounds"][0]["discussion_run"] = discussion
-    invalid_stage = InvestigationSession.model_validate(payload)
-
-    with pytest.raises(ValueError, match="must not contain a discussion"):
-        run_independent_analyses(
-            invalid_stage,
-            participant_bindings=participant_bindings(),
-            id_factory=FACTORY,
-        )
+    with pytest.raises(ValidationError, match="awaiting analyses"):
+        InvestigationSession.model_validate(payload)
 
 
 def test_incomplete_earlier_round_is_rejected() -> None:

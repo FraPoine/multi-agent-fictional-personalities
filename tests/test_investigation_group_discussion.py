@@ -334,16 +334,14 @@ def test_missing_or_misordered_current_analyses_are_rejected() -> None:
     missing_payload = original.model_dump(mode="python")
     missing_payload["analyses"] = missing_payload["analyses"][:1]
     missing_payload["rounds"][0]["analysis_ids"] = missing_payload["rounds"][0]["analysis_ids"][:1]
-    missing = InvestigationSession.model_validate(missing_payload)
-    with pytest.raises(ValueError, match="participant order exactly"):
-        run_group_discussion(missing, participant_bindings=mock_participants(), id_factory=FACTORY, turn_count=2)
+    with pytest.raises(ValidationError, match="one ordered analysis per participant"):
+        InvestigationSession.model_validate(missing_payload)
 
     reversed_payload = original.model_dump(mode="python")
     reversed_payload["analyses"] = tuple(reversed(reversed_payload["analyses"]))
     reversed_payload["rounds"][0]["analysis_ids"] = tuple(reversed(reversed_payload["rounds"][0]["analysis_ids"]))
-    reversed_session = InvestigationSession.model_validate(reversed_payload)
-    with pytest.raises(ValueError, match="participant order exactly"):
-        run_group_discussion(reversed_session, participant_bindings=mock_participants(), id_factory=FACTORY, turn_count=2)
+    with pytest.raises(ValidationError, match="one ordered analysis per participant"):
+        InvestigationSession.model_validate(reversed_payload)
 
 
 def test_duplicate_execution_is_rejected_without_modification() -> None:
