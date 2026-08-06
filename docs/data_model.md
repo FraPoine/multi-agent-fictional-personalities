@@ -595,6 +595,15 @@ and retry metadata therefore remain unchanged. Empty text, malformed JSON,
 schema errors, extra fields, and invalid enums fail explicitly; no retry,
 Markdown-fence removal, substring extraction, or automatic repair occurs.
 
+The implemented group-decision operation consumes `GeneratedDecisionPayload`
+only after a completed current-round discussion. The application service owns
+the resulting decision ID, session and round ownership, validates all analysis,
+hypothesis, and visible-clue references, and appends optional hypotheses with
+service-generated IDs. New hypothesis revisions may target only hypotheses in
+the pre-decision snapshot. Recording a decision completes its round while the
+session remains active; clue revelation, subsequent rounds, and finalization
+remain explicit caller actions.
+
 Prompt context comes from four version-1 files under `prompts/`. Their closed
 placeholder contracts are loaded and rendered in the application layer, while
 record helpers preserve supplied collection order. These facilities do not

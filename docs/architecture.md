@@ -395,8 +395,26 @@ the conversation run uses the deterministic
 The complete validated `ConversationRun`, including per-message generation
 metadata, is attached only after every turn succeeds. The service then moves
 that round from `awaiting_discussion` to `awaiting_decision` in one aggregate
-reconstruction. A failure attaches no partial run. Decision generation,
-consensus behavior, persistence, and finalization remain unimplemented.
+reconstruction. A failure attaches no partial run. Dynamic consensus behavior,
+persistence, and finalization remain unimplemented.
+
+## Investigation group decision
+
+`create_group_decision()` implements the structured decision phase after a
+completed, participant-consistent current-round discussion. It renders the
+versioned decision prompt from the round's visible clues, ordered analyses,
+temporally available hypotheses, and complete discussion transcript, then
+calls one explicitly supplied provider with a provider-neutral deterministic
+round task name. The shared structured-output adapter preserves the exact
+generation result while the service assigns authoritative decision and any
+optional hypothesis IDs and ownership.
+
+References and append-only proposed hypotheses are validated against the
+immutable pre-decision snapshot. A successful operation attaches exactly one
+decision, marks only the round `completed`, leaves the session `active`, and
+returns control. It does not execute the decision, reveal a clue, open another
+round, persist records, or finalize the investigation; those actions remain
+caller-controlled and finalization remains unimplemented.
 
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves

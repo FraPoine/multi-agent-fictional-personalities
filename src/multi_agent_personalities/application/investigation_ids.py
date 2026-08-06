@@ -84,3 +84,14 @@ class DeterministicInvestigationIdFactory:
         return validate_run_id(
             f"{self.round_id(round_index)}_discussion"
         )
+
+    def decision_id(self, round_index: int) -> str:
+        """Return the canonical group-decision ID for one round."""
+        round_index = _require_strict_integer(
+            round_index,
+            name="round_index",
+            minimum=1,
+        )
+        return validate_run_id(
+            f"{self.session_id}_decision_{round_index:04d}"
+        )

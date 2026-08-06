@@ -18,6 +18,7 @@ from multi_agent_personalities.application import (
     StructuredOutputError,
     build_investigation_mock_bindings,
     investigation_analysis_task_name,
+    investigation_decision_task_name,
     investigation_discussion_task_name,
     parse_structured_generation,
 )
@@ -73,6 +74,15 @@ def test_provider_neutral_task_names_remain_backward_compatible() -> None:
     assert investigation_discussion_task_name("hercule_poirot", 2, 0) == (
         "investigation.discussion.hercule_poirot.round_0002.turn_0001"
     )
+    assert investigation_decision_task_name(1) == (
+        "investigation.decision.round_0001"
+    )
+
+
+@pytest.mark.parametrize("value", [0, -1, True, 1.0, "1"])
+def test_decision_task_name_rejects_invalid_round(value: object) -> None:
+    with pytest.raises(ValueError, match="round_index"):
+        investigation_decision_task_name(value)  # type: ignore[arg-type]
 
 
 def test_provider_neutral_service_does_not_import_mock_module() -> None:

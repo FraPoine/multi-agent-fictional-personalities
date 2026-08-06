@@ -34,3 +34,14 @@ def investigation_discussion_task_name(
         f"investigation.discussion.{participant_id}."
         f"round_{round_index:04d}.turn_{turn_index + 1:04d}"
     )
+
+
+def investigation_decision_task_name(round_index: int) -> str:
+    """Return the stable group-decision task name for a one-based round."""
+    if (
+        isinstance(round_index, bool)
+        or not isinstance(round_index, int)
+        or round_index < 1
+    ):
+        raise ValueError("round_index must be a positive integer")
+    return f"investigation.decision.round_{round_index:04d}"

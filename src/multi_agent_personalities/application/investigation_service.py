@@ -12,6 +12,7 @@ from multi_agent_personalities.application.investigation_ids import (
 )
 from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
+    investigation_decision_task_name,
 )
 from multi_agent_personalities.application.investigation_prompts import (
     InvestigationPromptName,
@@ -26,13 +27,16 @@ from multi_agent_personalities.application.investigation_prompts import (
 )
 from multi_agent_personalities.application.investigation_structured_output import (
     GeneratedAnalysisPayload,
+    GeneratedDecisionPayload,
     StructuredGenerationResult,
     parse_structured_generation,
 )
+from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.models import (
     AgentAnalysis,
     Clue,
     ConversationRun,
+    GroupDecision,
     Hypothesis,
     InvestigationRound,
     InvestigationRoundStatus,
@@ -68,6 +72,15 @@ class GroupDiscussionResult:
 
     session: InvestigationSession
     conversation_run: ConversationRun
+
+
+@dataclass(frozen=True)
+class GroupDecisionResult:
+    """One atomic round completion and its generation provenance."""
+
+    session: InvestigationSession
+    decision: GroupDecision
+    generation: StructuredGenerationResult[GeneratedDecisionPayload]
 
 
 def _completed_history_context(
@@ -533,4 +546,186 @@ def run_group_discussion(
     return GroupDiscussionResult(
         session=updated_session,
         conversation_run=conversation_run,
+    )
+
+
+def create_group_decision(
+    session: InvestigationSession,
+    *,
+    decision_provider: LLMProvider,
+    id_factory: DeterministicInvestigationIdFactory,
+) -> GroupDecisionResult:
+    """Generate and atomically record the current round's group decision."""
+    if not isinstance(session, InvestigationSession):
+        raise ValueError("session must be a validated InvestigationSession")
+    snapshot = InvestigationSession.model_validate(
+        session.model_dump(mode="python")
+    )
+    if snapshot.status is not InvestigationStatus.ACTIVE:
+        raise ValueError("group decision may run only in an active session")
+    if not snapshot.rounds:
+        raise ValueError("group decision requires a current investigation round")
+    if not callable(getattr(decision_provider, "generate", None)):
+        raise ValueError("decision_provider must implement the LLMProvider boundary")
+    if not isinstance(id_factory, DeterministicInvestigationIdFactory):
+        raise ValueError(
+            "id_factory must be a DeterministicInvestigationIdFactory"
+        )
+    if id_factory.session_id != snapshot.session_id:
+        raise ValueError("id_factory session_id must match the investigation session")
+
+    current_round = snapshot.rounds[-1]
+    if current_round.status is not InvestigationRoundStatus.AWAITING_DECISION:
+        raise ValueError("current round must be awaiting decision")
+    if any(
+        item.status is not InvestigationRoundStatus.COMPLETED
+        for item in snapshot.rounds[:-1]
+    ):
+        raise ValueError("all previous rounds must be completed")
+    if current_round.decision_id is not None or any(
+        item.round_id == current_round.round_id for item in snapshot.decisions
+    ):
+        raise ValueError("current round already contains a decision")
+
+    current_analyses = tuple(
+        item
+        for item in snapshot.analyses
+        if item.round_id == current_round.round_id
+    )
+    if tuple(item.agent_id for item in current_analyses) != snapshot.participant_ids:
+        raise ValueError(
+            "current-round analyses must match session participant order exactly"
+        )
+    if current_round.analysis_ids != tuple(
+        item.analysis_id for item in current_analyses
+    ):
+        raise ValueError(
+            "current-round analysis_ids must match current analyses exactly"
+        )
+    if any(
+        item.session_id != snapshot.session_id
+        or item.visible_clue_ids != current_round.visible_clue_ids
+        for item in current_analyses
+    ):
+        raise ValueError("current-round analysis ownership or visibility is invalid")
+
+    discussion = current_round.discussion_run
+    if discussion is None or discussion.status != "completed":
+        raise ValueError("current round requires a completed discussion")
+    if discussion.character_ids != snapshot.participant_ids:
+        raise ValueError("discussion participants must match session participants")
+    discussion = ConversationRun.model_validate(
+        discussion.model_dump(mode="python")
+    )
+
+    available_hypotheses = tuple(
+        item
+        for item in snapshot.hypotheses
+        if next(
+            investigation_round.round_index
+            for investigation_round in snapshot.rounds
+            if investigation_round.round_id == item.round_id
+        ) <= current_round.round_index
+    )
+    prompt = render_investigation_prompt(
+        load_investigation_prompt(InvestigationPromptName.DECISION),
+        {
+            "session_id": snapshot.session_id,
+            "round_id": current_round.round_id,
+            "case_introduction": snapshot.case_introduction,
+            "visible_clues": render_visible_clues(
+                snapshot, current_round.visible_clue_ids
+            ),
+            "analyses": render_analyses(current_analyses),
+            "hypotheses": render_hypotheses(available_hypotheses),
+            "discussion_transcript": render_discussion_messages(
+                discussion.messages
+            ),
+        },
+    )
+    generation = decision_provider.generate(
+        prompt,
+        task_name=investigation_decision_task_name(current_round.round_index),
+    )
+    structured = parse_structured_generation(
+        generation,
+        GeneratedDecisionPayload,
+    )
+    generated = structured.value
+
+    current_analysis_ids = set(current_round.analysis_ids)
+    if any(item not in current_analysis_ids for item in generated.analysis_ids):
+        raise ValueError("decision analysis_ids must reference current-round analyses")
+    snapshot_hypothesis_ids = {
+        item.hypothesis_id for item in available_hypotheses
+    }
+    if any(item not in snapshot_hypothesis_ids for item in generated.hypothesis_ids):
+        raise ValueError(
+            "decision hypothesis_ids must reference pre-decision hypotheses"
+        )
+    visible_clue_ids = set(current_round.visible_clue_ids)
+    if any(item.clue_id not in visible_clue_ids for item in generated.evidence):
+        raise ValueError("decision evidence must reference visible clues")
+
+    generated_hypotheses: list[Hypothesis] = []
+    next_hypothesis_index = len(snapshot.hypotheses) + 1
+    existing_hypothesis_ids = {item.hypothesis_id for item in snapshot.hypotheses}
+    for proposed in generated.hypotheses:
+        if (
+            proposed.previous_hypothesis_id is not None
+            and proposed.previous_hypothesis_id not in snapshot_hypothesis_ids
+        ):
+            raise ValueError(
+                "previous_hypothesis_id must reference a hypothesis in the pre-decision snapshot"
+            )
+        if any(item.clue_id not in visible_clue_ids for item in proposed.evidence):
+            raise ValueError("hypothesis evidence must reference visible clues")
+        hypothesis_id = id_factory.hypothesis_id(next_hypothesis_index)
+        if hypothesis_id in existing_hypothesis_ids or any(
+            item.hypothesis_id == hypothesis_id for item in generated_hypotheses
+        ):
+            raise ValueError(f"duplicate hypothesis_id: {hypothesis_id!r}")
+        generated_hypotheses.append(
+            Hypothesis(
+                hypothesis_id=hypothesis_id,
+                session_id=snapshot.session_id,
+                round_id=current_round.round_id,
+                statement=proposed.statement,
+                status=proposed.status,
+                evidence=proposed.evidence,
+                previous_hypothesis_id=proposed.previous_hypothesis_id,
+            )
+        )
+        next_hypothesis_index += 1
+
+    decision_id = id_factory.decision_id(current_round.round_index)
+    if any(item.decision_id == decision_id for item in snapshot.decisions):
+        raise ValueError(f"duplicate decision_id: {decision_id!r}")
+    decision = GroupDecision(
+        decision_id=decision_id,
+        session_id=snapshot.session_id,
+        round_id=current_round.round_id,
+        decision_type=generated.decision_type,
+        summary=generated.summary,
+        analysis_ids=generated.analysis_ids,
+        hypothesis_ids=generated.hypothesis_ids,
+        evidence=generated.evidence,
+    )
+    round_payload = current_round.model_dump(mode="python")
+    round_payload.update(
+        decision_id=decision.decision_id,
+        status=InvestigationRoundStatus.COMPLETED,
+    )
+    updated_round = InvestigationRound.model_validate(round_payload)
+    session_payload = snapshot.model_dump(mode="python")
+    session_payload.update(
+        rounds=(*snapshot.rounds[:-1], updated_round),
+        hypotheses=(*snapshot.hypotheses, *generated_hypotheses),
+        decisions=(*snapshot.decisions, decision),
+    )
+    updated_session = InvestigationSession.model_validate(session_payload)
+    return GroupDecisionResult(
+        session=updated_session,
+        decision=decision,
+        generation=structured,
     )

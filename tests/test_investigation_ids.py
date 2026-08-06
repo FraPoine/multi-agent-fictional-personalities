@@ -24,6 +24,7 @@ def test_factory_builds_valid_one_based_deterministic_ids() -> None:
     assert factory.discussion_run_id(1) == (
         "session_001_round_0001_discussion"
     )
+    assert factory.decision_id(1) == "session_001_decision_0001"
     assert factory == DeterministicInvestigationIdFactory(1)
 
 
@@ -53,6 +54,12 @@ def test_factory_rejects_invalid_analysis_round_index(value: object) -> None:
         DeterministicInvestigationIdFactory(1).analysis_id(
             "sherlock_holmes", value  # type: ignore[arg-type]
         )
+
+
+@pytest.mark.parametrize("value", [0, -1, True, 1.0, "1"])
+def test_factory_rejects_invalid_decision_round_index(value: object) -> None:
+    with pytest.raises(ValueError, match="round_index"):
+        DeterministicInvestigationIdFactory(1).decision_id(value)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("value", [0, -1, True, 1.0, "1"])
