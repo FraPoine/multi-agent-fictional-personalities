@@ -35,7 +35,7 @@ from multi_agent_personalities.models import (
 EXPECTED_PLACEHOLDERS = {
     InvestigationPromptName.ANALYSIS: (
         "session_id", "round_id", "case_introduction", "participant_id",
-        "visible_clues",
+        "persona_profile", "visible_clues", "completed_history",
     ),
     InvestigationPromptName.DISCUSSION: (
         "session_id", "round_id", "case_introduction", "participant_id",
@@ -134,7 +134,8 @@ def test_complete_rendering_is_deterministic_and_replaces_repetitions() -> None:
         name=InvestigationPromptName.ANALYSIS,
         version=1,
         body="{{session_id}}/{{session_id}} {{round_id}} {{case_introduction}} "
-        "{{participant_id}} {{visible_clues}}",
+        "{{participant_id}} {{persona_profile}} {{visible_clues}} "
+        "{{completed_history}}",
         required_placeholders=EXPECTED_PLACEHOLDERS[InvestigationPromptName.ANALYSIS],
     )
     values = {
@@ -142,7 +143,9 @@ def test_complete_rendering_is_deterministic_and_replaces_repetitions() -> None:
         "round_id": "round_001",
         "case_introduction": "A case.",
         "participant_id": "sherlock",
+        "persona_profile": "Sherlock persona.",
         "visible_clues": "[clue] Text.",
+        "completed_history": "None.",
     }
     first = render_investigation_prompt(template, values)
     assert first == render_investigation_prompt(template, values)

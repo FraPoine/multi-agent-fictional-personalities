@@ -285,21 +285,21 @@ def test_two_round_references_follow_deterministic_chronology() -> None:
         for reference in analysis.evidence
     } <= {clue_one, clue_two}
     assert decision_one.analysis_ids == (
-        "session_001_analysis_sherlock_holmes_0001",
-        "session_001_analysis_hercule_poirot_0001",
+        factory.analysis_id("sherlock_holmes", 1),
+        factory.analysis_id("hercule_poirot", 1),
     )
     assert sum(len(item.hypotheses) for item in round_one_analyses) == 1
-    assert decision_one.hypothesis_ids == ("session_001_hypothesis_0001",)
+    assert decision_one.hypothesis_ids == (factory.hypothesis_id(1),)
     assert decision_two.analysis_ids == (
-        "session_001_analysis_sherlock_holmes_0002",
-        "session_001_analysis_hercule_poirot_0002",
+        factory.analysis_id("sherlock_holmes", 2),
+        factory.analysis_id("hercule_poirot", 2),
     )
     assert sum(len(item.hypotheses) for item in round_two_analyses) == 1
     assert round_two_analyses[0].hypotheses[0].previous_hypothesis_id == (
-        "session_001_hypothesis_0001"
+        factory.hypothesis_id(1)
     )
-    assert decision_two.hypothesis_ids == ("session_001_hypothesis_0002",)
-    assert final.hypothesis_ids == ("session_001_hypothesis_0002",)
+    assert decision_two.hypothesis_ids == (factory.hypothesis_id(2),)
+    assert final.hypothesis_ids == (factory.hypothesis_id(2),)
     assert {item.clue_id for item in final.evidence} <= {clue_one, clue_two}
 
 

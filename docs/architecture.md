@@ -328,6 +328,32 @@ bytes are deterministic, and execution requires neither network access nor an
 API key. These fixtures verify plumbing only: they do not establish persona
 quality, run workflow orchestration, or complete Sprint 6.
 
+## Independent investigation analyses
+
+`run_independent_analyses()` now implements the first generated investigation
+phase. It accepts a fully validated active session, the existing ordered
+persona/provider bindings, and the session's deterministic ID factory. Before
+calling any provider, it revalidates one immutable pre-analysis snapshot and
+renders every participant prompt from that same snapshot. Each prompt contains
+the participant's own validated persona, the current round's exact visible-
+clue tuple, and only completed history from earlier rounds. Current-round peer
+outputs, discussion, decisions, and later clues are excluded.
+
+Providers are then called once per `session.participant_ids` order with the
+explicit participant-and-round analysis task name. Every `GenerationResult`
+passes through `parse_structured_generation()` before the service assigns the
+canonical analysis ID, session, round, participant, and visibility fields.
+Analysis-phase hypotheses already permitted by the payload contract receive
+service-owned deterministic IDs in the same atomic operation. The immutable
+result returns the updated session plus the ordered structured generations, so
+original text and metadata remain available.
+
+Only after all prompts, generations, payloads, domain records, and IDs validate
+does the service reconstruct the aggregate once and move the round to
+`awaiting_discussion`. Any participant failure raises without returning a
+partially updated session. Group discussion, decisions, and finalization remain
+unimplemented.
+
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
 the effective message model, using configuration only when the provider omits

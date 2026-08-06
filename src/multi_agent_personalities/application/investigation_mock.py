@@ -8,6 +8,7 @@ from types import MappingProxyType
 
 from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.llm.mock_provider import MockProvider
+from multi_agent_personalities.models import validate_run_id
 
 
 SHERLOCK_HOLMES_ID = "sherlock_holmes"
@@ -110,6 +111,21 @@ class InvestigationMockBindings:
     participant_providers: Mapping[str, LLMProvider]
     decision_provider: LLMProvider
     final_theory_provider: LLMProvider
+
+
+def investigation_analysis_task_name(
+    participant_id: str,
+    round_index: int,
+) -> str:
+    """Return the stable analysis task name for explicit participant/round input."""
+    participant_id = validate_run_id(participant_id)
+    if (
+        isinstance(round_index, bool)
+        or not isinstance(round_index, int)
+        or round_index < 1
+    ):
+        raise ValueError("round_index must be a positive integer")
+    return f"investigation.analysis.{participant_id}.round_{round_index:04d}"
 
 
 def _paths_for_tasks(

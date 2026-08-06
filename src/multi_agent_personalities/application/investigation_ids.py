@@ -50,3 +50,26 @@ class DeterministicInvestigationIdFactory:
         return validate_run_id(
             f"{self.session_id}_round_{round_index:04d}"
         )
+
+    def analysis_id(self, participant_id: str, round_index: int) -> str:
+        """Return the canonical participant analysis ID for one round."""
+        participant_id = validate_run_id(participant_id)
+        round_index = _require_strict_integer(
+            round_index,
+            name="round_index",
+            minimum=1,
+        )
+        return validate_run_id(
+            f"{self.session_id}_analysis_{participant_id}_{round_index:04d}"
+        )
+
+    def hypothesis_id(self, hypothesis_index: int) -> str:
+        """Return the canonical one-based session hypothesis ID."""
+        hypothesis_index = _require_strict_integer(
+            hypothesis_index,
+            name="hypothesis_index",
+            minimum=1,
+        )
+        return validate_run_id(
+            f"{self.session_id}_hypothesis_{hypothesis_index:04d}"
+        )

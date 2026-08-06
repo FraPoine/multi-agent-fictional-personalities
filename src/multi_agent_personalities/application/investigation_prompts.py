@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
+from multi_agent_personalities.agent_runtime import build_system_prompt
 from multi_agent_personalities.models import (
     AgentAnalysis,
     EvidenceReference,
@@ -14,6 +15,7 @@ from multi_agent_personalities.models import (
     Hypothesis,
     InvestigationSession,
     Message,
+    Persona,
 )
 
 
@@ -49,7 +51,9 @@ _REQUIRED_PLACEHOLDERS = {
         "round_id",
         "case_introduction",
         "participant_id",
+        "persona_profile",
         "visible_clues",
+        "completed_history",
     ),
     InvestigationPromptName.DISCUSSION: (
         "session_id",
@@ -203,6 +207,13 @@ def render_visible_clues(
             raise ValueError(f"unknown visible clue_id: {clue_id!r}")
         lines.append(f"[{clue_id}] {clue_by_id[clue_id].text}")
     return "\n".join(lines) if lines else "None."
+
+
+def render_persona_context(persona: Persona) -> str:
+    """Render one validated persona through the existing system-prompt path."""
+    if not isinstance(persona, Persona):
+        raise ValueError("persona must be a validated Persona")
+    return build_system_prompt(persona, _PROMPT_DIRECTORY).strip()
 
 
 def _render_evidence(items: Sequence[EvidenceReference]) -> str:
