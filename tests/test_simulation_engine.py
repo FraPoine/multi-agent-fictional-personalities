@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 import pytest
 from pydantic import ValidationError
 
+import multi_agent_personalities.simulation.engine as engine_module
 from multi_agent_personalities.models import (
     GenerationMetadata,
     GenerationResult,
@@ -17,6 +18,7 @@ from multi_agent_personalities.models import (
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
     RoundRobinSelector,
+    TurnReplyGenerator,
     simulate_chat,
 )
 
@@ -36,9 +38,11 @@ class RecordingProvider:
         self.provider_name = provider_name
         self.model_name = model_name
         self.prompts: list[str] = []
+        self.tasks: list[str] = []
 
     def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
         self.prompts.append(prompt)
+        self.tasks.append(task_name)
         return GenerationResult(
             text=self.response,
             metadata=GenerationMetadata(
@@ -506,6 +510,275 @@ def test_safe_run_ids_are_accepted(
 ) -> None:
     run = simulate(participants[:2], run_id=run_id)
     assert run.run_id == run_id
+
+
+def test_default_path_still_delegates_to_standard_reply_generator(
+    participants: list[ConversationParticipant],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, int]] = []
+    original = engine_module.generate_participant_reply
+
+    def recording_default(**kwargs: object) -> Message:
+        participant = kwargs["participant"]
+        calls.append((participant.character_id, kwargs["turn_index"]))  # type: ignore[attr-defined]
+        return original(**kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(
+        engine_module,
+        "generate_participant_reply",
+        recording_default,
+    )
+    run = simulate(participants[:2], turn_count=3)
+
+    assert calls == [("alpha", 0), ("beta", 1), ("alpha", 2)]
+    assert [item.text for item in run.messages] == [
+        "response-from-alpha", "response-from-beta", "response-from-alpha",
+    ]
+    assert run.provider == "recording"
+    assert run.model == "fake-v1"
+
+
+def test_implicit_default_equals_explicit_standard_generator(
+    participants: list[ConversationParticipant],
+) -> None:
+    implicit = simulate(participants[:2], turn_count=3)
+    explicit = simulate(
+        participants[:2],
+        turn_count=3,
+        turn_reply_generator=engine_module.generate_participant_reply,
+    )
+    assert implicit == explicit
+
+
+class RecordingTurnReplyGenerator:
+    def __init__(self) -> None:
+        self.calls: list[
+            tuple[ConversationParticipant, tuple[Message, ...], str, str, int]
+        ] = []
+
+    def __call__(
+        self,
+        *,
+        participant: ConversationParticipant,
+        history: tuple[Message, ...],
+        topic: str,
+        run_id: str,
+        turn_index: int,
+        timestamp: datetime,
+    ) -> Message:
+        self.calls.append(
+            (participant, history, topic, run_id, turn_index)
+        )
+        generation = participant.provider.generate(
+            f"custom prompt for {participant.character_id} at {turn_index}",
+            task_name=f"custom.turn.{turn_index}",
+        )
+        return Message(
+            message_id=f"{run_id}_custom_{turn_index}",
+            run_id=run_id,
+            turn_index=turn_index,
+            speaker_character_id=participant.character_id,
+            speaker_name=participant.display_name,
+            text=f"custom-{participant.character_id}-{turn_index}",
+            provider=participant.provider_name,
+            model=participant.model_name,
+            generation_metadata=generation.metadata,
+            timestamp=timestamp,
+        )
+
+
+def test_custom_generator_controls_generation_but_not_loop_or_speakers(
+    participants: list[ConversationParticipant],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    generator = RecordingTurnReplyGenerator()
+
+    def forbidden_default(**kwargs: object) -> Message:
+        raise AssertionError("standard generator called")
+
+    monkeypatch.setattr(
+        engine_module,
+        "generate_participant_reply",
+        forbidden_default,
+    )
+    run = simulate(
+        participants[:2],
+        turn_count=4,
+        turn_reply_generator=generator,
+    )
+
+    assert len(generator.calls) == 4
+    assert [item[0].character_id for item in generator.calls] == [
+        "alpha", "beta", "alpha", "beta",
+    ]
+    assert [item[3] for item in generator.calls] == ["run_fixed"] * 4
+    assert [item[4] for item in generator.calls] == list(range(4))
+    assert [len(item[1]) for item in generator.calls] == list(range(4))
+    assert all(isinstance(item[1], tuple) for item in generator.calls)
+    assert [item.text for item in run.messages] == [
+        "custom-alpha-0", "custom-beta-1", "custom-alpha-2", "custom-beta-3",
+    ]
+    assert participants[0].provider.tasks == ["custom.turn.0", "custom.turn.2"]  # type: ignore[attr-defined]
+    assert participants[1].provider.tasks == ["custom.turn.1", "custom.turn.3"]  # type: ignore[attr-defined]
+
+
+def test_custom_generator_receives_complete_immutable_chronological_history(
+    participants: list[ConversationParticipant],
+) -> None:
+    class MutationCheckingGenerator(RecordingTurnReplyGenerator):
+        def __call__(self, **kwargs: object) -> Message:
+            history = kwargs["history"]
+            with pytest.raises(AttributeError):
+                history.append("bad")  # type: ignore[attr-defined]
+            if history:
+                with pytest.raises(ValidationError):
+                    history[0].text = "changed"  # type: ignore[index,union-attr]
+            return super().__call__(**kwargs)  # type: ignore[arg-type]
+
+    generator = MutationCheckingGenerator()
+    run = simulate(
+        participants[:2],
+        turn_count=3,
+        turn_reply_generator=generator,
+    )
+    assert generator.calls[0][1] == ()
+    assert generator.calls[1][1] == run.messages[:1]
+    assert generator.calls[2][1] == run.messages[:2]
+    assert run.messages == tuple(item for item in run.messages)
+
+
+def test_selector_runs_before_custom_generator_and_alone_controls_speaker(
+    participants: list[ConversationParticipant],
+) -> None:
+    events: list[tuple[str, int, str | None]] = []
+
+    class OrderedSelector:
+        def select_next(
+            self,
+            *,
+            participant_ids: Sequence[str],
+            history: Sequence[Message],
+            turn_index: int,
+        ) -> str:
+            selected = ("gamma", "alpha", "beta")[turn_index]
+            events.append(("select", turn_index, selected))
+            return selected
+
+    class OrderedGenerator(RecordingTurnReplyGenerator):
+        def __call__(self, **kwargs: object) -> Message:
+            selected = kwargs["participant"].character_id  # type: ignore[union-attr]
+            events.append(("generate", kwargs["turn_index"], selected))  # type: ignore[arg-type]
+            return super().__call__(**kwargs)  # type: ignore[arg-type]
+
+    generator = OrderedGenerator()
+    run = simulate(
+        participants,
+        turn_count=3,
+        speaker_selector=OrderedSelector(),
+        turn_reply_generator=generator,
+    )
+    assert events == [
+        ("select", 0, "gamma"), ("generate", 0, "gamma"),
+        ("select", 1, "alpha"), ("generate", 1, "alpha"),
+        ("select", 2, "beta"), ("generate", 2, "beta"),
+    ]
+    assert [item.speaker_character_id for item in run.messages] == [
+        "gamma", "alpha", "beta",
+    ]
+
+
+def test_custom_generator_exception_has_no_default_fallback(
+    participants: list[ConversationParticipant],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    default_calls = 0
+
+    def default(**kwargs: object) -> Message:
+        nonlocal default_calls
+        default_calls += 1
+        return engine_module.generate_participant_reply(**kwargs)  # pragma: no cover
+
+    def fail(**kwargs: object) -> Message:
+        raise RuntimeError("custom failure")
+
+    monkeypatch.setattr(engine_module, "generate_participant_reply", default)
+    with pytest.raises(RuntimeError, match="custom failure"):
+        simulate(
+            participants[:2],
+            turn_count=2,
+            turn_reply_generator=fail,
+        )
+    assert default_calls == 0
+
+
+def test_provider_error_inside_custom_generator_propagates(
+    participants: list[ConversationParticipant],
+) -> None:
+    class FailingProvider:
+        def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
+            raise RuntimeError("custom provider unavailable")
+
+    selected = [replace(participants[0], provider=FailingProvider()), participants[1]]
+    with pytest.raises(RuntimeError, match="custom provider unavailable"):
+        simulate(
+            selected,
+            turn_count=1,
+            turn_reply_generator=RecordingTurnReplyGenerator(),
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "error"),
+    [
+        ("run_id", "wrong_run", "run_id"),
+        ("turn_index", 9, "turn_index"),
+        ("speaker_character_id", "beta", "speaker"),
+        ("provider", "wrong-provider", "provider"),
+        ("model", "wrong-model", "model"),
+    ],
+)
+def test_engine_rejects_invalid_custom_message_ownership(
+    participants: list[ConversationParticipant],
+    field: str,
+    value: object,
+    error: str,
+) -> None:
+    def invalid_generator(
+        *,
+        participant: ConversationParticipant,
+        history: tuple[Message, ...],
+        topic: str,
+        run_id: str,
+        turn_index: int,
+        timestamp: datetime,
+    ) -> Message:
+        del history, topic
+        data: dict[str, object] = {
+            "message_id": "invalid",
+            "run_id": run_id,
+            "turn_index": turn_index,
+            "speaker_character_id": participant.character_id,
+            "speaker_name": participant.display_name,
+            "text": "invalid custom result",
+            "provider": participant.provider_name,
+            "model": participant.model_name,
+            "timestamp": timestamp,
+        }
+        data[field] = value
+        return Message.model_validate(data)
+
+    with pytest.raises(ValueError, match=error):
+        simulate(
+            participants[:2],
+            turn_count=1,
+            turn_reply_generator=invalid_generator,
+        )
+
+
+def test_turn_reply_generator_protocol_accepts_callable() -> None:
+    generator: TurnReplyGenerator = RecordingTurnReplyGenerator()
+    assert callable(generator)
 
 
 @pytest.mark.parametrize(

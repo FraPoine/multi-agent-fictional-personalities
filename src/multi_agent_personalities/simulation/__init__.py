@@ -2,6 +2,7 @@
 
 from .engine import simulate_chat
 from .participant import ConversationParticipant
+from .reply_generation import TurnReplyGenerator
 from .speaker_selector import (
     RoundRobinSelector,
     SpeakerSelector,
@@ -11,6 +12,7 @@ from .speaker_selector import (
 __all__ = [
     "RoundRobinSelector",
     "SpeakerSelector",
+    "TurnReplyGenerator",
     "ConversationParticipant",
     "select_valid_speaker",
     "simulate_chat",

@@ -215,6 +215,22 @@ the corresponding `ConversationParticipant`, whose provider generates exactly
 one message. Selector validation errors and selector exceptions propagate
 before generation for that turn.
 
+`simulate_chat()` also accepts an optional generic `TurnReplyGenerator` callable.
+When omitted, the engine continues to use `generate_participant_reply()` with
+the standard conversation prompt and task exactly as before. An injected
+generator receives the engine-selected participant, topic, run ID, timestamp,
+zero-based turn index, and the complete immutable history tuple. It may choose
+the prompt and provider task and generate that turn's `Message`; it cannot
+select speakers, alter turn order, truncate stored history, stop the loop, or
+construct the final run.
+
+The engine revalidates every returned message and requires its run ID, turn
+index, speaker, provider, and configured model to match the current selected
+turn before appending it. Generator, provider, selector, and validation errors
+propagate without retry or fallback. This extension permits a future
+investigation discussion strategy to reuse the conversation loop, but no
+investigation discussion orchestration is implemented yet.
+
 The application service owns the normal default policy: it constructs
 `RoundRobinSelector` when callers do not inject a selector. CLI and web callers
 therefore retain deterministic round-robin behavior without exposing selector
