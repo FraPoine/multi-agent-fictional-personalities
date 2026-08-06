@@ -1,0 +1,17 @@
+{
+  "facts": ["SHERLOCK_R1: The study window was open."],
+  "deductions": ["The open window may indicate an exit route."],
+  "evidence": [
+    {"clue_id": "session_001_clue_0001", "relation": "supports"}
+  ],
+  "proposed_leads": ["Inspect the ground beneath the window."],
+  "hypotheses": [
+    {
+      "statement": "The visitor left through the study window.",
+      "status": "active",
+      "evidence": [
+        {"clue_id": "session_001_clue_0001", "relation": "supports"}
+      ]
+    }
+  ]
+}

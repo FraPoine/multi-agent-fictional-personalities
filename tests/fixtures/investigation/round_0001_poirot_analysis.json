@@ -1,0 +1,9 @@
+{
+  "facts": ["POIROT_R1: The study window was open."],
+  "deductions": ["The window may have been arranged to attract attention."],
+  "evidence": [
+    {"clue_id": "session_001_clue_0001", "relation": "context"}
+  ],
+  "proposed_leads": ["Ask who first noticed the window."],
+  "hypotheses": []
+}

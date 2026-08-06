@@ -1,0 +1,13 @@
+{
+  "decision_type": "adopt_hypothesis",
+  "summary": "Treat the window as staged and pursue the interior corridor route.",
+  "analysis_ids": [
+    "session_001_analysis_sherlock_holmes_0002",
+    "session_001_analysis_hercule_poirot_0002"
+  ],
+  "hypothesis_ids": ["session_001_hypothesis_0002"],
+  "evidence": [
+    {"clue_id": "session_001_clue_0002", "relation": "supports"}
+  ],
+  "hypotheses": []
+}

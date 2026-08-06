@@ -1,0 +1,9 @@
+{
+  "facts": ["POIROT_R2: The mud beneath the window is undisturbed."],
+  "deductions": ["The conspicuous window is more likely staging than passage."],
+  "evidence": [
+    {"clue_id": "session_001_clue_0002", "relation": "supports"}
+  ],
+  "proposed_leads": ["Reconstruct movement inside the house."],
+  "hypotheses": []
+}

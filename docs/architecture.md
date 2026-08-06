@@ -298,6 +298,36 @@ retry, repair malformed JSON, remove Markdown fences, or extract JSON
 substrings. Analysis, discussion, decision, and final-theory orchestration are
 still unimplemented.
 
+## Deterministic investigation workflow fixtures
+
+The focused `tests/fixtures/investigation/` directory contains eleven offline
+outputs covering two rounds: one analysis and one discussion reply for each of
+Sherlock Holmes and Hercule Poirot per round, one group decision per round, and
+one final theory. Stable task names identify phase, participant, round, and
+discussion turn; fixture selection never depends on invocation order or a
+counter.
+
+`build_investigation_mock_bindings()` creates participant-specific
+`MockProvider` instances, plus explicitly injected decision and final-theory
+providers. The participant mapping contains only the two existing character
+IDs; group phases do not introduce a manager persona. All mappings use fixed
+known filenames resolved from the repository independently of the working
+directory.
+
+Structured fixtures traverse the same planned production boundary:
+
+```text
+UTF-8 fixture → MockProvider → GenerationResult
+             → parse_structured_generation() → provider payload schema
+```
+
+The files contain no service-owned record IDs beyond permitted references to
+deterministic existing records. Round-one evidence uses only clue one;
+round-two and final evidence may use clues one and two. Mock metadata and file
+bytes are deterministic, and execution requires neither network access nor an
+API key. These fixtures verify plumbing only: they do not establish persona
+quality, run workflow orchestration, or complete Sprint 6.
+
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
 the effective message model, using configuration only when the provider omits

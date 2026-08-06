@@ -1,0 +1,13 @@
+{
+  "decision_type": "pursue_lead",
+  "summary": "Inspect the ground below the window and question the first observer.",
+  "analysis_ids": [
+    "session_001_analysis_sherlock_holmes_0001",
+    "session_001_analysis_hercule_poirot_0001"
+  ],
+  "hypothesis_ids": ["session_001_hypothesis_0001"],
+  "evidence": [
+    {"clue_id": "session_001_clue_0001", "relation": "context"}
+  ],
+  "hypotheses": []
+}

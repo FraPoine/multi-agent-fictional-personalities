@@ -1,0 +1,8 @@
+{
+  "summary": "The visitor used the interior corridor and the open window was staged as a false exit.",
+  "hypothesis_ids": ["session_001_hypothesis_0002"],
+  "evidence": [
+    {"clue_id": "session_001_clue_0001", "relation": "context"},
+    {"clue_id": "session_001_clue_0002", "relation": "supports"}
+  ]
+}

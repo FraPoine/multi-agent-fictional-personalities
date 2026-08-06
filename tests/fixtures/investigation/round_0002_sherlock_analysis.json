@@ -1,0 +1,19 @@
+{
+  "facts": ["SHERLOCK_R2: Mud below the window contains no footprints."],
+  "deductions": ["The window was not used as an exit after the mud formed."],
+  "evidence": [
+    {"clue_id": "session_001_clue_0001", "relation": "context"},
+    {"clue_id": "session_001_clue_0002", "relation": "contradicts"}
+  ],
+  "proposed_leads": ["Trace access through the interior corridor."],
+  "hypotheses": [
+    {
+      "statement": "The open window was staged and the visitor used the corridor.",
+      "status": "active",
+      "evidence": [
+        {"clue_id": "session_001_clue_0002", "relation": "supports"}
+      ],
+      "previous_hypothesis_id": "session_001_hypothesis_0001"
+    }
+  ]
+}
