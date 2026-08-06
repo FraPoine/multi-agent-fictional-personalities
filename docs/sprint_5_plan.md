@@ -70,7 +70,7 @@ investigation.
   level provider/model values must match every generated message.
 - `ConversationParticipant` is an immutable runtime binding, and the former
   call-counter-based `RoundRobinMockProvider` has been removed.
-- No live provider, dynamic manager, investigation domain or workflow, third
+- No live provider, dynamic manager, investigation workflow, third
   or fourth runtime character, real game, or final experiment exists.
 
 ## Progress
@@ -87,18 +87,20 @@ investigation.
 | Task 8 — Define structured generation-result schemas | Completed | `8ff99c6` |
 | Task 9 — Migrate provider contract and local mocks | Completed | `86d5936` |
 | Task 10 — Propagate generation metadata into messages | Completed | `ce5f76a` |
-| Maintenance — Enforce run/message metadata consistency | Implemented | Pending commit |
-| Task 11 — Persist generation metadata in conversation artifacts | Implemented | Pending commit |
-| Task 12 — Model Clue and EvidenceReference | Implemented | Pending commit |
-| Task 13 — Model analyses, hypotheses, and group decisions | Implemented | Pending commit |
-| Task 14 — Model FinalTheory and InvestigationSession | Implemented | Pending commit |
+| Maintenance — Enforce run/message metadata consistency | Completed | `706d13d` |
+| Task 11 — Persist generation metadata in conversation artifacts | Completed | `281529d` |
+| Task 12 — Model Clue and EvidenceReference | Completed | `7329a6e` |
+| Task 13 — Model analyses, hypotheses, and group decisions | Completed | `ca37389` |
+| Task 14 — Model FinalTheory and InvestigationSession | Completed | `701555f` |
+| Task 15 — Offline regression and Sprint 5 closure | Completed | [Completion record](sprint_5_completion.md) |
 
-## Remaining work
+## Completion
 
-- Run the complete offline regression and reconcile final Sprint 5
-  documentation.
-- After Sprint 5, integrate a live provider and conduct the planned experiment
-  and investigation work.
+Sprint 5 completed on 2026-08-06 after the focused suites, the 410-test full
+offline suite, and the required CLI, web, pipeline, evaluation, artifact, and
+investigation-model checks passed. See the
+[Sprint 5 completion record](sprint_5_completion.md). Sprint 6 adds the mock
+investigation workflow; live-provider and experimental work remain later.
 
 ## In-scope objectives
 
@@ -202,7 +204,7 @@ metadata omits it. The application service explicitly constructs
 
 ### Investigation domain
 
-Sprint 5 will model concepts such as `InvestigationSession`, `Clue`,
+Sprint 5 models `InvestigationSession`, `Clue`,
 `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
 `FinalTheory`. Together they must support the case introduction, progressively
 revealed clues and their order, individual facts and deductions, evidence
@@ -229,7 +231,7 @@ completed session requires a final theory.
 ## Test strategy
 
 All Sprint 5 behavior is exercised offline with deterministic fixtures. Tests
-will cover configurable participant sequences (minimum two), round-robin
+cover configurable participant sequences (minimum two), round-robin
 selection, selector responsibility boundaries, participant-owned mock
 responses, generation-result validation and metadata propagation, artifact
 compatibility, evaluation regressions, and investigation models including
@@ -277,9 +279,9 @@ LLM-judge responses, a real pilot, or a playable investigation.
 
 ## Future work
 
-After Sprint 5, integrate and verify a real configurable provider; finalize and
-implement characters three and four; pre-register and run the chosen
-recognizability evaluation; implement investigation orchestration and
-persistence; and run user-moderated investigation sessions. Scientific and
-exploratory results must be reported separately according to the predefined
-design.
+Sprint 6 implements the mock investigation workflow, Sprint 7 its web UI,
+Sprint 8 generic recognizability evaluation, and Sprint 9 the complete offline
+system. Live-provider integration follows that offline sequence. Characters
+three and four, pre-registration, real evaluation, persistence, and moderated
+sessions remain later work; scientific and exploratory results must be
+reported separately according to the predefined design.

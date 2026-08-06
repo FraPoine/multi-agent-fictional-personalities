@@ -36,23 +36,42 @@ Poirot.
 
 ## Sprint 5
 
-- Realign the two final goals and active documentation.
-- Generalize configuration and application boundaries for a configurable
+- Completed realignment of the two final goals and active documentation.
+- Generalized configuration and application boundaries for a configurable
   participant sequence of at least two, without adding a character.
-- Isolate deterministic round-robin speaker choice behind `SpeakerSelector`
+- Isolated deterministic round-robin speaker choice behind `SpeakerSelector`
   and `RoundRobinSelector`; leave a dynamic manager for later.
-- Introduce `GenerationResult` and deterministic offline generation metadata.
-- Model investigation sessions, clues, analyses, evidence, hypotheses,
+- Introduced `GenerationResult` and deterministic offline generation metadata.
+- Modeled investigation sessions, clues, analyses, evidence, hypotheses,
   decisions, final theories, and partial session states without orchestration.
-- Finish with a complete offline regression. See the
-  [Sprint 5 plan](sprint_5_plan.md).
+- Completed the offline regression with 410 passing tests. See the
+  [Sprint 5 completion record](sprint_5_completion.md).
 
 The previously implemented two-character mock pilot remains technical
 foundation. Sprint 5 requires no API key, network access, live provider, real
 token/cost collection, genuine human response, LLM-judge panel, real pilot, or
 real investigation game.
 
-## Later provider and experimental work
+## Sprint 6 — Mock investigation workflow
+
+- Implement offline orchestration over the Sprint 5 investigation models.
+- Keep clue disclosure game-master-controlled and preserve per-analysis
+  visibility context.
+
+## Sprint 7 — Investigation web UI
+
+- Add a local interface over the mock investigation workflow.
+
+## Sprint 8 — Generic recognizability evaluation
+
+- Generalize the evaluation design after the runtime character set expands.
+
+## Sprint 9 — Complete offline system
+
+- Integrate and regress the complete offline conversation, investigation, and
+  evaluation system.
+
+## Later live-provider and experimental work
 
 - Integrate and verify a real configurable LLM provider.
 - Collect real provider metadata and add cost calculation where supported.
@@ -61,8 +80,8 @@ real investigation game.
   candidate design, chance baseline, and analysis.
 - Generate real experimental material, collect the chosen ratings, and report
   scientifically interpretable recognizability results.
-- Implement investigation orchestration and persistence, then run moderated
-  real investigation sessions.
+- Integrate a live provider only after the complete offline system.
+- Add investigation persistence and run moderated real investigation sessions.
 
 ## Presentation sprint
 

@@ -4,8 +4,8 @@
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.
 
-This document distinguishes the implemented baseline, the Sprint 5 offline
-target, and later provider, experiment, and investigation work.
+This document distinguishes the completed Sprint 5 offline foundation from
+later provider, experiment, and investigation-workflow work.
 
 The first delivered interface was the CLI. Sprint 4 completed an additional
 minimal local FastAPI/Jinja web interface over the same importable conversation
@@ -27,7 +27,7 @@ Browser / web page → Web route or controller → Application service ← CLI
                                                                │
                                                                ▼
                                             `simulate_chat()` engine boundary
-                                      Sprint 5: replaceable `SpeakerSelector`
+                                      replaceable `SpeakerSelector`
                                         (`RoundRobinSelector` preserves order)
                               future: dynamic `ConversationManager` outside Sprint 5
                                                                │
@@ -36,7 +36,7 @@ Browser / web page → Web route or controller → Application service ← CLI
                                                                │
                                                                ▼
                                              Deterministic mock provider
-                                      Sprint 5: participant-owned responses
+                                      participant-owned responses
                                                                │
                                                                ▼
                                                  Conversation persistence
@@ -59,10 +59,10 @@ rendered-result path were implemented and verified in Sprint 4. Both delivery
 paths reuse the agent runtime, deterministic round-robin simulation, and atomic
 conversation persistence. A two-character mock evaluation builder, rater app,
 and analyzer are also implemented as technical tooling, not a scientific
-experiment. Selector abstractions, engine injection, and participant-bound
-mocks are implemented Sprint 5 work. Structured generation results and
-investigation models remain Sprint 5 targets; a dynamic manager and live
-provider remain later work.
+experiment. Selector abstractions, engine injection, participant-bound mocks,
+structured generation results, and investigation models are implemented Sprint
+5 work. A dynamic manager, investigation workflow, and live provider remain
+later work.
 
 ## Main components
 
@@ -224,7 +224,7 @@ A future `ConversationManager` may implement dynamic selection. Rule-based,
 LLM-based, content-dependent, priority-based, and investigation-specific
 selection are all outside Sprint 5.
 
-## Sprint 5 generation-result target
+## Sprint 5 generation-result implementation
 
 `LLMProvider.generate()` now returns this validated success boundary:
 
@@ -683,9 +683,9 @@ deterministic and mostly `null`; real token, latency, and request values depend
 on future providers. There is no cost calculation or broader event-logging
 system.
 
-## Planned smoke test path
+## Verified smoke-test path
 
-The planned smoke test should exercise the current critical path:
+The Sprint 5 closure verification exercised the current critical path:
 
 ```txt
 Sherlock Holmes and Hercule Poirot

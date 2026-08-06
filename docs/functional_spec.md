@@ -364,11 +364,11 @@ and must be documented and applied consistently when selected.
 - No API key or network access is required.
 - The existing CLI continues to work.
 
-## F10 — Moderated investigation domain (future)
+## F10 — Moderated investigation domain
 
 ### Description
 
-The future system will support a game of *Sherlock Holmes: Consulting
+The future workflow will support a game of *Sherlock Holmes: Consulting
 Detective*. The project user is the game master: they manually provide the case
 introduction, progressively reveal clues, control their order, and prevent
 agents from accessing unrevealed material.
@@ -377,7 +377,7 @@ Sprint 5 models the domain and partial session states only. It does not
 implement the investigation loop, investigation persistence, scheduling,
 reasoning prompts, UI, or a playable game.
 
-### Future inputs and records
+### Implemented records and future workflow inputs
 
 - case introduction and ordered revealed clues;
 - individual analyses separating facts and deductions;
@@ -423,7 +423,7 @@ The project should keep separate modules for:
 - evaluation;
 - logging;
 - analysis.
-- investigation-domain models (planned in Sprint 5, without orchestration).
+- investigation-domain models (implemented in Sprint 5 without orchestration).
 
 ## Prompt versioning
 
@@ -446,7 +446,7 @@ The system should:
 - log malformed outputs;
 - validate structured JSON outputs.
 
-Sprint 5 does not introduce real API calls or retries. Its planned successful
+Sprint 5 does not introduce real API calls or retries. Its successful
 generation result has no nullable `error`; a separate failure entity may be
 added later if persistent failure records become necessary.
 
@@ -474,5 +474,5 @@ The project should avoid private personal data unless explicit consent and cours
 
 Agents use explicit complete per-run conversation history as working memory and
 no persistent memory. Multi-agent simulation currently uses deterministic
-round-robin turn taking. Sprint 5 will preserve that behavior behind a
-replaceable selector; the future dynamic manager is not part of the sprint.
+round-robin turn taking behind a replaceable selector; the future dynamic
+manager is not part of Sprint 5.

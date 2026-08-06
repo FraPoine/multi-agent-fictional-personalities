@@ -59,10 +59,11 @@ pipeline only. The final study targets four characters, but characters three
 and four are not finalized or implemented; L and Professor Layton are previous
 candidates. A scientifically interpretable evaluation remains future work.
 
-Development follows an offline-first order: complete the technical mock
-foundation, integrate a real LLM provider later, then run experiments and real
-investigation sessions. Sprint 5 remains network-free and does not require an
-API key, genuine rater responses, or live-provider measurements.
+Sprint 5 completed the generic offline foundation. It remains network-free and
+requires no API key, genuine rater responses, or live-provider measurements.
+The verified closure result is 410 passed, 0 failed, 0 skipped, and 0 warnings
+on Python 3.14.4. See the
+[Sprint 5 completion record](docs/sprint_5_completion.md).
 
 Supported runtime characters are declared in `configs/characters.yaml`. The
 validated loader preserves declaration order and resolves every asset path
@@ -71,9 +72,10 @@ The existing mock persona and response assets remain under `tests/fixtures/`
 temporarily; moving runtime assets into a production-owned directory is future
 cleanup rather than part of the catalog refactor.
 
-Sprint 5 has implemented the validated catalog, configurable participant
-application boundaries, a data-driven conversation UI, the standalone speaker-
-selector contract, and participant-bound deterministic mock providers. The
+The completed foundation includes the validated catalog, configurable
+participant application boundaries, a data-driven conversation UI, the
+standalone speaker-selector contract, and participant-bound deterministic mock
+providers. The
 application service supplies `RoundRobinSelector` by default, while the engine
 requires a `SpeakerSelector` and resolves its validated character ID to the
 participant-owned provider. The provider boundary now returns validated
@@ -81,6 +83,10 @@ participant-owned provider. The provider boundary now returns validated
 consumes `result.text`; agent runtime now stores both `result.text` and the
 complete metadata in each new `Message`. Legacy messages without nested metadata
 remain readable, and no metadata is shown in transcripts, CLI output, or web UI.
+Validated immutable investigation models cover clues, evidence references,
+individual analyses, append-only hypotheses, explicit group decisions, final
+theories, and partial sessions. They do not provide orchestration, persistence,
+automatic clue disclosure, or an investigation UI.
 
 ## Technical blind-evaluation pilot
 
@@ -266,14 +272,11 @@ critical-path tests reject attempted network access.
 
 ## Future work
 
-Sprint 5 has delivered the catalog, N-participant application boundary, data-
-driven UI, selector integration, participant-provider binding, and structured
-generation metadata propagation. Sprint 5 still requires investigation-domain
-models and the final offline regression. Later work will integrate a real
-provider, collect real token/latency/request metadata, optionally aggregate
-run-level observability, calculate cost, select and implement characters three
-and four, pre-register the final evaluation methodology, collect experimental
-data, and run moderated investigation sessions.
+The next increment is Sprint 6's fully offline mock investigation workflow over
+the existing domain models. Sprint 7 adds its web UI, Sprint 8 generalizes the
+recognizability evaluation, and Sprint 9 completes the offline system. Live-
+provider integration, real observability, characters three and four,
+pre-registration, and real experimental data remain later work.
 
 ## Repository structure
 
@@ -316,6 +319,7 @@ guaranteed to be committed.
 - [Sprint 4 plan](docs/sprint_4_plan.md)
 - [Sprint 4 smoke test](docs/sprint_4_smoke_test.md)
 - [Sprint 5 plan](docs/sprint_5_plan.md)
+- [Sprint 5 completion record](docs/sprint_5_completion.md)
 
 ## Historical development details
 

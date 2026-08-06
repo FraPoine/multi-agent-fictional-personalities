@@ -455,8 +455,8 @@ within a validated collection.
 
 `EvidenceReference` points to a clue through its stable ID rather than copying
 the clue text. Deductions, explanations, and agent interpretations belong to
-future investigation models. Investigation-session persistence, UI loading,
-and automatic clue disclosure are not implemented.
+the implemented reasoning records below. Investigation-session persistence,
+UI loading, and automatic clue disclosure are not implemented.
 
 ## 8. Investigation reasoning and decisions
 
