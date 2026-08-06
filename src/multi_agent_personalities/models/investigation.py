@@ -120,13 +120,18 @@ class AgentAnalysis(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     analysis_id: NonEmptyStr
+    session_id: NonEmptyStr
+    round_id: NonEmptyStr
     agent_id: NonEmptyStr
+    visible_clue_ids: tuple[NonEmptyStr, ...]
     facts: tuple[NonEmptyStr, ...] = ()
     deductions: tuple[NonEmptyStr, ...] = ()
     evidence: tuple[EvidenceReference, ...] = ()
     proposed_leads: tuple[NonEmptyStr, ...] = ()
 
-    @field_validator("facts", "deductions", "proposed_leads")
+    @field_validator(
+        "visible_clue_ids", "facts", "deductions", "proposed_leads"
+    )
     @classmethod
     def validate_unique_text_entries(
         cls,
@@ -273,6 +278,14 @@ class InvestigationRound(BaseModel):
     decision_id: NonEmptyStr | None = None
     status: InvestigationRoundStatus
 
+    @field_validator("analysis_ids")
+    @classmethod
+    def validate_unique_analysis_ids(
+        cls,
+        value: tuple[str, ...],
+    ) -> tuple[str, ...]:
+        return _reject_duplicate_strings(value, "analysis_ids")
+
 
 class InvestigationSession(BaseModel):
     """Validated immutable aggregate for one investigation snapshot."""
@@ -337,14 +350,83 @@ class InvestigationSession(BaseModel):
                 "all rounds must belong to the investigation session"
             )
 
-        participant_ids = set(self.participant_ids)
-        if any(item.agent_id not in participant_ids for item in self.analyses):
-            raise ValueError("all analyses must belong to session participants")
-
         clue_ids = {clue.clue_id for clue in self.clues}
+        participant_ids = set(self.participant_ids)
+        round_by_id = {item.round_id: item for item in self.rounds}
+        analysis_by_id = {item.analysis_id: item for item in self.analyses}
+        analysis_owners: set[tuple[str, str]] = set()
+        for analysis in self.analyses:
+            if analysis.session_id != self.session_id:
+                raise ValueError(
+                    f"analysis {analysis.analysis_id!r} belongs to another session"
+                )
+            if analysis.agent_id not in participant_ids:
+                raise ValueError(
+                    f"analysis {analysis.analysis_id!r} must belong to a "
+                    "session participants collection"
+                )
+            if analysis.round_id not in round_by_id:
+                raise ValueError(
+                    f"analysis {analysis.analysis_id!r} references an unknown round"
+                )
+
+            investigation_round = round_by_id[analysis.round_id]
+            if analysis.visible_clue_ids != investigation_round.visible_clue_ids:
+                raise ValueError(
+                    f"analysis {analysis.analysis_id!r} visibility snapshot must "
+                    "exactly match its round"
+                )
+
+            owner = (analysis.round_id, analysis.agent_id)
+            if owner in analysis_owners:
+                raise ValueError(
+                    "each agent may have at most one analysis per round"
+                )
+            analysis_owners.add(owner)
+
+            for reference in analysis.evidence:
+                if reference.clue_id not in clue_ids:
+                    raise ValueError(
+                        f"analysis {analysis.analysis_id!r} references an "
+                        "unknown clue"
+                    )
+                if reference.clue_id not in analysis.visible_clue_ids:
+                    raise ValueError(
+                        f"analysis {analysis.analysis_id!r} references a clue "
+                        "outside its visibility snapshot"
+                    )
+
+        for investigation_round in self.rounds:
+            for analysis_id in investigation_round.analysis_ids:
+                if analysis_id not in analysis_by_id:
+                    raise ValueError(
+                        f"round {investigation_round.round_id!r} references an "
+                        "unknown analysis"
+                    )
+                if (
+                    analysis_by_id[analysis_id].round_id
+                    != investigation_round.round_id
+                ):
+                    raise ValueError(
+                        f"round {investigation_round.round_id!r} lists an analysis "
+                        "belonging to another round"
+                    )
+
+        for investigation_round in self.rounds:
+            expected_analysis_ids = tuple(
+                item.analysis_id
+                for item in self.analyses
+                if item.round_id == investigation_round.round_id
+            )
+            if investigation_round.analysis_ids != expected_analysis_ids:
+                raise ValueError(
+                    f"round {investigation_round.round_id!r} analysis_ids must "
+                    "match session analysis order"
+                )
+
         evidence_groups = [
             item.evidence
-            for item in (*self.analyses, *self.hypotheses, *self.decisions)
+            for item in (*self.hypotheses, *self.decisions)
         ]
         if self.final_theory is not None:
             evidence_groups.append(self.final_theory.evidence)

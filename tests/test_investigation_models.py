@@ -183,10 +183,21 @@ def make_evidence(
     return EvidenceReference(clue_id="clue_001", relation=relation)
 
 
+def analysis_context() -> dict[str, object]:
+    return {
+        "session_id": "session_001",
+        "round_id": "round_001",
+        "visible_clue_ids": ["clue_001"],
+    }
+
+
 def test_valid_analysis_keeps_facts_deductions_and_leads_separate() -> None:
     analysis = AgentAnalysis(
         analysis_id="analysis_001",
+        session_id="session_001",
+        round_id="round_001",
         agent_id="sherlock",
+        visible_clue_ids=("clue_001",),
         facts=("The window is open.",),
         deductions=("The intruder used the window.",),
         evidence=(make_evidence(),),
@@ -205,7 +216,10 @@ def test_analysis_requires_non_empty_agent_id(agent_id: str) -> None:
     with pytest.raises(ValidationError):
         AgentAnalysis(
             analysis_id="analysis_001",
+            session_id="session_001",
+            round_id="round_001",
             agent_id=agent_id,
+            visible_clue_ids=("clue_001",),
             facts=("A fact",),
         )
 
@@ -214,7 +228,10 @@ def test_analysis_requires_fact_deduction_or_proposed_lead() -> None:
     with pytest.raises(ValidationError, match="at least one"):
         AgentAnalysis(
             analysis_id="analysis_001",
+            session_id="session_001",
+            round_id="round_001",
             agent_id="sherlock",
+            visible_clue_ids=("clue_001",),
             evidence=(make_evidence(),),
         )
 
@@ -306,6 +323,7 @@ def test_group_decision_references_records_only_by_id() -> None:
 @pytest.mark.parametrize("field_name", ["facts", "deductions", "proposed_leads"])
 def test_analysis_rejects_duplicate_text_entries(field_name: str) -> None:
     payload = {
+        **analysis_context(),
         "analysis_id": "analysis_001",
         "agent_id": "sherlock",
         "facts": ["A fact"],
@@ -339,6 +357,7 @@ def test_reasoning_models_reject_duplicate_evidence_references(
     ]
     if model is AgentAnalysis:
         payload = {
+            **analysis_context(),
             "analysis_id": "analysis_001",
             "agent_id": "sherlock",
             "facts": ["A fact"],
@@ -418,6 +437,7 @@ def test_blank_group_decision_summary_is_rejected(summary: str) -> None:
         (
             AgentAnalysis,
             {
+                **analysis_context(),
                 "analysis_id": "analysis_001",
                 "agent_id": "sherlock",
                 "facts": ["A fact"],
@@ -455,7 +475,10 @@ def test_reasoning_models_forbid_extra_fields(
 def test_reasoning_models_are_frozen() -> None:
     analysis = AgentAnalysis(
         analysis_id="analysis_001",
+        session_id="session_001",
+        round_id="round_001",
         agent_id="sherlock",
+        visible_clue_ids=("clue_001",),
         facts=("A fact",),
     )
     hypothesis = Hypothesis(
@@ -475,6 +498,76 @@ def test_reasoning_models_are_frozen() -> None:
         hypothesis.status = HypothesisStatus.ACTIVE
     with pytest.raises(ValidationError):
         decision.summary = "Changed"
+
+
+def test_analysis_requires_temporal_context_fields() -> None:
+    base = {
+        **analysis_context(),
+        "analysis_id": "analysis_001",
+        "agent_id": "sherlock",
+        "facts": ["A fact"],
+    }
+
+    for field_name in ("session_id", "round_id", "visible_clue_ids"):
+        payload = dict(base)
+        del payload[field_name]
+        with pytest.raises(ValidationError):
+            AgentAnalysis.model_validate(payload)
+
+
+@pytest.mark.parametrize("field_name", ["session_id", "round_id"])
+def test_analysis_rejects_empty_ownership_identifiers(field_name: str) -> None:
+    payload = {
+        **analysis_context(),
+        "analysis_id": "analysis_001",
+        "agent_id": "sherlock",
+        "facts": ["A fact"],
+        field_name: "  ",
+    }
+
+    with pytest.raises(ValidationError):
+        AgentAnalysis.model_validate(payload)
+
+
+def test_analysis_visibility_is_an_ordered_unique_tuple() -> None:
+    analysis = AgentAnalysis.model_validate(
+        {
+            **analysis_context(),
+            "analysis_id": "analysis_001",
+            "agent_id": "sherlock",
+            "visible_clue_ids": ["clue_002", "clue_001"],
+            "facts": ["A fact"],
+        }
+    )
+
+    assert analysis.visible_clue_ids == ("clue_002", "clue_001")
+    with pytest.raises(ValidationError, match="duplicates"):
+        AgentAnalysis.model_validate(
+            {
+                **analysis_context(),
+                "analysis_id": "analysis_002",
+                "agent_id": "sherlock",
+                "visible_clue_ids": ["clue_001", "clue_001"],
+                "facts": ["A fact"],
+            }
+        )
+
+
+def test_analysis_json_round_trip_preserves_visibility_order() -> None:
+    analysis = AgentAnalysis.model_validate(
+        {
+            **analysis_context(),
+            "analysis_id": "analysis_001",
+            "agent_id": "sherlock",
+            "visible_clue_ids": ["clue_002", "clue_001"],
+            "facts": ["A fact"],
+        }
+    )
+
+    restored = AgentAnalysis.model_validate_json(analysis.model_dump_json())
+
+    assert restored == analysis
+    assert restored.visible_clue_ids == ("clue_002", "clue_001")
 
 
 def test_list_inputs_become_ordered_tuples_and_json_round_trips() -> None:

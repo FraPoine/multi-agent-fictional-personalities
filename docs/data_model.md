@@ -464,6 +464,8 @@ The investigation reasoning layer uses three distinct immutable record types:
 
 ```text
 AgentAnalysis
+├── session and round IDs
+├── ordered visible-clue ID snapshot
 ├── agent-owned facts
 ├── agent-owned deductions
 ├── evidence references
@@ -483,9 +485,22 @@ GroupDecision
 └── evidence references
 ```
 
-Facts and deductions remain separate and each analysis belongs to the agent
-identified by `agent_id`. Proposed leads are individual suggestions; they do
-not imply agreement and never become group decisions automatically.
+Facts and deductions remain separate and each analysis belongs to the session,
+round, and participant identified by `session_id`, `round_id`, and `agent_id`.
+Its required `visible_clue_ids` tuple is an independently auditable, ordered
+copy of the exact clue snapshot stored by its round. Proposed leads are
+individual suggestions; they do not imply agreement and never become group
+decisions automatically.
+
+The session aggregate enforces exact tuple equality between an analysis and
+its round visibility snapshot. Analysis evidence may reference only IDs in
+that snapshot, even when a later clue already exists in the current session.
+It also permits at most one analysis per participant per round. Each round's
+ordered `analysis_ids` must exactly match the analyses assigned to that round
+as filtered from session analysis storage order; unknown, duplicated, omitted,
+misordered, or cross-round IDs are rejected. These are implemented model
+invariants only. Provider-driven analysis generation, prompts, and
+orchestration remain future Sprint 6 work.
 
 Hypotheses are append-only records. A revision receives a new ID and may point
 to the previous hypothesis ID; the old record is not mutated. Both active and
@@ -508,6 +523,7 @@ InvestigationSession
 ├── participant IDs
 ├── status
 ├── ordered revealed clues
+├── ordered investigation rounds
 ├── agent analyses
 ├── append-only hypotheses
 ├── group decisions
@@ -515,10 +531,12 @@ InvestigationSession
 ```
 
 `InvestigationSession` is the immutable aggregate root. It validates entity
-IDs, participant ownership, clue and record references, contiguous clue reveal
-order, and backward-only hypothesis revision links without executing agents.
-Clues still contain only information explicitly revealed by the game master,
-and nested references use stable IDs rather than copies of complete entities.
+IDs, round and participant ownership, exact per-analysis temporal visibility,
+clue and record references, contiguous clue and round order, round-analysis
+consistency, and backward-only hypothesis revision links without executing
+agents. Clues still contain only information explicitly revealed by the game
+master, and nested references use stable IDs rather than copies of complete
+entities.
 
 Partial `setup`, `active`, `ready_for_final`, and `abandoned` sessions are valid
 without clues, analyses, hypotheses, decisions, or a final theory. Only a
