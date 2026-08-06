@@ -83,10 +83,25 @@ participant-owned provider. The provider boundary now returns validated
 consumes `result.text`; agent runtime now stores both `result.text` and the
 complete metadata in each new `Message`. Legacy messages without nested metadata
 remain readable, and no metadata is shown in transcripts, CLI output, or web UI.
-Validated immutable investigation models cover clues, evidence references,
-individual analyses, append-only hypotheses, explicit group decisions, final
-theories, and partial sessions. They do not provide orchestration, persistence,
-automatic clue disclosure, or an investigation UI.
+Sprint 6 adds a framework-independent deterministic investigation application
+workflow over those immutable models. Its public operations create active
+sessions, reveal caller-supplied clues, generate independent analyses, reuse
+round-robin conversation simulation for discussion, record structured group
+decisions, pause after every round, and finalize only on an explicit caller
+request. Local fixture-backed two-round execution is covered end to end. It
+does not provide investigation persistence, CLI or web delivery, live-provider
+execution, automatic clues/actions/finalization, scoring, or recognizability
+evaluation of investigation output. See the
+[Sprint 6 completion record](docs/sprint_6_completion.md).
+
+### Implemented workflows
+
+- validated persona loading and deterministic local single-agent generation;
+- deterministic multi-agent conversations through application, CLI, and web;
+- atomic persistence for conversation runs;
+- technical evaluation-pilot preparation, rating, and analysis tooling; and
+- deterministic two-round mock investigation orchestration with explicit clue
+  revelation, analysis, discussion, decisions, pauses, and finalization.
 
 ## Technical blind-evaluation pilot
 
@@ -246,6 +261,12 @@ python -m pytest tests/test_web_app.py -q
 python -m pytest tests/test_web_startup.py -q
 ```
 
+The complete investigation workflow check is:
+
+```bash
+python -m pytest tests/test_investigation_workflow_e2e.py
+```
+
 Web route tests use temporary output directories and do not write conversation
 runs into the repository. Tests require no OpenAI API key, and mock
 critical-path tests reject attempted network access.
@@ -265,15 +286,16 @@ critical-path tests reject attempted network access.
   history browser.
 - Normal application scheduling uses deterministic round-robin. There is no
   dynamic conversation manager or content-dependent speaker priority.
-- There is no investigation workflow, session persistence, investigation UI,
-  or playable investigation game.
+- Investigation has no persistence, CLI, web UI, live provider, automatic clue
+  generation, automatic lead execution, automatic finalization, official-case
+  scoring, or recognizability evaluation.
 - Real token usage, latency, request IDs, retries, and monetary costs are not
   collected.
 
 ## Future work
 
-The next increment is Sprint 6's fully offline mock investigation workflow over
-the existing domain models. Sprint 7 adds its web UI, Sprint 8 generalizes the
+Sprint 6's offline mock investigation workflow is complete and verified.
+Sprint 7 adds its web UI, Sprint 8 generalizes the
 recognizability evaluation, and Sprint 9 completes the offline system. Live-
 provider integration, real observability, characters three and four,
 pre-registration, and real experimental data remain later work.

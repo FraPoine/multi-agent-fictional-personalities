@@ -48,11 +48,12 @@ OpenAI-backed conversation execution was not part of Sprint 4.
 
 The repository also contains a technical, two-character, mock-only blind-
 evaluation pilot. It verifies tooling rather than persona recognizability and
-does not provide scientifically interpretable results. The first stateless
-investigation operations create active sessions and reveal clues with
-deterministic IDs, but there is no dynamic conversation manager, complete
-investigation workflow or persistence, third or fourth runtime character,
-real investigation game, or final human/LLM-judge study.
+does not provide scientifically interpretable results. Sprint 6 implements a
+complete deterministic two-round investigation application workflow using
+local fixtures and explicit caller-controlled clue revelation and finalization.
+There is no investigation persistence, CLI, web UI, live provider, dynamic
+manager, third or fourth runtime character, real investigation game, or final
+human/LLM-judge study.
 
 ## Sprint 5 foundation
 
@@ -97,13 +98,17 @@ The system has six main stages:
    - Collect rater guesses.
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
-6. **Investigation (models and initial operations implemented; workflow planned)**
+6. **Investigation (offline application workflow implemented)**
    - Let the project user act as game master, manually provide the case
      introduction, and reveal clues progressively.
    - Keep unrevealed information unavailable to agents.
-   - Create active sessions and reveal clues through the implemented stateless
-     operations; analysis, decision, and final-theory orchestration remains
-     planned Sprint 6 work.
+   - Use `create_session`, `reveal_clue`, `run_independent_analyses`,
+     `run_group_discussion`, `create_group_decision`, and
+     `finalize_investigation` as the public stateless operations.
+   - Keep clue-prefix visibility immutable, IDs service-owned and deterministic,
+     generated JSON on the shared structured adapter, and every update atomic.
+   - Reuse `simulate_chat()` and `RoundRobinSelector` for discussion. A round
+     ends after its decision; only explicit finalization completes a session.
 
 ## Coding conventions
 
@@ -129,8 +134,17 @@ The system has six main stages:
 - `RaterResponse`: one rater answer.
 - Investigation entities include `InvestigationSession`, `Clue`,
   `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
-  `FinalTheory`; their validated immutable models are implemented without
-  orchestration, persistence, or UI.
+  `FinalTheory`; their immutable aggregate and provider-neutral orchestration
+  are implemented without investigation persistence or UI.
+
+## Investigation development checks
+
+The mock investigation path requires no network or API key. Stable task names
+select committed fixtures; do not make fixture selection depend on call order.
+Run `PYTHONPATH=src .venv/bin/python -m pytest
+tests/test_investigation_workflow_e2e.py` for the two-round flow and
+`PYTHONPATH=src .venv/bin/python -m pytest` for the complete regression. Do not
+add persistence or delivery concerns to the application service.
 
 ## Minimal success criterion
 

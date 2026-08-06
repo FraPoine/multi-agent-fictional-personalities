@@ -1,15 +1,19 @@
 # Sprint 6 Plan — Deterministic Investigation Workflow Contract
 
+> **Status:** Completed and verified on 2026-08-06. Implementation evidence is
+> recorded in the [Sprint 6 completion record](sprint_6_completion.md). The
+> requirements below remain the historical technical contract.
+
 ## 1. Sprint objective
 
-Sprint 6 will implement a deterministic, offline, mock-driven investigation
+Sprint 6 defined a deterministic, offline, mock-driven investigation
 workflow over the immutable investigation records delivered in Sprint 5. The
 workflow must support at least two complete clue-revelation cycles, stop after
 each completed round, and complete a session only when its caller explicitly
 requests finalization.
 
-This document is a technical contract for planned work, not a description of
-implemented behavior. At the time of writing, the repository has validated
+This document was a technical contract for planned work, not a description of
+the current implementation. At the time of writing, the repository had validated
 investigation records and partial `InvestigationSession` snapshots, but no
 `InvestigationRound`, investigation application service, structured-output
 adapter, investigation prompts, fixtures, orchestration, persistence, or UI.

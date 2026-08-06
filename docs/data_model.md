@@ -502,9 +502,8 @@ that snapshot, even when a later clue already exists in the current session.
 It also permits at most one analysis per participant per round. Each round's
 ordered `analysis_ids` must exactly match the analyses assigned to that round
 as filtered from session analysis storage order; unknown, duplicated, omitted,
-misordered, or cross-round IDs are rejected. These are implemented model
-invariants only. Provider-driven analysis generation, prompts, and
-orchestration remain future Sprint 6 work.
+misordered, or cross-round IDs are rejected. These invariants are enforced by
+the aggregate and the implemented provider-driven analysis operation.
 
 Hypotheses are optional, append-only, session- and round-owned records. Their
 evidence is limited to the owning round's visible-clue snapshot, so an earlier
@@ -529,8 +528,8 @@ in both directions. Non-completed rounds have no decision, while a completed
 round has exactly one valid linked decision. A completed round may still have
 no hypotheses and a decision may keep an empty `hypothesis_ids` tuple.
 Cross-record referential integrity is enforced without automatic hypothesis or
-decision generation. No persistence, provider integration, prompts, UI, or
-timestamps are implemented for these records.
+decision execution. Provider-neutral prompt and generation orchestration is
+implemented; investigation persistence and UI are not.
 
 ### InvestigationSession aggregate
 

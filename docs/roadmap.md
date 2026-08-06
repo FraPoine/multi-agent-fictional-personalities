@@ -54,9 +54,12 @@ real investigation game.
 
 ## Sprint 6 — Mock investigation workflow
 
-- Implement offline orchestration over the Sprint 5 investigation models.
-- Keep clue disclosure game-master-controlled and preserve per-analysis
-  visibility context.
+- Completed and verified deterministic offline orchestration over the Sprint 5
+  models, including two rounds, immutable clue visibility, structured analyses,
+  round-robin discussions, decisions, pauses, and explicit finalization.
+- Delivered no investigation persistence, UI, live provider, automatic clue or
+  action execution, scoring, or investigation-output recognizability study.
+- See the [Sprint 6 completion record](sprint_6_completion.md).
 
 ## Sprint 7 — Investigation web UI
 

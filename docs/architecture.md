@@ -4,8 +4,9 @@
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.
 
-This document distinguishes the completed Sprint 5 offline foundation from
-later provider, experiment, and investigation-workflow work.
+This document distinguishes the completed offline conversation and Sprint 6
+investigation workflows from later provider, delivery, persistence, and
+experiment work.
 
 The first delivered interface was the CLI. Sprint 4 completed an additional
 minimal local FastAPI/Jinja web interface over the same importable conversation
@@ -60,9 +61,33 @@ paths reuse the agent runtime, deterministic round-robin simulation, and atomic
 conversation persistence. A two-character mock evaluation builder, rater app,
 and analyzer are also implemented as technical tooling, not a scientific
 experiment. Selector abstractions, engine injection, participant-bound mocks,
-structured generation results, and investigation models are implemented Sprint
-5 work. A dynamic manager, investigation workflow, and live provider remain
-later work.
+structured generation results, investigation models, and the deterministic
+Sprint 6 investigation application workflow are implemented. A dynamic
+manager, investigation delivery/persistence, and live provider remain later
+work.
+
+The implemented investigation dependency flow is:
+
+```text
+Caller / future delivery layer
+        ↓
+Investigation application service
+        ├── deterministic ID factory
+        ├── versioned prompt loader and renderer
+        ├── provider-neutral task names
+        ├── participant/group mock providers
+        ├── structured-output adapter
+        └── simulate_chat() for discussion
+                ├── RoundRobinSelector
+                └── injected investigation turn generator
+        ↓
+Immutable InvestigationSession aggregate
+```
+
+Each operation reconstructs and validates one complete immutable snapshot or
+raises without returning a partial update. A decision ends its round and pauses
+the workflow; finalization is separate and explicit. No investigation
+persistence, CLI, or web connection is implemented.
 
 ## Main components
 
@@ -311,8 +336,8 @@ session, round, analysis, hypothesis, decision, and final-theory IDs remain
 service-owned. The adapter retains the original immutable `GenerationResult`
 and all its metadata without reconstructing it. It does not call providers,
 retry, repair malformed JSON, remove Markdown fences, or extract JSON
-substrings. Independent analysis and group discussion now use this
-infrastructure; decision and final-theory orchestration remain unimplemented.
+substrings. Analysis, discussion, decision, and final-theory generation all use
+this infrastructure.
 
 ## Deterministic investigation workflow fixtures
 
@@ -341,8 +366,8 @@ The files contain no service-owned record IDs beyond permitted references to
 deterministic existing records. Round-one evidence uses only clue one;
 round-two and final evidence may use clues one and two. Mock metadata and file
 bytes are deterministic, and execution requires neither network access nor an
-API key. These fixtures verify plumbing only: they do not establish persona
-quality, run workflow orchestration, or complete Sprint 6.
+API key. These fixtures and the two-round E2E verify deterministic workflow
+plumbing; they do not establish persona quality or scientific validity.
 
 ## Independent investigation analyses
 
@@ -370,7 +395,8 @@ original text and metadata remain available.
 Only after all prompts, generations, payloads, domain records, and IDs validate
 does the service reconstruct the aggregate once and move the round to
 `awaiting_discussion`. Any participant failure raises without returning a
-partially updated session. Decisions and finalization remain unimplemented.
+partially updated session. Decision and finalization remain separate explicit
+operations.
 
 ## Investigation group discussion
 
@@ -395,8 +421,9 @@ the conversation run uses the deterministic
 The complete validated `ConversationRun`, including per-message generation
 metadata, is attached only after every turn succeeds. The service then moves
 that round from `awaiting_discussion` to `awaiting_decision` in one aggregate
-reconstruction. A failure attaches no partial run. Dynamic consensus behavior,
-persistence, and finalization remain unimplemented.
+reconstruction. A failure attaches no partial run. Dynamic consensus behavior
+and investigation persistence remain unimplemented; finalization is explicit
+and separate from discussion.
 
 ## Investigation group decision
 

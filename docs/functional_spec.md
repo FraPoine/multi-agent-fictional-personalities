@@ -368,16 +368,27 @@ and must be documented and applied consistently when selected.
 
 ### Description
 
-The future workflow will support a game of *Sherlock Holmes: Consulting
-Detective*. The project user is the game master: they manually provide the case
-introduction, progressively reveal clues, control their order, and prevent
-agents from accessing unrevealed material.
+The implemented Sprint 6 application workflow is framework-independent,
+stateless, deterministic, mock-only, and caller moderated. The caller provides
+the case introduction and reveals each clue explicitly; no operation invents a
+clue, executes a decision, advances automatically, or finalizes implicitly.
 
-Sprint 5 models the domain and partial session states only. It does not
-implement the investigation loop, investigation persistence, scheduling,
-reasoning prompts, UI, or a playable game.
+### Public workflow
 
-### Implemented records and future workflow inputs
+| Operation | Accepted state | Result | Provider calls and boundary |
+|---|---|---|---|
+| `create_session()` | valid introduction, participants, and ID factory | empty `active` session | none; validates the whole initial aggregate |
+| `reveal_clue()` | `active`, all earlier rounds completed | one clue and `awaiting_analyses` round | none; freezes the ordered clue prefix |
+| `run_independent_analyses()` | newest round `awaiting_analyses` | ordered analyses and `awaiting_discussion` | one call per participant; prompts precede calls; atomic structured results |
+| `run_group_discussion()` | newest round `awaiting_discussion` | completed `ConversationRun` and `awaiting_decision` | one call per turn through `simulate_chat()`; no partial run attaches |
+| `create_group_decision()` | newest round `awaiting_decision` | one decision and completed round; session remains `active` | exactly one structured group-provider call; returns control |
+| `finalize_investigation()` | `active`, every round completed | final theory and `completed` session together | exactly one structured final-provider call; explicit atomic completion |
+
+Generated content traverses `GenerationResult`, strict payload parsing,
+service-owned IDs, domain records, and aggregate revalidation. Failures return
+no partial snapshot. Round completion and session completion are distinct.
+
+### Implemented records and workflow inputs
 
 - case introduction and ordered revealed clues;
 - individual analyses separating facts and deductions;
@@ -390,8 +401,12 @@ reasoning prompts, UI, or a playable game.
 Conceptual entities include `InvestigationSession`, `Clue`,
 `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
 `FinalTheory`. Partial states similar to `setup`, `active`, `ready_for_final`,
-`completed`, and `abandoned` must be representable. Only a completed session
-requires a final theory.
+`completed`, and `abandoned` remain representable. Operational services use
+`active`; only explicit finalization creates `completed`, and final theory and
+completed status require each other.
+
+Investigation persistence, CLI/web delivery, live providers, automatic clues
+or lead execution, scoring, and recognizability evaluation remain future work.
 
 ## Non-functional requirements
 
@@ -423,7 +438,7 @@ The project should keep separate modules for:
 - evaluation;
 - logging;
 - analysis.
-- investigation-domain models (implemented in Sprint 5 without orchestration).
+- investigation-domain models and provider-neutral application orchestration.
 
 ## Prompt versioning
 
