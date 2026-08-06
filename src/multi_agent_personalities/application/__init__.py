@@ -13,8 +13,12 @@ from multi_agent_personalities.application.investigation_service import (
     create_session,
     reveal_clue,
 )
+from multi_agent_personalities.application.investigation_ids import (
+    DeterministicInvestigationIdFactory,
+)
 
 __all__ = [
-    "ConversationResult", "PilotPreparationResult", "create_session",
+    "ConversationResult", "DeterministicInvestigationIdFactory",
+    "PilotPreparationResult", "create_session",
     "prepare_technical_pilot", "reveal_clue", "run_mock_conversation",
 ]

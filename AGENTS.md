@@ -48,9 +48,11 @@ OpenAI-backed conversation execution was not part of Sprint 4.
 
 The repository also contains a technical, two-character, mock-only blind-
 evaluation pilot. It verifies tooling rather than persona recognizability and
-does not provide scientifically interpretable results. There is no dynamic
-conversation manager, investigation workflow or persistence, third or fourth
-runtime character, real investigation game, or final human/LLM-judge study.
+does not provide scientifically interpretable results. The first stateless
+investigation operations create active sessions and reveal clues with
+deterministic IDs, but there is no dynamic conversation manager, complete
+investigation workflow or persistence, third or fourth runtime character,
+real investigation game, or final human/LLM-judge study.
 
 ## Sprint 5 foundation
 
@@ -95,13 +97,13 @@ The system has six main stages:
    - Collect rater guesses.
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
-6. **Investigation (models implemented; workflow planned)**
+6. **Investigation (models and initial operations implemented; workflow planned)**
    - Let the project user act as game master, manually provide the case
      introduction, and reveal clues progressively.
    - Keep unrevealed information unavailable to agents.
-   - Record analyses, evidence, hypotheses, leads, decisions, and a final
-     theory through the implemented investigation-domain models once the
-     Sprint 6 workflow exists.
+   - Create active sessions and reveal clues through the implemented stateless
+     operations; analysis, decision, and final-theory orchestration remains
+     planned Sprint 6 work.
 
 ## Coding conventions
 

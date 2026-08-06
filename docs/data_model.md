@@ -449,14 +449,16 @@ EvidenceReference
 ```
 
 `Clue.text` contains only revealed information, and `reveal_order` records its
-position in progressive disclosure. It contains no hidden information,
-deduction, interpretation, hypothesis, or confidence. Clue IDs are unique
-within a validated collection.
+position in progressive disclosure. Stateless application operations assign
+IDs from a caller-injected deterministic namespace: `session_001`,
+`session_001_clue_0001`, and `session_001_round_0001`. It contains no hidden
+information, deduction, interpretation, hypothesis, or confidence. Clue IDs
+are unique within a validated collection.
 
 `EvidenceReference` points to a clue through its stable ID rather than copying
 the clue text. Deductions, explanations, and agent interpretations belong to
 the implemented reasoning records below. Investigation-session persistence,
-UI loading, and automatic clue disclosure are not implemented.
+UI loading and provider-driven clue disclosure are not implemented.
 
 ## 8. Investigation reasoning and decisions
 
@@ -549,14 +551,22 @@ InvestigationSession
 IDs, round and participant ownership, exact per-analysis temporal visibility,
 clue and record references, contiguous clue and round order, round-analysis
 consistency, and backward-only hypothesis revision links without executing
-agents. Clues still contain only information explicitly revealed by the game
-master, and nested references use stable IDs rather than copies of complete
-entities.
+agents. Every stored round must identify the clue at its historical position
+and contain exactly the ordered clue prefix visible at that point. This rejects
+coordinated forgeries in which a round and its analyses agree on a future,
+unknown, missing, additional, or reordered clue. Legacy snapshots may still
+contain revealed clues without corresponding rounds. Clues contain only
+information explicitly revealed by the game master, and nested references use
+stable IDs rather than copies of complete entities.
 
 Partial `setup`, `active`, `ready_for_final`, and `abandoned` sessions are valid
 without clues, analyses, hypotheses, decisions, or a final theory. Only a
-`completed` session requires a `FinalTheory`. No controller, game loop,
-persistence, UI, status-transition API, or automatic clue disclosure exists.
+`completed` session requires a `FinalTheory`. The first stateless operations
+create an active session and explicitly reveal one caller-supplied clue while
+opening its round; they require an immutable deterministic ID factory and do
+not perform a `setup`-to-`active` transition. No complete controller, game loop,
+persistence, UI, later-round orchestration, or automatic clue disclosure
+exists.
 
 ## 9. EvaluationTrial
 

@@ -6,7 +6,11 @@ import socket
 import pytest
 from pydantic import ValidationError
 
-from multi_agent_personalities.application import create_session, reveal_clue
+from multi_agent_personalities.application import (
+    DeterministicInvestigationIdFactory,
+    create_session,
+    reveal_clue,
+)
 from multi_agent_personalities.models import (
     GroupDecision,
     GroupDecisionType,
@@ -28,12 +32,25 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def new_session(**overrides: object) -> InvestigationSession:
     arguments: dict[str, object] = {
-        "session_id": "session_001",
+        "id_factory": DeterministicInvestigationIdFactory(1),
         "introduction": "  A visitor vanished from a locked room.  ",
         "participant_ids": ("sherlock", "poirot"),
     }
     arguments.update(overrides)
     return create_session(**arguments)  # type: ignore[arg-type]
+
+
+def reveal(
+    session: InvestigationSession,
+    clue_text: str,
+    *,
+    id_factory: DeterministicInvestigationIdFactory | None = None,
+) -> InvestigationSession:
+    return reveal_clue(
+        session,
+        clue_text=clue_text,
+        id_factory=id_factory or DeterministicInvestigationIdFactory(1),
+    )
 
 
 def complete_current_round(session: InvestigationSession) -> InvestigationSession:
@@ -106,15 +123,6 @@ def test_create_session_rejects_blank_introduction(introduction: str) -> None:
         new_session(introduction=introduction)
 
 
-@pytest.mark.parametrize(
-    "session_id",
-    ["", "   ", "../session", "session/001", "_session", 1],
-)
-def test_create_session_rejects_invalid_session_id(session_id: object) -> None:
-    with pytest.raises(ValueError, match="run_id"):
-        new_session(session_id=session_id)
-
-
 def test_repeated_session_creation_is_equivalent() -> None:
     assert new_session() == new_session()
 
@@ -122,7 +130,7 @@ def test_repeated_session_creation_is_equivalent() -> None:
 def test_first_reveal_adds_exactly_one_clue_and_round() -> None:
     original = new_session()
 
-    updated = reveal_clue(original, clue_text="  The window is open.  ")
+    updated = reveal(original, "  The window is open.  ")
 
     assert updated.status is InvestigationStatus.ACTIVE
     assert len(updated.clues) == 1
@@ -145,7 +153,7 @@ def test_first_reveal_adds_exactly_one_clue_and_round() -> None:
 
 
 def test_revealed_session_json_round_trip_preserves_order() -> None:
-    updated = reveal_clue(new_session(), clue_text="The window is open.")
+    updated = reveal(new_session(), "The window is open.")
 
     restored = InvestigationSession.model_validate_json(updated.model_dump_json())
 
@@ -157,8 +165,8 @@ def test_revealed_session_json_round_trip_preserves_order() -> None:
 
 
 def test_generated_ids_are_deterministic_and_one_based() -> None:
-    first = reveal_clue(new_session(), clue_text="First clue.")
-    second = reveal_clue(new_session(), clue_text="First clue.")
+    first = reveal(new_session(), "First clue.")
+    second = reveal(new_session(), "First clue.")
 
     assert first.clues[0].clue_id == second.clues[0].clue_id
     assert first.rounds[0].round_id == second.rounds[0].round_id
@@ -167,47 +175,17 @@ def test_generated_ids_are_deterministic_and_one_based() -> None:
     assert "-" not in first.clues[0].clue_id
 
 
-def test_explicit_valid_clue_id_is_preserved() -> None:
-    updated = reveal_clue(
-        new_session(),
-        clue_text="First clue.",
-        clue_id="game_master_clue_A",
-    )
-
-    assert updated.clues[0].clue_id == "game_master_clue_A"
-    assert updated.rounds[0].revealed_clue_id == "game_master_clue_A"
-
-
-@pytest.mark.parametrize("clue_id", ["", " ", "../clue", "clue/001", "_clue"])
-def test_invalid_explicit_clue_id_is_rejected(clue_id: str) -> None:
-    with pytest.raises(ValueError, match="run_id"):
-        reveal_clue(new_session(), clue_text="A clue.", clue_id=clue_id)
-
-
-def test_duplicate_explicit_clue_id_is_rejected_without_replacement() -> None:
-    first = reveal_clue(
-        new_session(), clue_text="First.", clue_id="explicit_clue"
-    )
-    completed = complete_current_round(first)
-    before = completed.model_dump_json()
-
-    with pytest.raises(ValueError, match="duplicate clue_id"):
-        reveal_clue(
-            completed,
-            clue_text="Second.",
-            clue_id="explicit_clue",
-        )
-
-    assert completed.model_dump_json() == before
-    assert tuple(item.clue_id for item in completed.clues) == ("explicit_clue",)
+def test_service_does_not_accept_caller_owned_session_or_clue_ids() -> None:
+    assert "session_id" not in inspect.signature(create_session).parameters
+    assert "clue_id" not in inspect.signature(reveal_clue).parameters
 
 
 def test_second_reveal_preserves_history_and_extends_visibility() -> None:
-    first = reveal_clue(new_session(), clue_text="First clue.")
+    first = reveal(new_session(), "First clue.")
     completed = complete_current_round(first)
     prior_round_json = completed.rounds[0].model_dump_json()
 
-    updated = reveal_clue(completed, clue_text="Second clue.")
+    updated = reveal(completed, "Second clue.")
 
     assert updated.status is InvestigationStatus.ACTIVE
     assert tuple(item.reveal_order for item in updated.clues) == (0, 1)
@@ -224,6 +202,30 @@ def test_second_reveal_preserves_history_and_extends_visibility() -> None:
     assert updated.rounds[0].model_dump_json() == prior_round_json
 
 
+def test_reveal_rejects_factory_for_another_session() -> None:
+    session = new_session()
+
+    with pytest.raises(ValueError, match="session_id must match"):
+        reveal(
+            session,
+            "A clue.",
+            id_factory=DeterministicInvestigationIdFactory(2),
+        )
+
+
+def test_any_incomplete_historical_round_blocks_reveal() -> None:
+    first = complete_current_round(reveal(new_session(), "First clue."))
+    second = complete_current_round(reveal(first, "Second clue."))
+    payload = second.model_dump(mode="python")
+    payload["rounds"][0]["decision_id"] = None
+    payload["rounds"][0]["status"] = "awaiting_analyses"
+    payload["decisions"] = payload["decisions"][1:]
+    inconsistent_progress = InvestigationSession.model_validate(payload)
+
+    with pytest.raises(ValueError, match="any existing round is incomplete"):
+        reveal(inconsistent_progress, "Third clue.")
+
+
 @pytest.mark.parametrize(
     "status",
     [
@@ -235,14 +237,14 @@ def test_second_reveal_preserves_history_and_extends_visibility() -> None:
 def test_incomplete_round_blocks_another_reveal(
     status: InvestigationRoundStatus,
 ) -> None:
-    first = reveal_clue(new_session(), clue_text="First clue.")
+    first = reveal(new_session(), "First clue.")
     payload = first.model_dump(mode="python")
     payload["rounds"][0]["status"] = status
     incomplete = InvestigationSession.model_validate(payload)
     before = incomplete.model_dump_json()
 
-    with pytest.raises(ValueError, match="current round is incomplete"):
-        reveal_clue(incomplete, clue_text="Second clue.")
+    with pytest.raises(ValueError, match="any existing round is incomplete"):
+        reveal(incomplete, "Second clue.")
 
     assert incomplete.model_dump_json() == before
     assert len(incomplete.clues) == 1
@@ -256,7 +258,7 @@ def test_completed_session_rejects_reveal() -> None:
     completed = InvestigationSession.model_validate(payload)
 
     with pytest.raises(ValueError, match="only in an active session"):
-        reveal_clue(completed, clue_text="Too late.")
+        reveal(completed, "Too late.")
 
 
 @pytest.mark.parametrize(
@@ -275,13 +277,13 @@ def test_non_operational_session_status_rejects_reveal(
     session = InvestigationSession.model_validate(payload)
 
     with pytest.raises(ValueError, match="only in an active session"):
-        reveal_clue(session, clue_text="A clue.")
+        reveal(session, "A clue.")
 
 
 @pytest.mark.parametrize("clue_text", ["", " \t\n"])
 def test_reveal_rejects_blank_clue_text(clue_text: str) -> None:
     with pytest.raises(ValueError, match="clue_text"):
-        reveal_clue(new_session(), clue_text=clue_text)
+        reveal(new_session(), clue_text)
 
 
 def test_inconsistent_input_snapshot_is_not_repaired() -> None:
@@ -310,10 +312,10 @@ def test_inconsistent_input_snapshot_is_not_repaired() -> None:
     )
 
     with pytest.raises(ValidationError, match="round_index"):
-        reveal_clue(invalid_session, clue_text="A clue.")
+        reveal(invalid_session, "A clue.")
 
 
 def test_service_has_no_provider_dependency() -> None:
     assert "provider" not in inspect.signature(create_session).parameters
     assert "provider" not in inspect.signature(reveal_clue).parameters
-    assert reveal_clue(new_session(), clue_text="A clue.").clues
+    assert reveal(new_session(), "A clue.").clues

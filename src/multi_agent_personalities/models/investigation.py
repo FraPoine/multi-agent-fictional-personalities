@@ -504,6 +504,21 @@ class InvestigationSession(BaseModel):
             raise ValueError(
                 "all rounds must belong to the investigation session"
             )
+        if len(self.rounds) > len(self.clues):
+            raise ValueError("round history must not contain more rounds than clues")
+        for position, investigation_round in enumerate(self.rounds):
+            expected_clue_id = self.clues[position].clue_id
+            expected_visible_clue_ids = tuple(
+                clue.clue_id for clue in self.clues[: position + 1]
+            )
+            if investigation_round.revealed_clue_id != expected_clue_id:
+                raise ValueError(
+                    "round history revealed_clue_id must match its clue position"
+                )
+            if investigation_round.visible_clue_ids != expected_visible_clue_ids:
+                raise ValueError(
+                    "round history visibility must exactly match its clue prefix"
+                )
 
         clue_ids = {clue.clue_id for clue in self.clues}
         participant_ids = set(self.participant_ids)

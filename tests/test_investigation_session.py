@@ -144,6 +144,17 @@ def round_payload(
     }
 
 
+def clue_payloads(count: int) -> list[dict[str, object]]:
+    return [
+        {
+            "clue_id": f"session_001_clue_{index:04d}",
+            "text": f"Clue {index}.",
+            "reveal_order": index - 1,
+        }
+        for index in range(1, count + 1)
+    ]
+
+
 def round_payload_for_analysis(
     round_index: int = 1,
     *,
@@ -291,7 +302,11 @@ def test_legacy_payload_without_rounds_deserializes_with_empty_tuple() -> None:
 
 def test_session_accepts_one_round() -> None:
     session = InvestigationSession.model_validate(
-        {**minimal_payload("active"), "rounds": [round_payload()]}
+        {
+            **minimal_payload("active"),
+            "clues": clue_payloads(1),
+            "rounds": [round_payload()],
+        }
     )
 
     assert len(session.rounds) == 1
@@ -303,6 +318,7 @@ def test_session_accepts_multiple_contiguous_rounds_in_order() -> None:
     session = InvestigationSession.model_validate(
         {
             **minimal_payload("active"),
+            "clues": clue_payloads(3),
             "rounds": [round_payload(1), round_payload(2), round_payload(3)],
         }
     )
@@ -313,6 +329,7 @@ def test_session_accepts_multiple_contiguous_rounds_in_order() -> None:
 def test_session_rejects_duplicate_round_ids() -> None:
     payload = {
         **minimal_payload("active"),
+        "clues": clue_payloads(2),
         "rounds": [
             round_payload(1, round_id="same"),
             round_payload(2, round_id="same"),
@@ -329,6 +346,7 @@ def test_session_rejects_invalid_round_index_sequences(
 ) -> None:
     payload = {
         **minimal_payload("active"),
+        "clues": clue_payloads(max(len(indexes), max(indexes))),
         "rounds": [
             round_payload(index, round_id=f"round_{position}")
             for position, index in enumerate(indexes)
@@ -342,6 +360,7 @@ def test_session_rejects_invalid_round_index_sequences(
 def test_session_rejects_round_owned_by_another_session() -> None:
     payload = {
         **minimal_payload("active"),
+        "clues": clue_payloads(1),
         "rounds": [round_payload(session_id="session_002")],
     }
 
@@ -353,6 +372,7 @@ def test_session_round_json_round_trip_preserves_order() -> None:
     session = InvestigationSession.model_validate(
         {
             **minimal_payload("active"),
+            "clues": clue_payloads(2),
             "rounds": [round_payload(1), round_payload(2)],
         }
     )
@@ -364,6 +384,77 @@ def test_session_round_json_round_trip_preserves_order() -> None:
         "session_001_round_0001",
         "session_001_round_0002",
     )
+
+
+def test_legacy_snapshot_may_have_clues_without_rounds() -> None:
+    session = InvestigationSession.model_validate(
+        {**minimal_payload("active"), "clues": clue_payloads(2)}
+    )
+
+    assert len(session.clues) == 2
+    assert session.rounds == ()
+
+
+def test_session_rejects_more_rounds_than_clues() -> None:
+    payload = {
+        **minimal_payload("active"),
+        "clues": clue_payloads(1),
+        "rounds": [round_payload(1), round_payload(2)],
+    }
+
+    with pytest.raises(ValidationError, match="more rounds than clues"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_session_rejects_wrong_revealed_clue_for_round_position() -> None:
+    second_round = round_payload(2)
+    second_round["revealed_clue_id"] = "session_001_clue_0001"
+    payload = {
+        **minimal_payload("active"),
+        "clues": clue_payloads(2),
+        "rounds": [round_payload(1), second_round],
+    }
+
+    with pytest.raises(ValidationError, match="revealed_clue_id"):
+        InvestigationSession.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "visible_ids",
+    [
+        [],
+        ["session_001_clue_0002"],
+        ["session_001_clue_0002", "session_001_clue_0001"],
+        ["session_001_clue_0001", "unknown_clue"],
+    ],
+)
+def test_session_rejects_non_historical_round_visibility(
+    visible_ids: list[str],
+) -> None:
+    first_round = round_payload(1)
+    first_round["visible_clue_ids"] = visible_ids
+    payload = {
+        **minimal_payload("active"),
+        "clues": clue_payloads(2),
+        "rounds": [first_round],
+    }
+
+    with pytest.raises(ValidationError, match="round history visibility"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_coordinated_future_clue_forgery_is_rejected_by_round_history() -> None:
+    first_round = round_payload_for_analysis(1, analysis_ids=["analysis_001"])
+    first_round["visible_clue_ids"] = ["clue_001", "clue_002"]
+    analysis = analysis_payload(round_index=1)
+    analysis["visible_clue_ids"] = ["clue_001", "clue_002"]
+    analysis["evidence"] = [{"clue_id": "clue_002", "relation": "supports"}]
+    payload = analysis_session_payload(two_rounds=True)
+    payload["rounds"] = [first_round]
+    payload["analyses"] = [analysis]
+
+    with pytest.raises(ValidationError, match="round history visibility"):
+        InvestigationSession.model_validate(payload)
 
 
 def test_valid_analysis_matches_session_round_and_visibility() -> None:
