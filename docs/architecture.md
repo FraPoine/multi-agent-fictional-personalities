@@ -265,6 +265,39 @@ Real token counts, latency, request IDs, retry observations, and monetary costs
 are not collected in mock execution; live measurements and cost calculation
 are future work.
 
+## Investigation prompt and structured-output infrastructure
+
+Four UTF-8 prompt files now define the analysis, discussion, decision, and
+final-theory context boundaries. Each begins with `Prompt-Version: 1` and has a
+fixed, closed `{{placeholder_name}}` contract. The application-layer loader
+resolves those files from the repository rather than the process working
+directory. Rendering validates the complete contract, accepts string values
+only, and performs one deterministic replacement pass. Separate helpers render
+visible clues, analyses, hypotheses, decisions, and discussion messages in
+their supplied order. In particular, visible-clue rendering resolves only the
+explicit visibility tuple and fails on duplicates or unknown IDs, so later
+session clues are not disclosed accidentally.
+
+Provider-produced investigation content uses one application-layer adapter:
+
+```text
+GenerationResult
+    ├── text ── model_validate_json(output payload schema)
+    └── metadata ───────────────────────────────┐
+                                                ▼
+                              StructuredGenerationResult
+                                  ├── validated value
+                                  └── original GenerationResult
+```
+
+The payload schemas contain provider-authored content only. Authoritative
+session, round, analysis, hypothesis, decision, and final-theory IDs remain
+service-owned. The adapter retains the original immutable `GenerationResult`
+and all its metadata without reconstructing it. It does not call providers,
+retry, repair malformed JSON, remove Markdown fences, or extract JSON
+substrings. Analysis, discussion, decision, and final-theory orchestration are
+still unimplemented.
+
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
 the effective message model, using configuration only when the provider omits

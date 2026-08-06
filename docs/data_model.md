@@ -568,6 +568,31 @@ not perform a `setup`-to-`active` transition. No complete controller, game loop,
 persistence, UI, later-round orchestration, or automatic clue disclosure
 exists.
 
+### Investigation provider payloads
+
+The application layer defines immutable `GeneratedAnalysisPayload`,
+`GeneratedHypothesisPayload`, `GeneratedDecisionPayload`, and
+`GeneratedFinalTheoryPayload` schemas. These represent JSON content a provider
+may propose: reasoning text, evidence references, decision types, summaries,
+and references to already authoritative records. They deliberately omit the
+authoritative IDs and ownership fields that a later workflow service must
+assign before constructing `AgentAnalysis`, `Hypothesis`, `GroupDecision`, or
+`FinalTheory` domain records. Extra JSON fields are forbidden.
+
+`parse_structured_generation()` validates the exact `GenerationResult.text`
+with the selected payload model's `model_validate_json()` method and returns an
+immutable `StructuredGenerationResult` containing both the typed value and the
+original `GenerationResult`. Provider, model, usage, timing, request, finish,
+and retry metadata therefore remain unchanged. Empty text, malformed JSON,
+schema errors, extra fields, and invalid enums fail explicitly; no retry,
+Markdown-fence removal, substring extraction, or automatic repair occurs.
+
+Prompt context comes from four version-1 files under `prompts/`. Their closed
+placeholder contracts are loaded and rendered in the application layer, while
+record helpers preserve supplied collection order. These facilities do not
+perform provider calls or implement analysis, discussion, decision, or final-
+theory generation.
+
 ## 9. EvaluationTrial
 
 ### Definition

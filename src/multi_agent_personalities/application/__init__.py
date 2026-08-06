@@ -16,9 +16,38 @@ from multi_agent_personalities.application.investigation_service import (
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
+from multi_agent_personalities.application.investigation_prompts import (
+    InvestigationPromptError,
+    InvestigationPromptName,
+    InvestigationPromptTemplate,
+    load_investigation_prompt,
+    render_analyses,
+    render_decisions,
+    render_discussion_messages,
+    render_hypotheses,
+    render_investigation_prompt,
+    render_visible_clues,
+)
+from multi_agent_personalities.application.investigation_structured_output import (
+    GeneratedAnalysisPayload,
+    GeneratedDecisionPayload,
+    GeneratedFinalTheoryPayload,
+    GeneratedHypothesisPayload,
+    StructuredGenerationResult,
+    StructuredOutputError,
+    parse_structured_generation,
+)
 
 __all__ = [
     "ConversationResult", "DeterministicInvestigationIdFactory",
-    "PilotPreparationResult", "create_session",
-    "prepare_technical_pilot", "reveal_clue", "run_mock_conversation",
+    "GeneratedAnalysisPayload", "GeneratedDecisionPayload",
+    "GeneratedFinalTheoryPayload", "GeneratedHypothesisPayload",
+    "InvestigationPromptError", "InvestigationPromptName",
+    "InvestigationPromptTemplate", "PilotPreparationResult",
+    "StructuredGenerationResult", "StructuredOutputError", "create_session",
+    "load_investigation_prompt", "parse_structured_generation",
+    "prepare_technical_pilot", "render_analyses", "render_decisions",
+    "render_discussion_messages", "render_hypotheses",
+    "render_investigation_prompt", "render_visible_clues", "reveal_clue",
+    "run_mock_conversation",
 ]
