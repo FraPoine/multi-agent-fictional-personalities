@@ -434,6 +434,19 @@ ID. The theory and completed status are inserted in one aggregate rebuild.
 There is no automatic finalization, official-solution scoring, persistence, or
 investigation web exposure.
 
+## Synthetic two-round workflow test
+
+The offline end-to-end test uses an original case in which a researcher
+disappears from a locked archive room. The caller reveals an open archive-room
+window in round one, pauses after the first decision, then explicitly reveals
+that wet soil below the window has no footprints for round two. The workflow
+again pauses after its decision and completes only when the caller invokes
+finalization. Committed mock fixtures drive every provider boundary with no
+network or secrets. The test exists to verify deterministic orchestration,
+temporal clue visibility, metadata propagation, and aggregate serialization;
+it does not provide persistence, UI exposure, live-provider support, scoring,
+or compatibility with any commercial case.
+
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
 the effective message model, using configuration only when the provider omits
