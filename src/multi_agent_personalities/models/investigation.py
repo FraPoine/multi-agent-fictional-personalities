@@ -165,6 +165,8 @@ class Hypothesis(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     hypothesis_id: NonEmptyStr
+    session_id: NonEmptyStr
+    round_id: NonEmptyStr
     statement: StrictStr
     status: HypothesisStatus
     evidence: tuple[EvidenceReference, ...] = ()
@@ -198,6 +200,8 @@ class GroupDecision(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     decision_id: NonEmptyStr
+    session_id: NonEmptyStr
+    round_id: NonEmptyStr
     decision_type: GroupDecisionType
     summary: StrictStr
     analysis_ids: tuple[NonEmptyStr, ...] = ()
@@ -318,6 +322,157 @@ class InvestigationSession(BaseModel):
     ) -> tuple[str, ...]:
         return _reject_duplicate_strings(value, "participant_ids")
 
+    def _validate_hypotheses(
+        self,
+        *,
+        clue_ids: set[str],
+        round_by_id: dict[str, InvestigationRound],
+    ) -> dict[str, int]:
+        hypothesis_positions = {
+            item.hypothesis_id: index
+            for index, item in enumerate(self.hypotheses)
+        }
+        for index, hypothesis in enumerate(self.hypotheses):
+            if hypothesis.session_id != self.session_id:
+                raise ValueError(
+                    f"hypothesis {hypothesis.hypothesis_id!r} belongs to "
+                    "another session"
+                )
+            if hypothesis.round_id not in round_by_id:
+                raise ValueError(
+                    f"hypothesis {hypothesis.hypothesis_id!r} references an "
+                    "unknown round"
+                )
+
+            owning_round = round_by_id[hypothesis.round_id]
+            for reference in hypothesis.evidence:
+                if reference.clue_id not in clue_ids:
+                    raise ValueError(
+                        f"hypothesis {hypothesis.hypothesis_id!r} references "
+                        "an unknown clue"
+                    )
+                if reference.clue_id not in owning_round.visible_clue_ids:
+                    raise ValueError(
+                        f"hypothesis {hypothesis.hypothesis_id!r} references "
+                        "a clue outside its round visibility snapshot"
+                    )
+
+            previous_id = hypothesis.previous_hypothesis_id
+            if previous_id is None:
+                continue
+            if previous_id not in hypothesis_positions:
+                raise ValueError("previous hypothesis must exist in the session")
+            previous_position = hypothesis_positions[previous_id]
+            if previous_position >= index:
+                raise ValueError("previous hypothesis must appear earlier")
+            previous = self.hypotheses[previous_position]
+            if previous.session_id != hypothesis.session_id:
+                raise ValueError(
+                    "previous hypothesis must belong to the same session"
+                )
+            if (
+                round_by_id[previous.round_id].round_index
+                > owning_round.round_index
+            ):
+                raise ValueError(
+                    "previous hypothesis must not belong to a later round"
+                )
+        return hypothesis_positions
+
+    def _validate_decisions(
+        self,
+        *,
+        clue_ids: set[str],
+        round_by_id: dict[str, InvestigationRound],
+        analysis_by_id: dict[str, AgentAnalysis],
+        hypothesis_positions: dict[str, int],
+    ) -> None:
+        decision_by_id = {
+            item.decision_id: item for item in self.decisions
+        }
+        decision_round_ids: set[str] = set()
+        for decision in self.decisions:
+            if decision.session_id != self.session_id:
+                raise ValueError(
+                    f"decision {decision.decision_id!r} belongs to another session"
+                )
+            if decision.round_id not in round_by_id:
+                raise ValueError(
+                    f"decision {decision.decision_id!r} references an unknown round"
+                )
+            if decision.round_id in decision_round_ids:
+                raise ValueError("each round may have at most one group decision")
+            decision_round_ids.add(decision.round_id)
+
+            owning_round = round_by_id[decision.round_id]
+            for analysis_id in decision.analysis_ids:
+                if analysis_id not in analysis_by_id:
+                    raise ValueError("decision references an unknown analysis")
+                analysis = analysis_by_id[analysis_id]
+                if analysis.round_id != decision.round_id:
+                    raise ValueError(
+                        "decision analyses must belong to the decision round"
+                    )
+                if analysis_id not in owning_round.analysis_ids:
+                    raise ValueError(
+                        "decision analysis must be listed by the owning round"
+                    )
+
+            for hypothesis_id in decision.hypothesis_ids:
+                if hypothesis_id not in hypothesis_positions:
+                    raise ValueError("decision references an unknown hypothesis")
+                hypothesis = self.hypotheses[
+                    hypothesis_positions[hypothesis_id]
+                ]
+                hypothesis_round = round_by_id[hypothesis.round_id]
+                if hypothesis_round.round_index > owning_round.round_index:
+                    raise ValueError(
+                        "decision must not reference a future-round hypothesis"
+                    )
+
+            for reference in decision.evidence:
+                if reference.clue_id not in clue_ids:
+                    raise ValueError(
+                        f"decision {decision.decision_id!r} references an "
+                        "unknown clue"
+                    )
+                if reference.clue_id not in owning_round.visible_clue_ids:
+                    raise ValueError(
+                        f"decision {decision.decision_id!r} references a clue "
+                        "outside its round visibility snapshot"
+                    )
+
+        for investigation_round in self.rounds:
+            decision_id = investigation_round.decision_id
+            if investigation_round.status is InvestigationRoundStatus.COMPLETED:
+                if decision_id is None:
+                    raise ValueError("completed rounds require a group decision")
+            elif decision_id is not None:
+                raise ValueError(
+                    "non-completed rounds must not reference a group decision"
+                )
+
+            if decision_id is not None:
+                if decision_id not in decision_by_id:
+                    raise ValueError("round references an unknown decision")
+                if (
+                    decision_by_id[decision_id].round_id
+                    != investigation_round.round_id
+                ):
+                    raise ValueError(
+                        "round references a decision belonging to another round"
+                    )
+
+        for decision in self.decisions:
+            if (
+                round_by_id[decision.round_id].decision_id
+                != decision.decision_id
+            ):
+                raise ValueError(
+                    f"decision {decision.decision_id!r} must be referenced by "
+                    "its owning round"
+                )
+
     @model_validator(mode="after")
     def validate_investigation_graph(self) -> "InvestigationSession":
         """Validate ordering and references across the aggregate snapshot."""
@@ -424,10 +579,18 @@ class InvestigationSession(BaseModel):
                     "match session analysis order"
                 )
 
-        evidence_groups = [
-            item.evidence
-            for item in (*self.hypotheses, *self.decisions)
-        ]
+        hypothesis_positions = self._validate_hypotheses(
+            clue_ids=clue_ids,
+            round_by_id=round_by_id,
+        )
+        self._validate_decisions(
+            clue_ids=clue_ids,
+            round_by_id=round_by_id,
+            analysis_by_id=analysis_by_id,
+            hypothesis_positions=hypothesis_positions,
+        )
+
+        evidence_groups = []
         if self.final_theory is not None:
             evidence_groups.append(self.final_theory.evidence)
         if any(
@@ -437,30 +600,7 @@ class InvestigationSession(BaseModel):
         ):
             raise ValueError("all evidence must reference session clues")
 
-        hypothesis_positions = {
-            item.hypothesis_id: index
-            for index, item in enumerate(self.hypotheses)
-        }
-        for index, hypothesis in enumerate(self.hypotheses):
-            previous_id = hypothesis.previous_hypothesis_id
-            if previous_id is not None and previous_id not in hypothesis_positions:
-                raise ValueError("previous hypothesis must exist in the session")
-            if (
-                previous_id is not None
-                and hypothesis_positions[previous_id] >= index
-            ):
-                raise ValueError("previous hypothesis must appear earlier")
-
-        analysis_ids = {item.analysis_id for item in self.analyses}
         hypothesis_ids = set(hypothesis_positions)
-        for decision in self.decisions:
-            if any(item not in analysis_ids for item in decision.analysis_ids):
-                raise ValueError("decision references an unknown analysis")
-            if any(
-                item not in hypothesis_ids for item in decision.hypothesis_ids
-            ):
-                raise ValueError("decision references an unknown hypothesis")
-
         if self.final_theory is not None and any(
             item not in hypothesis_ids
             for item in self.final_theory.hypothesis_ids

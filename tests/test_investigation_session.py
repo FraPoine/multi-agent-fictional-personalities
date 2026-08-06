@@ -37,7 +37,18 @@ def complete_payload() -> dict[str, object]:
                 "revealed_clue_id": "clue_001",
                 "visible_clue_ids": ["clue_001"],
                 "analysis_ids": ["analysis_001"],
-                "status": "awaiting_discussion",
+                "decision_id": "decision_001",
+                "status": "completed",
+            },
+            {
+                "session_id": "session_001",
+                "round_id": "round_002",
+                "round_index": 2,
+                "revealed_clue_id": "clue_002",
+                "visible_clue_ids": ["clue_001", "clue_002"],
+                "analysis_ids": ["analysis_002"],
+                "decision_id": "decision_002",
+                "status": "completed",
             }
         ],
         "analyses": [
@@ -51,17 +62,29 @@ def complete_payload() -> dict[str, object]:
                 "deductions": ["Someone may have used the window."],
                 "evidence": [{"clue_id": "clue_001", "relation": "supports"}],
                 "proposed_leads": ["Inspect the garden."],
+            },
+            {
+                "analysis_id": "analysis_002",
+                "session_id": "session_001",
+                "round_id": "round_002",
+                "agent_id": "sherlock",
+                "visible_clue_ids": ["clue_001", "clue_002"],
+                "facts": ["Mud lies outside."],
             }
         ],
         "hypotheses": [
             {
                 "hypothesis_id": "hypothesis_001",
+                "session_id": "session_001",
+                "round_id": "round_001",
                 "statement": "The visitor used the window.",
                 "status": "discarded",
                 "evidence": [{"clue_id": "clue_001", "relation": "context"}],
             },
             {
                 "hypothesis_id": "hypothesis_002",
+                "session_id": "session_001",
+                "round_id": "round_002",
                 "statement": "An accomplice waited outside.",
                 "status": "active",
                 "evidence": [{"clue_id": "clue_002", "relation": "supports"}],
@@ -71,9 +94,21 @@ def complete_payload() -> dict[str, object]:
         "decisions": [
             {
                 "decision_id": "decision_001",
+                "session_id": "session_001",
+                "round_id": "round_001",
                 "decision_type": "adopt_hypothesis",
                 "summary": "Adopt the accomplice hypothesis.",
                 "analysis_ids": ["analysis_001"],
+                "hypothesis_ids": ["hypothesis_001"],
+                "evidence": [{"clue_id": "clue_001", "relation": "supports"}],
+            },
+            {
+                "decision_id": "decision_002",
+                "session_id": "session_001",
+                "round_id": "round_002",
+                "decision_type": "adopt_hypothesis",
+                "summary": "Adopt the accomplice hypothesis.",
+                "analysis_ids": ["analysis_002"],
                 "hypothesis_ids": ["hypothesis_002"],
                 "evidence": [{"clue_id": "clue_002", "relation": "supports"}],
             }
@@ -145,6 +180,40 @@ def analysis_payload(
     }
 
 
+def hypothesis_payload(
+    hypothesis_id: str = "hypothesis_001",
+    *,
+    round_index: int = 1,
+    previous_hypothesis_id: str | None = None,
+) -> dict[str, object]:
+    return {
+        "hypothesis_id": hypothesis_id,
+        "session_id": "session_001",
+        "round_id": f"round_{round_index:03d}",
+        "statement": f"Theory {hypothesis_id}.",
+        "status": "active",
+        "previous_hypothesis_id": previous_hypothesis_id,
+    }
+
+
+def decision_payload(
+    decision_id: str = "decision_001",
+    *,
+    round_index: int = 1,
+    analysis_ids: list[str] | None = None,
+    hypothesis_ids: list[str] | None = None,
+) -> dict[str, object]:
+    return {
+        "decision_id": decision_id,
+        "session_id": "session_001",
+        "round_id": f"round_{round_index:03d}",
+        "decision_type": "pursue_lead",
+        "summary": f"Decision {decision_id}.",
+        "analysis_ids": [] if analysis_ids is None else analysis_ids,
+        "hypothesis_ids": [] if hypothesis_ids is None else hypothesis_ids,
+    }
+
+
 def analysis_session_payload(*, two_rounds: bool = False) -> dict[str, object]:
     round_count = 2 if two_rounds else 1
     return {
@@ -162,6 +231,35 @@ def analysis_session_payload(*, two_rounds: bool = False) -> dict[str, object]:
             for index in range(1, round_count + 1)
         ],
     }
+
+
+def completed_decision_session_payload(
+    *,
+    two_rounds: bool = False,
+) -> dict[str, object]:
+    payload = analysis_session_payload(two_rounds=two_rounds)
+    round_count = 2 if two_rounds else 1
+    payload["analyses"] = [
+        analysis_payload(f"analysis_{index:03d}", round_index=index)
+        for index in range(1, round_count + 1)
+    ]
+    payload["decisions"] = [
+        decision_payload(
+            f"decision_{index:03d}",
+            round_index=index,
+            analysis_ids=[f"analysis_{index:03d}"],
+        )
+        for index in range(1, round_count + 1)
+    ]
+    for index in range(round_count):
+        payload["rounds"][index]["analysis_ids"] = [
+            f"analysis_{index + 1:03d}"
+        ]
+        payload["rounds"][index]["decision_id"] = (
+            f"decision_{index + 1:03d}"
+        )
+        payload["rounds"][index]["status"] = "completed"
+    return payload
 
 
 def test_minimal_setup_session_is_valid_and_preserves_introduction() -> None:
@@ -462,6 +560,365 @@ def test_two_round_analysis_context_json_round_trip_is_deterministic() -> None:
     )
 
 
+def test_hypothesis_belongs_to_its_session_and_round() -> None:
+    payload = analysis_session_payload()
+    payload["hypotheses"] = [hypothesis_payload()]
+
+    session = InvestigationSession.model_validate(payload)
+
+    assert session.hypotheses[0].session_id == "session_001"
+    assert session.hypotheses[0].round_id == "round_001"
+
+
+def test_hypothesis_from_another_session_is_rejected() -> None:
+    payload = analysis_session_payload()
+    hypothesis = hypothesis_payload()
+    hypothesis["session_id"] = "session_002"
+    payload["hypotheses"] = [hypothesis]
+
+    with pytest.raises(ValidationError, match="hypothesis_001.*another session"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_hypothesis_referencing_unknown_round_is_rejected() -> None:
+    payload = analysis_session_payload()
+    hypothesis = hypothesis_payload()
+    hypothesis["round_id"] = "round_missing"
+    payload["hypotheses"] = [hypothesis]
+
+    with pytest.raises(ValidationError, match="hypothesis_001.*unknown round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_hypothesis_may_use_clue_visible_in_its_round() -> None:
+    payload = analysis_session_payload()
+    hypothesis = hypothesis_payload()
+    hypothesis["evidence"] = [{"clue_id": "clue_001", "relation": "supports"}]
+    payload["hypotheses"] = [hypothesis]
+
+    session = InvestigationSession.model_validate(payload)
+
+    assert session.hypotheses[0].evidence[0].clue_id == "clue_001"
+
+
+def test_hypothesis_referencing_unknown_clue_is_rejected() -> None:
+    payload = analysis_session_payload()
+    hypothesis = hypothesis_payload()
+    hypothesis["evidence"] = [{"clue_id": "missing", "relation": "context"}]
+    payload["hypotheses"] = [hypothesis]
+
+    with pytest.raises(ValidationError, match="hypothesis_001.*unknown clue"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_round_one_hypothesis_cannot_use_clue_revealed_in_round_two() -> None:
+    payload = analysis_session_payload(two_rounds=True)
+    hypothesis = hypothesis_payload(round_index=1)
+    hypothesis["evidence"] = [{"clue_id": "clue_002", "relation": "supports"}]
+    payload["hypotheses"] = [hypothesis]
+
+    with pytest.raises(ValidationError, match="outside its round visibility"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_hypothesis_may_revise_previous_round_hypothesis() -> None:
+    payload = analysis_session_payload(two_rounds=True)
+    payload["hypotheses"] = [
+        hypothesis_payload("hypothesis_001", round_index=1),
+        hypothesis_payload(
+            "hypothesis_002",
+            round_index=2,
+            previous_hypothesis_id="hypothesis_001",
+        ),
+    ]
+
+    session = InvestigationSession.model_validate(payload)
+
+    assert session.hypotheses[1].previous_hypothesis_id == "hypothesis_001"
+
+
+def test_hypothesis_may_revise_earlier_same_round_hypothesis() -> None:
+    payload = analysis_session_payload()
+    payload["hypotheses"] = [
+        hypothesis_payload("hypothesis_001"),
+        hypothesis_payload(
+            "hypothesis_002",
+            previous_hypothesis_id="hypothesis_001",
+        ),
+    ]
+
+    assert len(InvestigationSession.model_validate(payload).hypotheses) == 2
+
+
+def test_hypothesis_cannot_revise_hypothesis_from_later_round() -> None:
+    payload = analysis_session_payload(two_rounds=True)
+    payload["hypotheses"] = [
+        hypothesis_payload("hypothesis_future", round_index=2),
+        hypothesis_payload(
+            "hypothesis_current",
+            round_index=1,
+            previous_hypothesis_id="hypothesis_future",
+        ),
+    ]
+
+    with pytest.raises(ValidationError, match="later round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_hypothesis_revision_cycle_is_rejected() -> None:
+    payload = analysis_session_payload()
+    payload["hypotheses"] = [
+        hypothesis_payload(
+            "hypothesis_001",
+            previous_hypothesis_id="hypothesis_002",
+        ),
+        hypothesis_payload(
+            "hypothesis_002",
+            previous_hypothesis_id="hypothesis_001",
+        ),
+    ]
+
+    with pytest.raises(ValidationError, match="appear earlier"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_hypothesis_cannot_revise_hypothesis_from_another_session() -> None:
+    payload = analysis_session_payload()
+    foreign = hypothesis_payload("hypothesis_001")
+    foreign["session_id"] = "session_002"
+    payload["hypotheses"] = [
+        foreign,
+        hypothesis_payload(
+            "hypothesis_002",
+            previous_hypothesis_id="hypothesis_001",
+        ),
+    ]
+
+    with pytest.raises(ValidationError, match="another session"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_multiple_independent_hypotheses_are_valid() -> None:
+    payload = analysis_session_payload()
+    payload["hypotheses"] = [
+        hypothesis_payload("hypothesis_001"),
+        hypothesis_payload("hypothesis_002"),
+    ]
+
+    assert len(InvestigationSession.model_validate(payload).hypotheses) == 2
+
+
+def test_valid_decision_uses_analyses_from_own_round() -> None:
+    session = InvestigationSession.model_validate(
+        completed_decision_session_payload()
+    )
+
+    assert session.decisions[0].analysis_ids == ("analysis_001",)
+    assert session.rounds[0].decision_id == "decision_001"
+
+
+def test_decision_from_another_session_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"][0]["session_id"] = "session_002"
+
+    with pytest.raises(ValidationError, match="decision_001.*another session"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_referencing_unknown_round_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"][0]["round_id"] = "round_missing"
+
+    with pytest.raises(ValidationError, match="decision_001.*unknown round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_referencing_unknown_analysis_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"][0]["analysis_ids"] = ["missing"]
+
+    with pytest.raises(ValidationError, match="unknown analysis"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_round_one_decision_cannot_reference_round_two_analysis() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["decisions"][0]["analysis_ids"] = ["analysis_002"]
+
+    with pytest.raises(ValidationError, match="decision round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_round_two_decision_cannot_reference_round_one_analysis() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["decisions"][1]["analysis_ids"] = ["analysis_001"]
+
+    with pytest.raises(ValidationError, match="decision round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_cannot_reference_analysis_from_another_session() -> None:
+    payload = completed_decision_session_payload()
+    payload["analyses"][0]["session_id"] = "session_002"
+
+    with pytest.raises(ValidationError, match="analysis_001.*another session"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_analysis_must_be_listed_by_owning_round() -> None:
+    payload = completed_decision_session_payload()
+    payload["rounds"][0]["analysis_ids"] = []
+
+    with pytest.raises(ValidationError, match="match session analysis order"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_may_reference_hypothesis_from_previous_round() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["hypotheses"] = [hypothesis_payload(round_index=1)]
+    payload["decisions"][1]["hypothesis_ids"] = ["hypothesis_001"]
+
+    session = InvestigationSession.model_validate(payload)
+
+    assert session.decisions[1].hypothesis_ids == ("hypothesis_001",)
+
+
+def test_decision_may_reference_hypothesis_from_current_round() -> None:
+    payload = completed_decision_session_payload()
+    payload["hypotheses"] = [hypothesis_payload()]
+    payload["decisions"][0]["hypothesis_ids"] = ["hypothesis_001"]
+
+    assert InvestigationSession.model_validate(payload).decisions
+
+
+def test_decision_cannot_reference_future_round_hypothesis() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["hypotheses"] = [hypothesis_payload(round_index=2)]
+    payload["decisions"][0]["hypothesis_ids"] = ["hypothesis_001"]
+
+    with pytest.raises(ValidationError, match="future-round hypothesis"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_referencing_unknown_hypothesis_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"][0]["hypothesis_ids"] = ["missing"]
+
+    with pytest.raises(ValidationError, match="unknown hypothesis"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_evidence_is_limited_to_round_visibility() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["decisions"][0]["evidence"] = [
+        {"clue_id": "clue_002", "relation": "context"}
+    ]
+
+    with pytest.raises(ValidationError, match="outside its round visibility"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_referencing_unknown_clue_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"][0]["evidence"] = [
+        {"clue_id": "missing", "relation": "context"}
+    ]
+
+    with pytest.raises(ValidationError, match="decision_001.*unknown clue"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_two_decisions_for_one_round_are_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["decisions"].append(decision_payload("decision_002"))
+
+    with pytest.raises(ValidationError, match="at most one group decision"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_round_referencing_unknown_decision_is_rejected() -> None:
+    payload = analysis_session_payload()
+    payload["rounds"][0]["decision_id"] = "missing"
+    payload["rounds"][0]["status"] = "completed"
+
+    with pytest.raises(ValidationError, match="unknown decision"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_decision_omitted_from_owning_round_is_rejected() -> None:
+    payload = completed_decision_session_payload()
+    payload["rounds"][0]["decision_id"] = None
+    payload["rounds"][0]["status"] = "awaiting_decision"
+
+    with pytest.raises(ValidationError, match="referenced by its owning round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_round_cannot_reference_decision_from_another_round() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["rounds"][0]["decision_id"] = "decision_002"
+
+    with pytest.raises(ValidationError, match="another round"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_completed_round_requires_decision() -> None:
+    payload = analysis_session_payload()
+    payload["rounds"][0]["status"] = "completed"
+
+    with pytest.raises(ValidationError, match="completed rounds require"):
+        InvestigationSession.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "status",
+    ["awaiting_analyses", "awaiting_discussion", "awaiting_decision"],
+)
+def test_non_completed_round_cannot_link_decision(status: str) -> None:
+    payload = completed_decision_session_payload()
+    payload["rounds"][0]["status"] = status
+
+    with pytest.raises(ValidationError, match="non-completed rounds"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_completed_round_does_not_require_hypotheses() -> None:
+    payload = completed_decision_session_payload()
+
+    session = InvestigationSession.model_validate(payload)
+
+    assert session.hypotheses == ()
+    assert session.decisions[0].hypothesis_ids == ()
+
+
+def test_two_completed_rounds_preserve_complete_graph_in_json() -> None:
+    payload = completed_decision_session_payload(two_rounds=True)
+    payload["hypotheses"] = [
+        hypothesis_payload("hypothesis_001", round_index=1),
+        hypothesis_payload(
+            "hypothesis_002",
+            round_index=2,
+            previous_hypothesis_id="hypothesis_001",
+        ),
+    ]
+    payload["decisions"][0]["hypothesis_ids"] = ["hypothesis_001"]
+    payload["decisions"][1]["hypothesis_ids"] = [
+        "hypothesis_001",
+        "hypothesis_002",
+    ]
+    session = InvestigationSession.model_validate(payload)
+
+    serialized = session.model_dump_json()
+    restored = InvestigationSession.model_validate_json(serialized)
+
+    assert restored == session
+    assert restored.model_dump_json() == serialized
+    assert tuple(item.decision_id for item in restored.rounds) == (
+        "decision_001",
+        "decision_002",
+    )
+
+
 @pytest.mark.parametrize("status", ["active", "ready_for_final", "abandoned"])
 def test_partial_statuses_accept_empty_sessions_without_final_theory(
     status: str,
@@ -477,9 +934,9 @@ def test_complete_session_validates_full_graph() -> None:
 
     assert session.status is InvestigationStatus.COMPLETED
     assert len(session.clues) == 2
-    assert len(session.analyses) == 1
+    assert len(session.analyses) == 2
     assert len(session.hypotheses) == 2
-    assert len(session.decisions) == 1
+    assert len(session.decisions) == 2
     assert session.final_theory is not None
 
 
@@ -521,12 +978,24 @@ def test_duplicate_participants_are_rejected() -> None:
         (
             "hypotheses",
             "hypothesis_id",
-            {"hypothesis_id": "same", "statement": "A", "status": "active"},
+            {
+                "hypothesis_id": "same",
+                "session_id": "session_001",
+                "round_id": "round_001",
+                "statement": "A",
+                "status": "active",
+            },
         ),
         (
             "decisions",
             "decision_id",
-            {"decision_id": "same", "decision_type": "pursue_lead", "summary": "A"},
+            {
+                "decision_id": "same",
+                "session_id": "session_001",
+                "round_id": "round_001",
+                "decision_type": "pursue_lead",
+                "summary": "A",
+            },
         ),
     ],
 )
@@ -611,17 +1080,30 @@ def test_unknown_clue_reference_is_rejected_for_every_entity(entity: str) -> Non
         ]
         payload["rounds"][0]["analysis_ids"] = ["analysis_001"]
     elif entity == "hypotheses":
+        payload["clues"] = [
+            {"clue_id": "clue_001", "text": "First", "reveal_order": 0}
+        ]
+        payload["rounds"] = [round_payload_for_analysis()]
         payload[entity] = [
-            {"hypothesis_id": "hypothesis_001", "statement": "A", "status": "active", "evidence": evidence}
+            {**hypothesis_payload(), "evidence": evidence}
         ]
     elif entity == "decisions":
+        payload["clues"] = [
+            {"clue_id": "clue_001", "text": "First", "reveal_order": 0}
+        ]
+        decision_round = round_payload_for_analysis()
+        decision_round["decision_id"] = "decision_001"
+        decision_round["status"] = "completed"
+        payload["rounds"] = [decision_round]
         payload[entity] = [
-            {"decision_id": "decision_001", "decision_type": "pursue_lead", "summary": "A", "evidence": evidence}
+            {**decision_payload(), "evidence": evidence}
         ]
     else:
         payload[entity] = {"final_theory_id": "final_001", "summary": "A", "evidence": evidence}
 
-    expected_error = "unknown clue" if entity == "analyses" else "session clues"
+    expected_error = (
+        "unknown clue" if entity != "final_theory" else "session clues"
+    )
     with pytest.raises(ValidationError, match=expected_error):
         InvestigationSession.model_validate(payload)
 
@@ -638,12 +1120,13 @@ def test_decision_references_must_resolve(
     value: str,
     message: str,
 ) -> None:
-    payload = minimal_payload("active")
+    payload = analysis_session_payload()
+    decision_round = payload["rounds"][0]
+    decision_round["decision_id"] = "decision_001"
+    decision_round["status"] = "completed"
     payload["decisions"] = [
         {
-            "decision_id": "decision_001",
-            "decision_type": "pursue_lead",
-            "summary": "A decision.",
+            **decision_payload(),
             field_name: [value],
         }
     ]
@@ -653,12 +1136,10 @@ def test_decision_references_must_resolve(
 
 
 def test_unknown_previous_hypothesis_is_rejected() -> None:
-    payload = minimal_payload("active")
+    payload = analysis_session_payload()
     payload["hypotheses"] = [
         {
-            "hypothesis_id": "hypothesis_002",
-            "statement": "A revision.",
-            "status": "active",
+            **hypothesis_payload("hypothesis_002"),
             "previous_hypothesis_id": "missing",
         }
     ]
@@ -668,15 +1149,18 @@ def test_unknown_previous_hypothesis_is_rejected() -> None:
 
 
 def test_forward_hypothesis_revision_reference_is_rejected() -> None:
-    payload = minimal_payload("active")
+    payload = analysis_session_payload()
     payload["hypotheses"] = [
         {
-            "hypothesis_id": "hypothesis_002",
+            **hypothesis_payload("hypothesis_002"),
             "statement": "Revision first.",
-            "status": "active",
             "previous_hypothesis_id": "hypothesis_001",
         },
-        {"hypothesis_id": "hypothesis_001", "statement": "Original.", "status": "discarded"},
+        {
+            **hypothesis_payload("hypothesis_001"),
+            "statement": "Original.",
+            "status": "discarded",
+        },
     ]
 
     with pytest.raises(ValidationError, match="earlier"):

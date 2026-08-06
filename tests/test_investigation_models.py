@@ -191,6 +191,10 @@ def analysis_context() -> dict[str, object]:
     }
 
 
+def round_owned_context() -> dict[str, object]:
+    return {"session_id": "session_001", "round_id": "round_001"}
+
+
 def test_valid_analysis_keeps_facts_deductions_and_leads_separate() -> None:
     analysis = AgentAnalysis(
         analysis_id="analysis_001",
@@ -240,6 +244,8 @@ def test_analysis_requires_fact_deduction_or_proposed_lead() -> None:
 def test_active_and_discarded_hypotheses(status: HypothesisStatus) -> None:
     hypothesis = Hypothesis(
         hypothesis_id=f"hypothesis_{status.value}",
+        session_id="session_001",
+        round_id="round_001",
         statement="  The visitor entered through the window.  ",
         status=status,
     )
@@ -253,6 +259,8 @@ def test_hypothesis_accepts_every_evidence_relation() -> None:
 
     hypothesis = Hypothesis(
         hypothesis_id="hypothesis_001",
+        session_id="session_001",
+        round_id="round_001",
         statement="The visitor entered through the window.",
         status=HypothesisStatus.ACTIVE,
         evidence=evidence,
@@ -266,6 +274,8 @@ def test_hypothesis_accepts_every_evidence_relation() -> None:
 def test_hypothesis_revision_references_previous_record_by_id() -> None:
     revision = Hypothesis(
         hypothesis_id="hypothesis_002",
+        session_id="session_001",
+        round_id="round_001",
         statement="The visitor left through the window.",
         status=HypothesisStatus.ACTIVE,
         previous_hypothesis_id="hypothesis_001",
@@ -278,10 +288,89 @@ def test_hypothesis_cannot_reference_itself() -> None:
     with pytest.raises(ValidationError, match="itself"):
         Hypothesis(
             hypothesis_id="hypothesis_001",
+            session_id="session_001",
+            round_id="round_001",
             statement="A theory.",
             status=HypothesisStatus.ACTIVE,
             previous_hypothesis_id="hypothesis_001",
         )
+
+
+@pytest.mark.parametrize("model", [Hypothesis, GroupDecision])
+@pytest.mark.parametrize("field_name", ["session_id", "round_id"])
+def test_round_owned_reasoning_records_require_ownership_fields(
+    model: type[Hypothesis] | type[GroupDecision],
+    field_name: str,
+) -> None:
+    if model is Hypothesis:
+        payload: dict[str, object] = {
+            **round_owned_context(),
+            "hypothesis_id": "hypothesis_001",
+            "statement": "A theory.",
+            "status": "active",
+        }
+    else:
+        payload = {
+            **round_owned_context(),
+            "decision_id": "decision_001",
+            "decision_type": "pursue_lead",
+            "summary": "Pursue it.",
+        }
+    del payload[field_name]
+
+    with pytest.raises(ValidationError):
+        model.model_validate(payload)
+
+
+@pytest.mark.parametrize("model", [Hypothesis, GroupDecision])
+@pytest.mark.parametrize("field_name", ["session_id", "round_id"])
+def test_round_owned_reasoning_records_reject_empty_ownership(
+    model: type[Hypothesis] | type[GroupDecision],
+    field_name: str,
+) -> None:
+    payload: dict[str, object]
+    if model is Hypothesis:
+        payload = {
+            **round_owned_context(),
+            "hypothesis_id": "hypothesis_001",
+            "statement": "A theory.",
+            "status": "active",
+        }
+    else:
+        payload = {
+            **round_owned_context(),
+            "decision_id": "decision_001",
+            "decision_type": "pursue_lead",
+            "summary": "Pursue it.",
+        }
+    payload[field_name] = "  "
+
+    with pytest.raises(ValidationError):
+        model.model_validate(payload)
+
+
+def test_hypothesis_json_round_trip_preserves_ownership_and_evidence_order() -> None:
+    hypothesis = Hypothesis(
+        hypothesis_id="hypothesis_001",
+        session_id="session_001",
+        round_id="round_001",
+        statement="A theory.",
+        status=HypothesisStatus.ACTIVE,
+        evidence=(
+            EvidenceReference(clue_id="clue_002", relation="context"),
+            EvidenceReference(clue_id="clue_001", relation="supports"),
+        ),
+    )
+
+    restored = Hypothesis.model_validate_json(hypothesis.model_dump_json())
+
+    assert restored == hypothesis
+    assert restored.session_id == "session_001"
+    assert restored.round_id == "round_001"
+    assert tuple(item.clue_id for item in restored.evidence) == (
+        "clue_002",
+        "clue_001",
+    )
 
 
 @pytest.mark.parametrize("decision_type", list(GroupDecisionType))
@@ -290,6 +379,8 @@ def test_all_group_decision_types_are_supported(
 ) -> None:
     decision = GroupDecision(
         decision_id=f"decision_{decision_type.value}",
+        session_id="session_001",
+        round_id="round_001",
         decision_type=decision_type,
         summary="  The group explicitly adopted this action.  ",
     )
@@ -301,6 +392,8 @@ def test_all_group_decision_types_are_supported(
 def test_group_decision_references_records_only_by_id() -> None:
     decision = GroupDecision(
         decision_id="decision_001",
+        session_id="session_001",
+        round_id="round_001",
         decision_type=GroupDecisionType.ADOPT_HYPOTHESIS,
         summary="Adopt the window hypothesis.",
         analysis_ids=("analysis_001",),
@@ -312,6 +405,8 @@ def test_group_decision_references_records_only_by_id() -> None:
     assert decision.hypothesis_ids == ("hypothesis_001",)
     assert set(decision.model_dump()) == {
         "decision_id",
+        "session_id",
+        "round_id",
         "decision_type",
         "summary",
         "analysis_ids",
@@ -337,6 +432,7 @@ def test_analysis_rejects_duplicate_text_entries(field_name: str) -> None:
 @pytest.mark.parametrize("field_name", ["analysis_ids", "hypothesis_ids"])
 def test_group_decision_rejects_duplicate_ids(field_name: str) -> None:
     payload = {
+        **round_owned_context(),
         "decision_id": "decision_001",
         "decision_type": "pursue_lead",
         "summary": "Pursue the lead.",
@@ -365,6 +461,7 @@ def test_reasoning_models_reject_duplicate_evidence_references(
         }
     elif model is Hypothesis:
         payload = {
+            **round_owned_context(),
             "hypothesis_id": "hypothesis_001",
             "statement": "A theory.",
             "status": "active",
@@ -372,6 +469,7 @@ def test_reasoning_models_reject_duplicate_evidence_references(
         }
     else:
         payload = {
+            **round_owned_context(),
             "decision_id": "decision_001",
             "decision_type": "pursue_lead",
             "summary": "Pursue it.",
@@ -388,6 +486,7 @@ def test_reasoning_models_reject_duplicate_evidence_references(
         (
             Hypothesis,
             {
+                **round_owned_context(),
                 "hypothesis_id": "hypothesis_001",
                 "statement": "A theory.",
                 "status": "unknown",
@@ -396,6 +495,7 @@ def test_reasoning_models_reject_duplicate_evidence_references(
         (
             GroupDecision,
             {
+                **round_owned_context(),
                 "decision_id": "decision_001",
                 "decision_type": "finish_investigation",
                 "summary": "Finish.",
@@ -416,6 +516,8 @@ def test_blank_hypothesis_statement_is_rejected(statement: str) -> None:
     with pytest.raises(ValidationError):
         Hypothesis(
             hypothesis_id="hypothesis_001",
+            session_id="session_001",
+            round_id="round_001",
             statement=statement,
             status=HypothesisStatus.ACTIVE,
         )
@@ -426,6 +528,8 @@ def test_blank_group_decision_summary_is_rejected(summary: str) -> None:
     with pytest.raises(ValidationError):
         GroupDecision(
             decision_id="decision_001",
+            session_id="session_001",
+            round_id="round_001",
             decision_type=GroupDecisionType.REQUEST_INFORMATION,
             summary=summary,
         )
@@ -447,6 +551,7 @@ def test_blank_group_decision_summary_is_rejected(summary: str) -> None:
         (
             Hypothesis,
             {
+                **round_owned_context(),
                 "hypothesis_id": "hypothesis_001",
                 "statement": "A theory.",
                 "status": "active",
@@ -456,6 +561,7 @@ def test_blank_group_decision_summary_is_rejected(summary: str) -> None:
         (
             GroupDecision,
             {
+                **round_owned_context(),
                 "decision_id": "decision_001",
                 "decision_type": "request_information",
                 "summary": "Ask for details.",
@@ -483,11 +589,15 @@ def test_reasoning_models_are_frozen() -> None:
     )
     hypothesis = Hypothesis(
         hypothesis_id="hypothesis_001",
+        session_id="session_001",
+        round_id="round_001",
         statement="A theory.",
         status=HypothesisStatus.DISCARDED,
     )
     decision = GroupDecision(
         decision_id="decision_001",
+        session_id="session_001",
+        round_id="round_001",
         decision_type=GroupDecisionType.DISCARD_HYPOTHESIS,
         summary="Discard the theory.",
     )
@@ -572,6 +682,7 @@ def test_analysis_json_round_trip_preserves_visibility_order() -> None:
 
 def test_list_inputs_become_ordered_tuples_and_json_round_trips() -> None:
     payload = {
+        **round_owned_context(),
         "decision_id": "decision_001",
         "decision_type": "adopt_hypothesis",
         "summary": "Adopt the theory.",

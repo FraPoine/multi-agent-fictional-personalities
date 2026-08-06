@@ -472,12 +472,14 @@ AgentAnalysis
 └── proposed leads
 
 Hypothesis
+├── session and originating round IDs
 ├── statement
 ├── active/discarded status
 ├── evidence references
 └── optional previous hypothesis ID
 
 GroupDecision
+├── session and owning round IDs
 ├── explicit decision type
 ├── summary
 ├── referenced analysis IDs
@@ -502,18 +504,31 @@ misordered, or cross-round IDs are rejected. These are implemented model
 invariants only. Provider-driven analysis generation, prompts, and
 orchestration remain future Sprint 6 work.
 
-Hypotheses are append-only records. A revision receives a new ID and may point
-to the previous hypothesis ID; the old record is not mutated. Both active and
+Hypotheses are optional, append-only, session- and round-owned records. Their
+evidence is limited to the owning round's visible-clue snapshot, so an earlier
+hypothesis cannot cite evidence revealed later. A revision receives a new ID
+and may point backward to an earlier stored hypothesis from the same session
+and the same or an earlier round; the old record is not mutated. Forward,
+future-round, self, and cyclic revision links are rejected. Both active and
 discarded hypotheses remain part of the history.
 
 A `GroupDecision` must be created explicitly with one of `pursue_lead`,
 `adopt_hypothesis`, `discard_hypothesis`, or `request_information`. It does not
-result from a consensus algorithm. Evidence references contain only clue IDs
-and relations, while decisions reference analyses and hypotheses only by ID;
-complete entities are never nested or copied. Cross-record referential
-integrity is enforced when records are assembled into an
-`InvestigationSession`. No persistence, automation, UI, or timestamps are
-implemented for these records.
+result from a consensus algorithm. Each decision belongs to one session and
+round, may reference analyses only from that round, and may reference
+hypotheses from its current or previous rounds. Direct evidence is restricted
+to the decision round's visible-clue snapshot; future-round references are
+invalid. Evidence references contain only clue IDs and relations, while
+decisions reference analyses and hypotheses only by ID; complete entities are
+never nested or copied.
+
+The aggregate validates `InvestigationRound.decision_id` and session decisions
+in both directions. Non-completed rounds have no decision, while a completed
+round has exactly one valid linked decision. A completed round may still have
+no hypotheses and a decision may keep an empty `hypothesis_ids` tuple.
+Cross-record referential integrity is enforced without automatic hypothesis or
+decision generation. No persistence, provider integration, prompts, UI, or
+timestamps are implemented for these records.
 
 ### InvestigationSession aggregate
 
