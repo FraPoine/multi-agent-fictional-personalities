@@ -134,7 +134,8 @@ class InMemoryInvestigationRegistry:
         """Return the latest immutable record for one known session."""
         session_lock = self._get_session_lock(session_id)
         with session_lock:
-            return self._records[session_id]
+            with self._registry_lock:
+                return self._records[session_id]
 
     def snapshot(self, session_id: str) -> InvestigationSession:
         """Return the latest immutable investigation aggregate."""
@@ -153,7 +154,8 @@ class InMemoryInvestigationRegistry:
             raise ValueError("operation must be callable")
         session_lock = self._get_session_lock(session_id)
         with session_lock:
-            current = self._records[session_id]
+            with self._registry_lock:
+                current = self._records[session_id]
             mutation = operation(current)
             if not isinstance(mutation, InvestigationSessionMutation):
                 raise InvestigationRegistryInvariantError(
@@ -165,7 +167,8 @@ class InMemoryInvestigationRegistry:
                 raise InvestigationRegistryInvariantError(
                     "replacement session_id must match the registered session"
                 )
-            self._records[session_id] = updated
+            with self._registry_lock:
+                self._records[session_id] = updated
             return updated, mutation.result
 
     def _get_session_lock(self, session_id: str) -> Lock:
