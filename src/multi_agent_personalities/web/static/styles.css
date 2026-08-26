@@ -994,6 +994,36 @@ body {
     border-left: 4px solid var(--color-accent);
 }
 
+.clue-control,
+.clue-history li {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-medium);
+    background: var(--surface-subtle);
+}
+
+.clue-control form,
+.clue-history {
+    display: grid;
+    gap: var(--spacing-md);
+}
+
+.clue-control textarea {
+    width: 100%;
+    resize: vertical;
+}
+
+.clue-history {
+    margin: var(--spacing-md) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.clue-text {
+    margin-top: var(--spacing-xs);
+    white-space: pre-wrap;
+}
+
 .investigation-empty-state {
     min-height: 150px;
     padding: var(--spacing-xl);

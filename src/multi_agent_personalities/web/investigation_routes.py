@@ -13,12 +13,18 @@ from fastapi.templating import Jinja2Templates
 from multi_agent_personalities.application import (
     InvestigationMockCapabilities,
     investigation_mock_capabilities,
+    reveal_clue,
 )
-from multi_agent_personalities.models import validate_run_id
+from multi_agent_personalities.models import (
+    InvestigationRoundStatus,
+    InvestigationStatus,
+    validate_run_id,
+)
 from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
     InvestigationRegistryInvariantError,
+    InvestigationSessionMutation,
     InvestigationSessionCollisionError,
     InvestigationSessionNotFoundError,
     InvestigationSessionRecord,
@@ -26,7 +32,12 @@ from multi_agent_personalities.web.investigation_store import (
 
 
 MAX_CASE_INTRODUCTION_LENGTH = 4000
+MAX_CLUE_LENGTH = 4000
 logger = logging.getLogger(__name__)
+
+
+class InvestigationWorkflowConflictError(ValueError):
+    """Raised when a browser action conflicts with the latest snapshot."""
 
 
 @dataclass(frozen=True)
@@ -128,10 +139,51 @@ def _index_context(
     }
 
 
+def _can_reveal_clue(record: InvestigationSessionRecord) -> bool:
+    session = record.session
+    if session.status is not InvestigationStatus.ACTIVE:
+        return False
+    if len(session.rounds) >= record.runtime.capabilities.supported_rounds:
+        return False
+    return not session.rounds or all(
+        item.status is InvestigationRoundStatus.COMPLETED
+        for item in session.rounds
+    )
+
+
 def _workflow_state(record: InvestigationSessionRecord) -> str:
     if not record.session.rounds:
         return "Awaiting first clue"
     return record.session.rounds[-1].status.value.replace("_", " ").title()
+
+
+def _workflow_message(record: InvestigationSessionRecord) -> str:
+    session = record.session
+    if session.status is InvestigationStatus.COMPLETED:
+        return "This investigation is completed."
+    if (
+        len(session.rounds)
+        >= record.runtime.capabilities.supported_rounds
+    ):
+        return "The deterministic mock scenario has no more clue rounds available."
+    if not session.rounds:
+        return "Waiting for the Game Master to reveal the first clue."
+    status = session.rounds[-1].status
+    messages = {
+        InvestigationRoundStatus.AWAITING_ANALYSES: (
+            "Waiting for independent analyses."
+        ),
+        InvestigationRoundStatus.AWAITING_DISCUSSION: (
+            "Waiting for group discussion."
+        ),
+        InvestigationRoundStatus.AWAITING_DECISION: (
+            "Waiting for a group decision."
+        ),
+        InvestigationRoundStatus.COMPLETED: (
+            "Waiting for the Game Master to reveal the next clue."
+        ),
+    }
+    return messages[status]
 
 
 def create_investigation_router(
@@ -147,6 +199,51 @@ def create_investigation_router(
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
     supported_slugs = tuple(config.slug for config in supported_configs)
+
+    def render_error(
+        request: Request,
+        *,
+        status_code: int,
+        page_title: str,
+        heading: str,
+        message: str,
+    ) -> HTMLResponse:
+        return templates.TemplateResponse(
+            request=request,
+            name="investigation_error.html",
+            context={
+                "page_title": page_title,
+                "provider_name": "mock",
+                "heading": heading,
+                "message": message,
+            },
+            status_code=status_code,
+        )
+
+    def render_detail(
+        request: Request,
+        record: InvestigationSessionRecord,
+        *,
+        status_code: int = 200,
+        clue_value: str = "",
+        clue_error: str | None = None,
+    ) -> HTMLResponse:
+        return templates.TemplateResponse(
+            request=request,
+            name="investigation_detail.html",
+            context={
+                "page_title": "Investigation session",
+                "provider_name": "mock",
+                "record": record,
+                "workflow_state": _workflow_state(record),
+                "workflow_message": _workflow_message(record),
+                "can_reveal_clue": _can_reveal_clue(record),
+                "clue_value": clue_value,
+                "clue_error": clue_error,
+                "max_clue_length": MAX_CLUE_LENGTH,
+            },
+            status_code=status_code,
+        )
 
     def render_index(
         request: Request,
@@ -253,30 +350,142 @@ def create_investigation_router(
             validate_run_id(session_id)
             record = registry.get(session_id)
         except (ValueError, InvestigationSessionNotFoundError):
-            return templates.TemplateResponse(
-                request=request,
-                name="investigation_error.html",
-                context={
-                    "page_title": "Investigation not found",
-                    "provider_name": "mock",
-                    "message": (
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        return render_detail(request, record)
+
+    @router.post(
+        "/investigations/{session_id}/clues",
+        response_class=HTMLResponse,
+        name="reveal_investigation_clue",
+    )
+    async def reveal_investigation_clue(
+        request: Request,
+        session_id: str,
+        clue: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        """Reveal one explicit clue against the latest locked snapshot."""
+        try:
+            validate_run_id(session_id)
+        except ValueError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        raw_clue = clue or ""
+        normalized_clue = raw_clue.strip()
+        clue_error = None
+        if not normalized_clue:
+            clue_error = "Enter a clue."
+        elif len(raw_clue) > MAX_CLUE_LENGTH:
+            clue_error = f"Clue must be at most {MAX_CLUE_LENGTH} characters."
+        if clue_error is not None:
+            try:
+                record = registry.get(session_id)
+            except InvestigationSessionNotFoundError:
+                return render_error(
+                    request,
+                    status_code=404,
+                    page_title="Investigation not found",
+                    heading="Investigation not found",
+                    message=(
                         "The requested investigation is not available in this "
                         "local process."
                     ),
-                },
-                status_code=404,
+                )
+            return render_detail(
+                request,
+                record,
+                status_code=400,
+                clue_value=raw_clue,
+                clue_error=clue_error,
             )
 
-        return templates.TemplateResponse(
-            request=request,
-            name="investigation_detail.html",
-            context={
-                "page_title": "Investigation session",
-                "provider_name": "mock",
-                "record": record,
-                "workflow_state": _workflow_state(record),
-            },
-            status_code=200,
+        def mutate_clue(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[None]:
+            if (
+                len(record.session.rounds)
+                >= record.runtime.capabilities.supported_rounds
+            ):
+                raise InvestigationWorkflowConflictError(
+                    "mock clue-round capability exhausted"
+                )
+            updated = reveal_clue(
+                record.session,
+                clue_text=normalized_clue,
+                id_factory=record.runtime.id_factory,
+            )
+            return InvestigationSessionMutation(session=updated, result=None)
+
+        try:
+            registry.mutate(session_id, mutate_clue)
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+        except InvestigationRegistryInvariantError:
+            logger.exception("Investigation registry invariant failure")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Clue revelation failed",
+                message=(
+                    "The clue could not be revealed because of an unexpected "
+                    "local error. The previous investigation state was kept."
+                ),
+            )
+        except (InvestigationWorkflowConflictError, ValueError):
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Clue could not be revealed",
+                message=(
+                    "This investigation cannot accept a clue in its current "
+                    "workflow state. Refresh the session page and try again."
+                ),
+            )
+        except Exception:
+            logger.exception("Local investigation clue revelation failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Clue revelation failed",
+                message=(
+                    "The clue could not be revealed because of an unexpected "
+                    "local error. The previous investigation state was kept."
+                ),
+            )
+
+        return RedirectResponse(
+            url=f"/investigations/{session_id}",
+            status_code=303,
         )
 
     return router

@@ -60,11 +60,24 @@
                     </ol>
                 </section>
 
-                {% if not record.session.rounds %}
-                    <section class="waiting-state" aria-labelledby="waiting-title">
+                <section class="waiting-state" aria-labelledby="waiting-title">
+                    <p class="eyebrow">Current workflow</p>
+                    <h2 id="waiting-title">{{ workflow_message }}</h2>
+                    <p>No investigation transition happens automatically.</p>
+                </section>
+
+                {% if can_reveal_clue %}
+                    <section class="clue-control" aria-labelledby="clue-control-title">
                         <p class="eyebrow">Game Master control</p>
-                        <h2 id="waiting-title">Waiting for the Game Master to reveal the first clue.</h2>
-                        <p>No investigation transition happens automatically. Clue controls are not part of this task.</p>
+                        <h2 id="clue-control-title">Reveal {{ "the first" if not record.session.rounds else "the next" }} clue</h2>
+                        {% if clue_error %}
+                            <p class="field-error" id="clue-error" role="alert">{{ clue_error }}</p>
+                        {% endif %}
+                        <form method="post" action="{{ url_for('reveal_investigation_clue', session_id=record.session_id) }}">
+                            <label for="clue" class="field-label">Clue</label>
+                            <textarea id="clue" name="clue" rows="6" maxlength="{{ max_clue_length }}" required{% if clue_error %} aria-invalid="true" aria-describedby="clue-error"{% endif %}>{{ clue_value }}</textarea>
+                            <button type="submit" class="primary-button">Reveal clue</button>
+                        </form>
                     </section>
                 {% endif %}
 
@@ -75,8 +88,28 @@
                             <h3>No clues revealed</h3>
                             <p>This immutable session snapshot has no active round.</p>
                         </div>
+                    {% else %}
+                        <ol class="clue-history">
+                            {% for clue in record.session.clues %}
+                                <li>
+                                    <p class="eyebrow">Clue {{ clue.reveal_order + 1 }} · Round {{ loop.index }}</p>
+                                    <p class="clue-text">{{ clue.text }}</p>
+                                </li>
+                            {% endfor %}
+                        </ol>
                     {% endif %}
                 </section>
+
+                {% if record.session.rounds %}
+                    {% set current_round = record.session.rounds[-1] %}
+                    <section aria-labelledby="current-round-title">
+                        <h2 id="current-round-title">Round {{ current_round.round_index }}</h2>
+                        <dl class="run-summary investigation-summary">
+                            <div class="run-summary-row"><dt>Round status</dt><dd>{{ current_round.status.value|replace('_', ' ')|title }}</dd></div>
+                            <div class="run-summary-row"><dt>Visible clues</dt><dd>{{ current_round.visible_clue_ids|length }}</dd></div>
+                        </dl>
+                    </section>
+                {% endif %}
             </div>
         </section>
     </main>

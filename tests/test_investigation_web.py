@@ -9,16 +9,24 @@ import pytest
 
 from tests.asgi_client import ASGITestClient
 
-from multi_agent_personalities.models import InvestigationStatus
+from multi_agent_personalities.application import build_investigation_mock_runtime
+from multi_agent_personalities.models import (
+    InvestigationRoundStatus,
+    InvestigationStatus,
+)
 from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_routes import (
     MAX_CASE_INTRODUCTION_LENGTH,
+    MAX_CLUE_LENGTH,
     _validate_investigation_creation_form,
 )
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
+    InvestigationRegistryInvariantError,
     InvestigationSessionCollisionError,
+    InvestigationSessionRecord,
 )
+from tests.test_investigation_workflow_e2e import run_two_round_workflow
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -122,10 +130,274 @@ def test_valid_creation_uses_303_prg_and_renders_empty_snapshot(
     assert "Awaiting first clue" in detail.text
     assert "Waiting for the Game Master to reveal the first clue." in detail.text
     assert "No clues revealed" in detail.text
-    assert 'action="http://testserver/investigations/session_001/clues"' not in (
-        detail.text
-    )
+    assert 'action="http://testserver/investigations/session_001/clues"' in detail.text
+    assert 'method="post"' in detail.text
+    assert 'name="clue"' in detail.text
+    assert f'maxlength="{MAX_CLUE_LENGTH}"' in detail.text
+    for suffix in ("analyses", "discussion", "decision", "finalize"):
+        assert f"/investigations/session_001/{suffix}" not in detail.text
     assert_no_output(output_root)
+
+
+def test_first_clue_uses_303_prg_and_waits_for_analyses(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, output_root = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    before = registry.get("session_001")
+    runtime = before.runtime
+    clue_text = "The archive-room window was found open."
+
+    response = client.post(
+        "/investigations/session_001/clues",
+        data={"clue": clue_text},
+    )
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/investigations/session_001"
+    assert registry.session_ids == ("session_001",)
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert len(updated.session.clues) == len(updated.session.rounds) == 1
+    assert updated.session.clues[0].text == clue_text
+    assert updated.session.rounds[0].status is (
+        InvestigationRoundStatus.AWAITING_ANALYSES
+    )
+
+    detail = client.get(response.headers["location"])
+    assert_html(detail, 200)
+    assert clue_text in detail.text
+    assert "Clue 1 · Round 1" in detail.text
+    assert "Round 1" in detail.text
+    assert "Waiting for independent analyses." in detail.text
+    assert (
+        'action="http://testserver/investigations/session_001/clues"'
+        not in detail.text
+    )
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is updated
+    assert registry.session_ids == ("session_001",)
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    ("data", "message", "preserved"),
+    [
+        ({}, "Enter a clue.", None),
+        ({"clue": "   "}, "Enter a clue.", None),
+        (
+            {"clue": "x" * (MAX_CLUE_LENGTH + 1)},
+            f"at most {MAX_CLUE_LENGTH} characters",
+            "xxxxx",
+        ),
+    ],
+)
+def test_clue_input_errors_are_400_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    data: dict[str, str],
+    message: str,
+    preserved: str | None,
+) -> None:
+    client, registry, output_root = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    before = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/clues", data=data)
+
+    assert_html(response, 400)
+    assert message in response.text
+    if preserved is not None:
+        assert preserved in response.text
+    assert registry.get("session_001") is before
+    assert_no_output(output_root)
+
+
+def test_revealed_clue_is_html_escaped(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, _, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    clue = "<script>alert('clue')</script>"
+    client.post("/investigations/session_001/clues", data={"clue": clue})
+
+    detail = client.get("/investigations/session_001")
+
+    assert clue not in detail.text
+    assert "&lt;script&gt;alert" in detail.text
+    assert "&lt;/script&gt;" in detail.text
+    assert "<script" not in detail.text
+
+
+@pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
+def test_clue_post_to_malformed_or_unknown_session_is_404(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    session_id: str,
+) -> None:
+    client, registry, output_root = investigation_client
+
+    response = client.post(
+        f"/investigations/{session_id}/clues",
+        data={"clue": "A valid clue."},
+    )
+
+    assert_html(response, 404)
+    assert registry.session_ids == ()
+    assert_no_output(output_root)
+
+
+def test_repeated_clue_while_round_incomplete_is_409_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "First clue."},
+    )
+    committed = registry.get("session_001")
+
+    response = client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "Repeated clue."},
+    )
+
+    assert_html(response, 409)
+    assert "cannot accept a clue" in response.text
+    assert registry.get("session_001") is committed
+    assert len(committed.session.clues) == len(committed.session.rounds) == 1
+
+
+def _register_completed_mock_record(
+    registry: InMemoryInvestigationRegistry,
+    *,
+    completed_session: bool,
+) -> InvestigationSessionRecord:
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    session = (
+        trace.finalization.session
+        if completed_session
+        else trace.round_two_decision.session
+    )
+    return registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=session,
+            runtime=runtime,
+        )
+    )
+
+
+@pytest.mark.parametrize("completed_session", [False, True])
+def test_exhausted_or_completed_session_rejects_clue_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    completed_session: bool,
+) -> None:
+    client, registry, _ = investigation_client
+    before = _register_completed_mock_record(
+        registry,
+        completed_session=completed_session,
+    )
+
+    detail = client.get("/investigations/session_001")
+    expected_message = (
+        "This investigation is completed."
+        if completed_session
+        else "no more clue rounds available"
+    )
+    assert expected_message in detail.text
+    assert 'name="clue"' not in detail.text
+
+    response = client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "A forbidden third clue."},
+    )
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+    assert len(before.session.clues) == len(before.session.rounds) == 2
+
+
+def test_clue_revelation_is_isolated_between_sessions(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations",
+        data={**VALID_FORM, "introduction": "Second isolated case."},
+    )
+    second_before = registry.get("session_002")
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "Only the first session sees this clue."},
+    )
+
+    assert registry.get("session_002") is second_before
+    assert second_before.session.clues == second_before.session.rounds == ()
+    second_page = client.get("/investigations/session_002")
+    assert "Only the first session sees this clue." not in second_page.text
+
+
+def test_clue_registry_invariant_failure_is_safe_500(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    before = registry.get("session_001")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise InvestigationRegistryInvariantError("private registry detail")
+
+    monkeypatch.setattr(registry, "mutate", fail)
+    response = client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "A valid clue."},
+    )
+
+    assert_html(response, 500)
+    assert "unexpected local error" in response.text
+    assert "private registry detail" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before
 
 
 def test_second_session_is_namespaced_and_content_isolated(
@@ -402,6 +674,6 @@ def test_later_investigation_mutation_routes_do_not_exist(
     ],
 ) -> None:
     client, _, _ = investigation_client
-    for suffix in ("clues", "analyses", "discussion", "decision", "finalize"):
+    for suffix in ("analyses", "discussion", "decision", "finalize"):
         response = client.post(f"/investigations/session_001/{suffix}")
         assert response.status_code == 404
