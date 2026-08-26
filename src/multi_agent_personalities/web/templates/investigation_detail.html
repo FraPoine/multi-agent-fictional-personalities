@@ -103,6 +103,17 @@
                     </section>
                 {% endif %}
 
+                {% if can_create_decision %}
+                    <section class="decision-control" aria-labelledby="decision-control-title">
+                        <p class="eyebrow">Explicit investigation action</p>
+                        <h2 id="decision-control-title">Complete the current round</h2>
+                        <p>Create the group decision from the completed discussion and return control to the Game Master.</p>
+                        <form method="post" action="{{ url_for('create_investigation_decision', session_id=record.session_id) }}">
+                            <button type="submit" class="primary-button">Create group decision</button>
+                        </form>
+                    </section>
+                {% endif %}
+
                 <section aria-labelledby="clues-title">
                     <h2 id="clues-title">Revealed clues</h2>
                     {% if not record.session.clues %}
@@ -186,6 +197,28 @@
                                         </li>
                                     {% endfor %}
                                 </ol>
+                            </div>
+                        {% endif %}
+                        {% if group.decision %}
+                            <div class="decision-history">
+                                <p class="eyebrow">Game Master pause</p>
+                                <h3>Round {{ group.round_index }} group decision</h3>
+                                <p class="decision-type">{{ group.decision.decision_type }}</p>
+                                <p class="decision-summary">{{ group.decision.summary }}</p>
+                                {% if group.decision.analysis_references %}
+                                    <h4>Referenced analyses</h4>
+                                    <ul>{% for item in group.decision.analysis_references %}<li>{{ item }}</li>{% endfor %}</ul>
+                                {% endif %}
+                                {% if group.decision.hypothesis_references %}
+                                    <h4>Referenced hypotheses</h4>
+                                    <ul>{% for item in group.decision.hypothesis_references %}<li>{{ item }}</li>{% endfor %}</ul>
+                                {% endif %}
+                                <h4>Evidence</h4>
+                                {% if group.decision.evidence %}
+                                    <ul class="evidence-list">
+                                        {% for item in group.decision.evidence %}<li><strong>{{ item.relation }} — Clue {{ item.clue_number }}</strong><span>{{ item.clue_text }}</span></li>{% endfor %}
+                                    </ul>
+                                {% else %}<p>None referenced.</p>{% endif %}
                             </div>
                         {% endif %}
                     </section>

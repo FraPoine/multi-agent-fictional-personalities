@@ -86,6 +86,12 @@ def advance_first_session_to_discussion(client: ASGITestClient) -> None:
     assert response.status_code == 303
 
 
+def advance_first_session_to_decision(client: ASGITestClient) -> None:
+    advance_first_session_to_discussion(client)
+    response = client.post("/investigations/session_001/discussion")
+    assert response.status_code == 303
+
+
 def test_index_is_side_effect_free_and_catalogue_driven(
     investigation_client: tuple[
         ASGITestClient,
@@ -314,11 +320,293 @@ def test_first_round_discussion_uses_303_prg_and_renders_stored_order(
     assert "Sherlock Holmes" in detail.text
     assert "Hercule Poirot" in detail.text
     assert "Run group discussion" not in detail.text
-    assert "/investigations/session_001/decision" not in detail.text
+    assert "Create group decision" in detail.text
+    assert (
+        'action="http://testserver/investigations/session_001/decision"'
+        in detail.text
+    )
+    assert "/investigations/session_001/finalize" not in detail.text
     for _ in range(2):
         assert client.get(response.headers["location"]).status_code == 200
     assert registry.get("session_001") is updated
     assert_no_output(output_root)
+
+
+def test_first_round_decision_uses_303_prg_and_pauses_for_game_master(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, output_root = investigation_client
+    advance_first_session_to_decision(client)
+    before = registry.get("session_001")
+    runtime = before.runtime
+    clues = before.session.clues
+    analyses = before.session.analyses
+    hypotheses = before.session.hypotheses
+    discussion = before.session.rounds[-1].discussion_run
+
+    response = client.post("/investigations/session_001/decision")
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/investigations/session_001"
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.status is InvestigationStatus.ACTIVE
+    assert updated.session.clues == clues
+    assert updated.session.analyses == analyses
+    assert updated.session.hypotheses == hypotheses
+    assert len(updated.session.clues) == len(updated.session.rounds) == 1
+    assert len(updated.session.decisions) == 1
+    current_round = updated.session.rounds[-1]
+    decision = updated.session.decisions[-1]
+    assert current_round.status is InvestigationRoundStatus.COMPLETED
+    assert current_round.decision_id == decision.decision_id
+    assert decision.round_id == current_round.round_id
+    assert current_round.discussion_run == discussion
+    assert updated.session.final_theory is None
+
+    detail = client.get(response.headers["location"])
+    assert_html(detail, 200)
+    assert "Waiting for the Game Master to reveal the next clue." in detail.text
+    assert "Round 1 group decision" in detail.text
+    assert "Pursue Lead" in detail.text
+    assert "Inspect the ground below the window" in detail.text
+    assert "Sherlock Holmes — Round 1 analysis" in detail.text
+    assert "Hercule Poirot — Round 1 analysis" in detail.text
+    assert "The visitor left through the study window." in detail.text
+    assert "Context — Clue 1" in detail.text
+    assert 'name="clue"' in detail.text
+    assert "Create group decision" not in detail.text
+    assert "/investigations/session_001/finalize" not in detail.text
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is updated
+    assert len(updated.session.clues) == len(updated.session.rounds) == 1
+    assert_no_output(output_root)
+
+
+def test_decision_before_discussion_is_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    states = [registry.get("session_001")]
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    states.append(registry.get("session_001"))
+    client.post("/investigations/session_001/analyses")
+    states.append(registry.get("session_001"))
+
+    for state in states:
+        isolated = InMemoryInvestigationRegistry()
+        isolated.register(state)
+        app = create_app(
+            project_root=ROOT,
+            investigation_registry=isolated,
+        )
+        response = ASGITestClient(app).post(
+            "/investigations/session_001/decision"
+        )
+        assert_html(response, 409)
+        assert isolated.get("session_001") is state
+
+
+def test_repeated_decision_is_409_and_keeps_committed_record(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    advance_first_session_to_decision(client)
+    client.post("/investigations/session_001/decision")
+    committed = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/decision")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is committed
+    assert len(committed.session.decisions) == 1
+    assert len(committed.session.hypotheses) == 1
+
+
+@pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
+def test_decision_post_to_malformed_or_unknown_session_is_404(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    session_id: str,
+) -> None:
+    client, registry, output_root = investigation_client
+
+    response = client.post(f"/investigations/{session_id}/decision")
+
+    assert_html(response, 404)
+    assert "Traceback" not in response.text
+    assert registry.session_ids == ()
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        StructuredOutputError("private malformed decision JSON"),
+        FileNotFoundError("/private/decision-fixture.json"),
+        ValueError("private invalid decision reference"),
+    ],
+)
+def test_decision_failures_are_safe_500_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+    failure: Exception,
+) -> None:
+    client, registry, output_root = investigation_client
+    advance_first_session_to_decision(client)
+    before = registry.get("session_001")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise failure
+
+    monkeypatch.setattr(investigation_routes, "create_group_decision", fail)
+    response = client.post("/investigations/session_001/decision")
+
+    assert_html(response, 500)
+    assert response.status_code != 409
+    assert "unexpected local generation error" in response.text
+    assert "private" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before
+    assert before.session.rounds[-1].status is (
+        InvestigationRoundStatus.AWAITING_DECISION
+    )
+    assert before.session.decisions == ()
+    assert len(before.session.hypotheses) == 1
+    assert_no_output(output_root)
+
+
+def test_second_round_decision_preserves_history_and_pauses_exhausted(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_discussion.session,
+            runtime=runtime,
+        )
+    )
+    first_round = before.session.rounds[0]
+    first_decision = before.session.decisions[0]
+
+    response = client.post("/investigations/session_001/decision")
+
+    assert response.status_code == 303
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.rounds[0] == first_round
+    assert updated.session.decisions[0] == first_decision
+    assert len(updated.session.decisions) == 2
+    assert updated.session.rounds[1].status is InvestigationRoundStatus.COMPLETED
+    assert updated.session.decisions[1].round_id == updated.session.rounds[1].round_id
+    assert updated.session.status is InvestigationStatus.ACTIVE
+    assert updated.session.final_theory is None
+    detail = client.get(response.headers["location"])
+    assert "Round 1 group decision" in detail.text
+    assert "Round 2 group decision" in detail.text
+    assert "Adopt Hypothesis" in detail.text
+    assert "no more clue rounds available" in detail.text
+    assert 'name="clue"' not in detail.text
+    assert "Create group decision" not in detail.text
+    assert "/investigations/session_001/finalize" not in detail.text
+
+
+def test_session_two_decision_namespace_and_isolation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations",
+        data={**VALID_FORM, "introduction": "Second decision case."},
+    )
+    first_before = registry.get("session_001")
+    client.post(
+        "/investigations/session_002/clues",
+        data={"clue": "A clue scoped to session two."},
+    )
+    client.post("/investigations/session_002/analyses")
+    client.post("/investigations/session_002/discussion")
+
+    response = client.post("/investigations/session_002/decision")
+
+    assert response.status_code == 303
+    assert registry.get("session_001") is first_before
+    second = registry.get("session_002")
+    serialized = second.session.model_dump_json()
+    assert len(second.session.decisions) == 1
+    assert "session_002_decision_0001" in serialized
+    assert "session_001_" not in serialized
+
+
+def test_decision_summary_is_html_escaped(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    payload = trace.round_one_decision.session.model_dump(mode="python")
+    payload["decisions"][0]["summary"] = "<script>decision()</script>"
+    escaped_session = type(trace.round_one_decision.session).model_validate(payload)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=escaped_session,
+            runtime=runtime,
+        )
+    )
+
+    detail = client.get("/investigations/session_001")
+
+    assert "<script>decision()" not in detail.text
+    assert "&lt;script&gt;decision()&lt;/script&gt;" in detail.text
 
 
 def test_discussion_before_analyses_is_409_without_mutation(
@@ -1385,6 +1673,6 @@ def test_later_investigation_mutation_routes_do_not_exist(
     ],
 ) -> None:
     client, _, _ = investigation_client
-    for suffix in ("decision", "finalize"):
+    for suffix in ("finalize",):
         response = client.post(f"/investigations/session_001/{suffix}")
         assert response.status_code == 404

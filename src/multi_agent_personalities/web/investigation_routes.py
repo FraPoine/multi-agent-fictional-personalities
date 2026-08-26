@@ -11,10 +11,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
+    GroupDecisionResult,
     GroupDiscussionResult,
     IndependentAnalysesResult,
     InvestigationMockCapabilities,
     MAX_DISCUSSION_TURNS,
+    create_group_decision,
     investigation_mock_capabilities,
     reveal_clue,
     run_group_discussion,
@@ -94,6 +96,17 @@ class InvestigationDiscussionMessagePresentation:
 
 
 @dataclass(frozen=True)
+class InvestigationDecisionPresentation:
+    """One completed decision with resolved user-facing references."""
+
+    decision_type: str
+    summary: str
+    evidence: tuple[InvestigationEvidencePresentation, ...]
+    analysis_references: tuple[str, ...]
+    hypothesis_references: tuple[str, ...]
+
+
+@dataclass(frozen=True)
 class InvestigationReasoningGroupPresentation:
     """Ordered analysis and hypothesis history belonging to one round."""
 
@@ -101,6 +114,7 @@ class InvestigationReasoningGroupPresentation:
     analyses: tuple[InvestigationAnalysisPresentation, ...]
     hypotheses: tuple[InvestigationHypothesisPresentation, ...]
     discussion: tuple[InvestigationDiscussionMessagePresentation, ...]
+    decision: InvestigationDecisionPresentation | None
 
 
 def _supported_configs(
@@ -234,6 +248,18 @@ def _can_run_discussion(record: InvestigationSessionRecord) -> bool:
     )
 
 
+def _can_create_decision(record: InvestigationSessionRecord) -> bool:
+    session = record.session
+    return (
+        session.status is InvestigationStatus.ACTIVE
+        and bool(session.rounds)
+        and session.rounds[-1].status
+        is InvestigationRoundStatus.AWAITING_DECISION
+        and session.rounds[-1].round_index
+        <= record.runtime.capabilities.supported_rounds
+    )
+
+
 def _reasoning_groups(
     record: InvestigationSessionRecord,
 ) -> tuple[InvestigationReasoningGroupPresentation, ...]:
@@ -245,6 +271,20 @@ def _reasoning_groups(
     config_by_id = {
         config.character_id: config
         for config in record.runtime.character_configs
+    }
+    analysis_by_id = {
+        analysis.analysis_id: analysis for analysis in session.analyses
+    }
+    analysis_display_by_id = {
+        analysis_id: config_by_id[analysis.agent_id].display_name
+        for analysis_id, analysis in analysis_by_id.items()
+    }
+    hypothesis_by_id = {
+        hypothesis.hypothesis_id: hypothesis
+        for hypothesis in session.hypotheses
+    }
+    decision_by_round_id = {
+        decision.round_id: decision for decision in session.decisions
     }
 
     def evidence_items(references: Sequence[EvidenceReference]) -> tuple[
@@ -309,13 +349,37 @@ def _reasoning_groups(
             if discussion_run is not None
             else ()
         )
-        if analyses or hypotheses or discussion:
+        stored_decision = decision_by_round_id.get(investigation_round.round_id)
+        decision = (
+            InvestigationDecisionPresentation(
+                decision_type=stored_decision.decision_type.value.replace(
+                    "_", " "
+                ).title(),
+                summary=stored_decision.summary,
+                evidence=evidence_items(stored_decision.evidence),
+                analysis_references=tuple(
+                    (
+                        f"{analysis_display_by_id[analysis_id]} "
+                        f"— Round {investigation_round.round_index} analysis"
+                    )
+                    for analysis_id in stored_decision.analysis_ids
+                ),
+                hypothesis_references=tuple(
+                    hypothesis_by_id[hypothesis_id].statement
+                    for hypothesis_id in stored_decision.hypothesis_ids
+                ),
+            )
+            if stored_decision is not None
+            else None
+        )
+        if analyses or hypotheses or discussion or decision is not None:
             groups.append(
                 InvestigationReasoningGroupPresentation(
                     round_index=investigation_round.round_index,
                     analyses=analyses,
                     hypotheses=hypotheses,
                     discussion=discussion,
+                    decision=decision,
                 )
             )
     return tuple(groups)
@@ -409,6 +473,7 @@ def create_investigation_router(
                 "can_reveal_clue": _can_reveal_clue(record),
                 "can_run_analyses": _can_run_analyses(record),
                 "can_run_discussion": _can_run_discussion(record),
+                "can_create_decision": _can_create_decision(record),
                 "reasoning_groups": _reasoning_groups(record),
                 "clue_value": clue_value,
                 "clue_error": clue_error,
@@ -837,4 +902,93 @@ def create_investigation_router(
             status_code=303,
         )
 
+    @router.post(
+        "/investigations/{session_id}/decision",
+        response_class=HTMLResponse,
+        name="create_investigation_decision",
+    )
+    async def create_investigation_decision(
+        request: Request,
+        session_id: str,
+    ) -> Response:
+        """Generate one complete current-round decision under the lock."""
+        try:
+            validate_run_id(session_id)
+        except ValueError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        def mutate_decision(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[GroupDecisionResult]:
+            if not _can_create_decision(record):
+                raise InvestigationWorkflowConflictError(
+                    "group decision is unavailable in the latest state"
+                )
+            result = create_group_decision(
+                record.session,
+                decision_provider=record.runtime.decision_provider,
+                id_factory=record.runtime.id_factory,
+            )
+            return InvestigationSessionMutation(
+                session=result.session,
+                result=result,
+            )
+
+        try:
+            _updated_record, _decision_result = registry.mutate(
+                session_id,
+                mutate_decision,
+            )
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+        except InvestigationWorkflowConflictError:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Group decision could not be created",
+                message=(
+                    "A group decision cannot be created in the "
+                    "investigation's current workflow state. Refresh the "
+                    "session page and try again."
+                ),
+            )
+        except Exception:
+            logger.exception("Local investigation decision generation failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Group decision failed",
+                message=(
+                    "The group decision could not be completed because of an "
+                    "unexpected local generation error. The previous "
+                    "investigation state was kept."
+                ),
+            )
+
+        return RedirectResponse(
+            url=f"/investigations/{session_id}",
+            status_code=303,
+        )
+
     return router
+    create_group_decision,
