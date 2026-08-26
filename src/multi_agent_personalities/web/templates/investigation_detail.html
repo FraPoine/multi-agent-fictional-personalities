@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ record.session_id }} · {{ page_title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <div class="brand-block">
+                <p class="brand-name">{{ page_title }}</p>
+                <p class="brand-description">Canonical process-local investigation snapshot</p>
+            </div>
+            <div class="header-actions">
+                <nav class="app-nav" aria-label="Primary navigation">
+                    <a href="{{ url_for('home') }}">Conversations</a>
+                    <a href="{{ url_for('investigations_index') }}" aria-current="page">Investigations</a>
+                </nav>
+                <span class="provider-badge">local {{ provider_name }}</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="investigation-detail-workspace">
+        <section class="panel" aria-labelledby="session-title">
+            <header class="panel-header investigation-session-header">
+                <div>
+                    <p class="eyebrow">Investigation session</p>
+                    <h1 id="session-title"><code>{{ record.session_id }}</code></h1>
+                </div>
+                <span class="status-label">{{ record.session.status.value|upper }}</span>
+            </header>
+            <div class="panel-body investigation-detail-stack">
+                <section aria-labelledby="case-introduction-title">
+                    <p class="field-label">Case introduction</p>
+                    <h2 id="case-introduction-title" class="visually-hidden">Case introduction</h2>
+                    <p class="case-introduction">{{ record.session.case_introduction }}</p>
+                </section>
+
+                <dl class="run-summary investigation-summary">
+                    <div class="run-summary-row"><dt>Workflow state</dt><dd>{{ workflow_state }}</dd></div>
+                    <div class="run-summary-row"><dt>Current rounds</dt><dd>{{ record.session.rounds|length }}</dd></div>
+                    <div class="run-summary-row"><dt>Revealed clues</dt><dd>{{ record.session.clues|length }}</dd></div>
+                    <div class="run-summary-row"><dt>Supported mock rounds</dt><dd>{{ record.runtime.capabilities.supported_rounds }}</dd></div>
+                    <div class="run-summary-row"><dt>Discussion turns</dt><dd>{{ record.runtime.capabilities.discussion_turns }} per round</dd></div>
+                </dl>
+
+                <section aria-labelledby="participants-title">
+                    <p class="eyebrow">Canonical scenario order</p>
+                    <h2 id="participants-title">Investigators</h2>
+                    <ol class="detail-participant-list">
+                        {% for config in record.runtime.character_configs %}
+                            <li>
+                                <h3>{{ config.display_name }}</h3>
+                                <p>{{ config.description }}</p>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </section>
+
+                {% if not record.session.rounds %}
+                    <section class="waiting-state" aria-labelledby="waiting-title">
+                        <p class="eyebrow">Game Master control</p>
+                        <h2 id="waiting-title">Waiting for the Game Master to reveal the first clue.</h2>
+                        <p>No investigation transition happens automatically. Clue controls are not part of this task.</p>
+                    </section>
+                {% endif %}
+
+                <section aria-labelledby="clues-title">
+                    <h2 id="clues-title">Revealed clues</h2>
+                    {% if not record.session.clues %}
+                        <div class="empty-state investigation-empty-state">
+                            <h3>No clues revealed</h3>
+                            <p>This immutable session snapshot has no active round.</p>
+                        </div>
+                    {% endif %}
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <footer class="app-footer"><p>Local deterministic mock</p><span aria-hidden="true">•</span><p>No API key required</p></footer>
+</body>
+</html>

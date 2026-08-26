@@ -19,6 +19,8 @@ from multi_agent_personalities.simulation import ConversationParticipant
 
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[3]
+_SUPPORTED_ROUNDS = 2
+_DISCUSSION_TURNS = 2
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,24 @@ class InvestigationMockRuntime:
     def character_slugs(self) -> tuple[str, ...]:
         """Return catalogue slugs in the same executable order."""
         return tuple(item.slug for item in self.character_configs)
+
+
+def _capabilities_for_participants(
+    participant_ids: tuple[str, ...],
+) -> InvestigationMockCapabilities:
+    return InvestigationMockCapabilities(
+        participant_ids=participant_ids,
+        supported_rounds=_SUPPORTED_ROUNDS,
+        discussion_turns=_DISCUSSION_TURNS,
+    )
+
+
+def investigation_mock_capabilities() -> InvestigationMockCapabilities:
+    """Describe the fixed scenario without executing provider generation."""
+    bindings = build_investigation_mock_bindings()
+    return _capabilities_for_participants(
+        tuple(bindings.participant_providers)
+    )
 
 
 def _validate_character_slugs(character_slugs: Sequence[str]) -> tuple[str, ...]:
@@ -98,10 +118,8 @@ def build_investigation_mock_runtime(
     bindings = build_investigation_mock_bindings(
         session_sequence=session_sequence
     )
-    capabilities = InvestigationMockCapabilities(
-        participant_ids=tuple(bindings.participant_providers),
-        supported_rounds=2,
-        discussion_turns=2,
+    capabilities = _capabilities_for_participants(
+        tuple(bindings.participant_providers)
     )
 
     resolved_project_root = (

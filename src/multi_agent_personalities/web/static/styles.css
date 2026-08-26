@@ -902,6 +902,103 @@ body {
     letter-spacing: 0.03em;
 }
 
+.header-actions,
+.app-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.app-nav a {
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.app-nav a:hover,
+.app-nav a[aria-current="page"] {
+    color: var(--color-ink);
+}
+
+.investigation-workspace {
+    width: min(100%, var(--content-width));
+    margin: 0 auto;
+    padding: var(--spacing-xl) 32px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+    gap: var(--spacing-lg);
+}
+
+.investigation-detail-workspace {
+    width: min(100%, 980px);
+    margin: 0 auto;
+    padding: var(--spacing-xl) 32px;
+}
+
+.session-list,
+.detail-participant-list {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--spacing-md);
+    list-style: none;
+}
+
+.session-list-item,
+.detail-participant-list li,
+.waiting-state {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-medium);
+    background: var(--surface-subtle);
+}
+
+.session-list-item > span {
+    margin-left: var(--spacing-sm);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.session-list-item p,
+.detail-participant-list p,
+.waiting-state p {
+    margin-top: var(--spacing-xs);
+    color: var(--color-muted);
+}
+
+.investigation-session-header {
+    align-items: center;
+}
+
+.investigation-detail-stack {
+    display: grid;
+    gap: var(--spacing-xl);
+}
+
+.case-introduction {
+    margin-top: var(--spacing-sm);
+    white-space: pre-wrap;
+}
+
+.investigation-summary {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-medium);
+    background: var(--surface-subtle);
+}
+
+.waiting-state {
+    border-left: 4px solid var(--color-accent);
+}
+
+.investigation-empty-state {
+    min-height: 150px;
+    padding: var(--spacing-xl);
+}
+
 .visually-hidden {
     width: 1px;
     height: 1px;
@@ -920,7 +1017,8 @@ body {
 }
 
 @media (max-width: 900px) {
-    .workspace {
+    .workspace,
+    .investigation-workspace {
         grid-template-columns: minmax(0, 1fr);
         padding: var(--spacing-xl);
     }
@@ -939,6 +1037,11 @@ body {
         gap: 7px;
     }
 
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
     .brand-description {
         display: none;
     }
@@ -946,6 +1049,11 @@ body {
     .workspace {
         padding: 16px;
         gap: 16px;
+    }
+
+    .investigation-workspace,
+    .investigation-detail-workspace {
+        padding: 16px;
     }
 
     .panel-header,

@@ -15,7 +15,13 @@
                     Fictional detective conversation simulator
                 </p>
             </div>
-            <span class="provider-badge">{{ provider_name }} provider</span>
+            <div class="header-actions">
+                <nav class="app-nav" aria-label="Primary navigation">
+                    <a href="{{ url_for('home') }}" aria-current="page">Conversations</a>
+                    <a href="{{ url_for('investigations_index') }}">Investigations</a>
+                </nav>
+                <span class="provider-badge">{{ provider_name }} provider</span>
+            </div>
         </div>
     </header>
 

@@ -37,6 +37,7 @@ from multi_agent_personalities.application.investigation_mock_runtime import (
     InvestigationMockCapabilities,
     InvestigationMockRuntime,
     build_investigation_mock_runtime,
+    investigation_mock_capabilities,
 )
 from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
@@ -82,6 +83,7 @@ __all__ = [
     "StructuredGenerationResult", "StructuredOutputError", "create_group_decision",
     "create_session",
     "finalize_investigation", "build_investigation_mock_runtime",
+    "investigation_mock_capabilities",
     "build_investigation_mock_bindings", "investigation_analysis_task_name",
     "investigation_decision_task_name", "investigation_discussion_task_name",
     "investigation_final_theory_task_name",

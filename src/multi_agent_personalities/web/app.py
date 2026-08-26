@@ -16,6 +16,12 @@ from multi_agent_personalities.application import (
 )
 from multi_agent_personalities.models import Message
 from multi_agent_personalities.pipeline import CharacterConfig, character_registry
+from multi_agent_personalities.web.investigation_routes import (
+    create_investigation_router,
+)
+from multi_agent_personalities.web.investigation_store import (
+    InMemoryInvestigationRegistry,
+)
 
 
 WEB_DIRECTORY = Path(__file__).resolve().parent
@@ -253,6 +259,7 @@ def create_app(
     *,
     project_root: Path | None = None,
     output_root: Path | None = None,
+    investigation_registry: InMemoryInvestigationRegistry | None = None,
 ) -> FastAPI:
     """Create the local web application without starting a server."""
     resolved_project_root = (
@@ -262,6 +269,11 @@ def create_app(
         OUTPUT_ROOT if output_root is None else Path(output_root)
     )
     registry = character_registry(resolved_project_root)
+    resolved_investigation_registry = (
+        InMemoryInvestigationRegistry()
+        if investigation_registry is None
+        else investigation_registry
+    )
     supported_characters = tuple(registry)
     display_root = resolved_output_root.parent
     application = FastAPI(
@@ -271,6 +283,7 @@ def create_app(
         ),
         version="0.1.0",
     )
+    application.state.investigation_registry = resolved_investigation_registry
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the two fixed local assets without a worker-thread hop."""
@@ -406,6 +419,15 @@ def create_app(
     async def health() -> dict[str, str]:
         """Report local application availability without external calls."""
         return {"status": "ok", "provider": "mock"}
+
+    application.include_router(
+        create_investigation_router(
+            registry=resolved_investigation_registry,
+            project_root=resolved_project_root,
+            catalogue=registry,
+            templates=templates,
+        )
+    )
 
     return application
 
