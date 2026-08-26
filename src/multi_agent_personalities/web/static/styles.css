@@ -998,6 +998,7 @@ body {
 .analysis-control,
 .discussion-control,
 .decision-control,
+.finalization-control,
 .clue-history li {
     padding: var(--spacing-md);
     border: 1px solid var(--border-default);
@@ -1094,6 +1095,18 @@ body {
 
 .decision-summary {
     margin-top: var(--spacing-xs);
+}
+
+.final-theory {
+    padding: var(--spacing-lg);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-medium);
+    background: var(--surface-subtle);
+}
+
+.final-theory-summary {
+    margin-top: var(--spacing-md);
+    font-size: 1.125rem;
 }
 
 .investigation-empty-state {

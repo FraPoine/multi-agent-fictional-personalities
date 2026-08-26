@@ -114,6 +114,17 @@
                     </section>
                 {% endif %}
 
+                {% if can_finalize_investigation %}
+                    <section class="finalization-control" aria-labelledby="finalization-control-title">
+                        <p class="eyebrow">Explicit Game Master action</p>
+                        <h2 id="finalization-control-title">Finalize the exhausted mock investigation</h2>
+                        <p>All supported clue rounds are complete. Final theory generation begins only when this action is submitted.</p>
+                        <form method="post" action="{{ url_for('finalize_investigation_session', session_id=record.session_id) }}">
+                            <button type="submit" class="primary-button">Finalize investigation</button>
+                        </form>
+                    </section>
+                {% endif %}
+
                 <section aria-labelledby="clues-title">
                     <h2 id="clues-title">Revealed clues</h2>
                     {% if not record.session.clues %}
@@ -223,6 +234,22 @@
                         {% endif %}
                     </section>
                 {% endfor %}
+
+                {% if final_theory %}
+                    <section class="final-theory" aria-labelledby="final-theory-title">
+                        <p class="eyebrow">Completed investigation</p>
+                        <h2 id="final-theory-title">Final theory</h2>
+                        <p class="final-theory-summary">{{ final_theory.summary }}</p>
+                        {% if final_theory.hypothesis_references %}
+                            <h3>Referenced hypotheses</h3>
+                            <ul>{% for statement in final_theory.hypothesis_references %}<li>{{ statement }}</li>{% endfor %}</ul>
+                        {% endif %}
+                        <h3>Final evidence</h3>
+                        <ul class="evidence-list">
+                            {% for item in final_theory.evidence %}<li><strong>{{ item.relation }} — Clue {{ item.clue_number }}</strong><span>{{ item.clue_text }}</span></li>{% endfor %}
+                        </ul>
+                    </section>
+                {% endif %}
             </div>
         </section>
     </main>

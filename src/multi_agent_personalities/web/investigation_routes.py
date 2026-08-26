@@ -11,12 +11,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
+    FinalizationResult,
     GroupDecisionResult,
     GroupDiscussionResult,
     IndependentAnalysesResult,
     InvestigationMockCapabilities,
     MAX_DISCUSSION_TURNS,
     create_group_decision,
+    finalize_investigation,
     investigation_mock_capabilities,
     reveal_clue,
     run_group_discussion,
@@ -104,6 +106,15 @@ class InvestigationDecisionPresentation:
     evidence: tuple[InvestigationEvidencePresentation, ...]
     analysis_references: tuple[str, ...]
     hypothesis_references: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class InvestigationFinalTheoryPresentation:
+    """Completed final theory with resolved hypotheses and evidence."""
+
+    summary: str
+    hypothesis_references: tuple[str, ...]
+    evidence: tuple[InvestigationEvidencePresentation, ...]
 
 
 @dataclass(frozen=True)
@@ -260,14 +271,63 @@ def _can_create_decision(record: InvestigationSessionRecord) -> bool:
     )
 
 
+def _can_finalize_investigation(record: InvestigationSessionRecord) -> bool:
+    session = record.session
+    return (
+        session.status is InvestigationStatus.ACTIVE
+        and bool(session.rounds)
+        and all(
+            item.status is InvestigationRoundStatus.COMPLETED
+            for item in session.rounds
+        )
+        and len(session.rounds)
+        >= record.runtime.capabilities.supported_rounds
+        and session.final_theory is None
+    )
+
+
+def _evidence_presentations(
+    record: InvestigationSessionRecord,
+    references: Sequence[EvidenceReference],
+) -> tuple[InvestigationEvidencePresentation, ...]:
+    clue_by_id = {
+        clue.clue_id: (clue.reveal_order + 1, clue.text)
+        for clue in record.session.clues
+    }
+    return tuple(
+        InvestigationEvidencePresentation(
+            relation=reference.relation.value.title(),
+            clue_number=clue_by_id[reference.clue_id][0],
+            clue_text=clue_by_id[reference.clue_id][1],
+        )
+        for reference in references
+    )
+
+
+def _final_theory_presentation(
+    record: InvestigationSessionRecord,
+) -> InvestigationFinalTheoryPresentation | None:
+    final_theory = record.session.final_theory
+    if final_theory is None:
+        return None
+    hypothesis_by_id = {
+        hypothesis.hypothesis_id: hypothesis
+        for hypothesis in record.session.hypotheses
+    }
+    return InvestigationFinalTheoryPresentation(
+        summary=final_theory.summary,
+        hypothesis_references=tuple(
+            hypothesis_by_id[hypothesis_id].statement
+            for hypothesis_id in final_theory.hypothesis_ids
+        ),
+        evidence=_evidence_presentations(record, final_theory.evidence),
+    )
+
+
 def _reasoning_groups(
     record: InvestigationSessionRecord,
 ) -> tuple[InvestigationReasoningGroupPresentation, ...]:
     session = record.session
-    clue_by_id = {
-        clue.clue_id: (clue.reveal_order + 1, clue.text)
-        for clue in session.clues
-    }
     config_by_id = {
         config.character_id: config
         for config in record.runtime.character_configs
@@ -287,21 +347,6 @@ def _reasoning_groups(
         decision.round_id: decision for decision in session.decisions
     }
 
-    def evidence_items(references: Sequence[EvidenceReference]) -> tuple[
-        InvestigationEvidencePresentation, ...
-    ]:
-        resolved = []
-        for reference in references:
-            clue_number, clue_text = clue_by_id[reference.clue_id]
-            resolved.append(
-                InvestigationEvidencePresentation(
-                    relation=reference.relation.value.title(),
-                    clue_number=clue_number,
-                    clue_text=clue_text,
-                )
-            )
-        return tuple(resolved)
-
     groups = []
     for investigation_round in session.rounds:
         analysis_by_participant = {
@@ -314,7 +359,8 @@ def _reasoning_groups(
                 display_name=config_by_id[participant_id].display_name,
                 facts=analysis_by_participant[participant_id].facts,
                 deductions=analysis_by_participant[participant_id].deductions,
-                evidence=evidence_items(
+                evidence=_evidence_presentations(
+                    record,
                     analysis_by_participant[participant_id].evidence
                 ),
                 proposed_leads=(
@@ -328,7 +374,7 @@ def _reasoning_groups(
             InvestigationHypothesisPresentation(
                 statement=hypothesis.statement,
                 status=hypothesis.status.value.title(),
-                evidence=evidence_items(hypothesis.evidence),
+                evidence=_evidence_presentations(record, hypothesis.evidence),
                 previous_hypothesis_id=hypothesis.previous_hypothesis_id,
             )
             for hypothesis in session.hypotheses
@@ -356,7 +402,7 @@ def _reasoning_groups(
                     "_", " "
                 ).title(),
                 summary=stored_decision.summary,
-                evidence=evidence_items(stored_decision.evidence),
+                evidence=_evidence_presentations(record, stored_decision.evidence),
                 analysis_references=tuple(
                     (
                         f"{analysis_display_by_id[analysis_id]} "
@@ -474,7 +520,9 @@ def create_investigation_router(
                 "can_run_analyses": _can_run_analyses(record),
                 "can_run_discussion": _can_run_discussion(record),
                 "can_create_decision": _can_create_decision(record),
+                "can_finalize_investigation": _can_finalize_investigation(record),
                 "reasoning_groups": _reasoning_groups(record),
+                "final_theory": _final_theory_presentation(record),
                 "clue_value": clue_value,
                 "clue_error": clue_error,
                 "max_clue_length": MAX_CLUE_LENGTH,
@@ -980,6 +1028,94 @@ def create_investigation_router(
                 heading="Group decision failed",
                 message=(
                     "The group decision could not be completed because of an "
+                    "unexpected local generation error. The previous "
+                    "investigation state was kept."
+                ),
+            )
+
+        return RedirectResponse(
+            url=f"/investigations/{session_id}",
+            status_code=303,
+        )
+
+    @router.post(
+        "/investigations/{session_id}/finalize",
+        response_class=HTMLResponse,
+        name="finalize_investigation_session",
+    )
+    async def finalize_investigation_session(
+        request: Request,
+        session_id: str,
+    ) -> Response:
+        """Explicitly generate and commit the exhausted mock final theory."""
+        try:
+            validate_run_id(session_id)
+        except ValueError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        def mutate_finalization(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[FinalizationResult]:
+            if not _can_finalize_investigation(record):
+                raise InvestigationWorkflowConflictError(
+                    "finalization is unavailable in the latest browser state"
+                )
+            result = finalize_investigation(
+                record.session,
+                final_theory_provider=record.runtime.final_theory_provider,
+                id_factory=record.runtime.id_factory,
+            )
+            return InvestigationSessionMutation(
+                session=result.session,
+                result=result,
+            )
+
+        try:
+            _updated_record, _finalization_result = registry.mutate(
+                session_id,
+                mutate_finalization,
+            )
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+        except InvestigationWorkflowConflictError:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Investigation could not be finalized",
+                message=(
+                    "This investigation cannot be finalized in the current "
+                    "mock workflow state. Refresh the session page and try "
+                    "again."
+                ),
+            )
+        except Exception:
+            logger.exception("Local investigation finalization failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Investigation finalization failed",
+                message=(
+                    "The investigation could not be finalized because of an "
                     "unexpected local generation error. The previous "
                     "investigation state was kept."
                 ),

@@ -380,12 +380,324 @@ def test_first_round_decision_uses_303_prg_and_pauses_for_game_master(
     assert "Context — Clue 1" in detail.text
     assert 'name="clue"' in detail.text
     assert "Create group decision" not in detail.text
-    assert "/investigations/session_001/finalize" not in detail.text
+    assert "Finalize investigation" not in detail.text
     for _ in range(2):
         assert client.get(response.headers["location"]).status_code == 200
     assert registry.get("session_001") is updated
     assert len(updated.session.clues) == len(updated.session.rounds) == 1
     assert_no_output(output_root)
+
+
+def test_round_one_completed_is_not_browser_finalizable(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    advance_first_session_to_decision(client)
+    client.post("/investigations/session_001/decision")
+    before = registry.get("session_001")
+
+    detail = client.get("/investigations/session_001")
+    assert "Waiting for the Game Master to reveal the next clue." in detail.text
+    assert 'name="clue"' in detail.text
+    assert "Finalize investigation" not in detail.text
+
+    response = client.post("/investigations/session_001/finalize")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+    assert before.session.status is InvestigationStatus.ACTIVE
+    assert before.session.final_theory is None
+
+
+def test_explicit_finalization_uses_303_prg_and_preserves_full_history(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, output_root = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_decision.session,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_001/finalize")
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/investigations/session_001"
+    completed = registry.get("session_001")
+    assert completed.runtime is runtime
+    assert completed.session.status is InvestigationStatus.COMPLETED
+    assert completed.session.final_theory is not None
+    assert completed.session.final_theory.final_theory_id == (
+        "session_001_final_theory"
+    )
+    assert completed.session.rounds == before.session.rounds
+    assert completed.session.clues == before.session.clues
+    assert completed.session.analyses == before.session.analyses
+    assert completed.session.hypotheses == before.session.hypotheses
+    assert completed.session.decisions == before.session.decisions
+
+    detail = client.get(response.headers["location"])
+    assert_html(detail, 200)
+    assert "This investigation is completed." in detail.text
+    assert "Final theory" in detail.text
+    assert "The visitor used the interior corridor" in detail.text
+    assert (
+        "The open window was staged and the visitor used the corridor."
+        in detail.text
+    )
+    assert "Context — Clue 1" in detail.text
+    assert "Supports — Clue 2" in detail.text
+    assert "The wet soil below the window contained no footprints." in detail.text
+    for heading in (
+        "Round 1 analyses",
+        "Round 1 discussion",
+        "Round 1 group decision",
+        "Round 2 analyses",
+        "Round 2 discussion",
+        "Round 2 group decision",
+    ):
+        assert heading in detail.text
+    for action in (
+        "Reveal clue",
+        "Run independent analyses",
+        "Run group discussion",
+        "Create group decision",
+        "Finalize investigation",
+    ):
+        assert action not in detail.text
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is completed
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "trace_attribute",
+    [
+        "created",
+        "round_one_revealed",
+        "round_one_analyses",
+        "round_one_discussion",
+        "round_one_decision",
+    ],
+)
+def test_finalize_wrong_or_unexhausted_state_is_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    trace_attribute: str,
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    snapshot = getattr(trace, trace_attribute)
+    session = getattr(snapshot, "session", snapshot)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=session,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_001/finalize")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+
+
+def test_repeated_finalization_is_409_and_keeps_completed_record(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_decision.session,
+            runtime=runtime,
+        )
+    )
+    client.post("/investigations/session_001/finalize")
+    committed = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/finalize")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is committed
+    assert committed.session.status is InvestigationStatus.COMPLETED
+
+
+@pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
+def test_finalize_post_to_malformed_or_unknown_session_is_404(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    session_id: str,
+) -> None:
+    client, registry, output_root = investigation_client
+
+    response = client.post(f"/investigations/{session_id}/finalize")
+
+    assert_html(response, 404)
+    assert "Traceback" not in response.text
+    assert registry.session_ids == ()
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        StructuredOutputError("private malformed final JSON"),
+        FileNotFoundError("/private/final-theory.json"),
+        ValueError("private invalid final reference"),
+    ],
+)
+def test_finalization_failures_are_safe_500_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+    failure: Exception,
+) -> None:
+    client, registry, output_root = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_decision.session,
+            runtime=runtime,
+        )
+    )
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise failure
+
+    monkeypatch.setattr(investigation_routes, "finalize_investigation", fail)
+    response = client.post("/investigations/session_001/finalize")
+
+    assert_html(response, 500)
+    assert response.status_code != 409
+    assert "unexpected local generation error" in response.text
+    assert "private" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before
+    assert before.session.status is InvestigationStatus.ACTIVE
+    assert before.session.final_theory is None
+    assert_no_output(output_root)
+
+
+def test_session_two_finalization_namespace_and_isolation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    first = registry.create(
+        character_slugs=("sherlock", "poirot"),
+        introduction="First untouched session.",
+        project_root=ROOT,
+    )
+    trace = run_two_round_workflow(session_sequence=2)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=2,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=2,
+            session=trace.round_two_decision.session,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_002/finalize")
+
+    assert response.status_code == 303
+    assert registry.get("session_001") is first
+    second = registry.get("session_002")
+    assert second.session.status is InvestigationStatus.COMPLETED
+    assert second.session.final_theory is not None
+    assert second.session.final_theory.final_theory_id == (
+        "session_002_final_theory"
+    )
+    serialized = second.session.model_dump_json()
+    assert "session_002_" in serialized
+    assert "session_001_" not in serialized
+
+
+def test_final_theory_summary_is_html_escaped(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    payload = trace.finalization.session.model_dump(mode="python")
+    payload["final_theory"]["summary"] = "<script>final()</script>"
+    escaped_session = type(trace.finalization.session).model_validate(payload)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=escaped_session,
+            runtime=runtime,
+        )
+    )
+
+    detail = client.get("/investigations/session_001")
+
+    assert "<script>final()" not in detail.text
+    assert "&lt;script&gt;final()&lt;/script&gt;" in detail.text
 
 
 def test_decision_before_discussion_is_409_without_mutation(
@@ -543,7 +855,17 @@ def test_second_round_decision_preserves_history_and_pauses_exhausted(
     assert "no more clue rounds available" in detail.text
     assert 'name="clue"' not in detail.text
     assert "Create group decision" not in detail.text
-    assert "/investigations/session_001/finalize" not in detail.text
+    assert "Finalize investigation" in detail.text
+    assert (
+        'action="http://testserver/investigations/session_001/finalize"'
+        in detail.text
+    )
+    pre_final = registry.get("session_001")
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is pre_final
+    assert pre_final.session.status is InvestigationStatus.ACTIVE
+    assert pre_final.session.final_theory is None
 
 
 def test_session_two_decision_namespace_and_isolation(
@@ -1665,7 +1987,7 @@ def test_case_introduction_is_html_escaped(
     assert "<script" not in detail.text
 
 
-def test_later_investigation_mutation_routes_do_not_exist(
+def test_unknown_investigation_mutation_route_does_not_exist(
     investigation_client: tuple[
         ASGITestClient,
         InMemoryInvestigationRegistry,
@@ -1673,6 +1995,5 @@ def test_later_investigation_mutation_routes_do_not_exist(
     ],
 ) -> None:
     client, _, _ = investigation_client
-    for suffix in ("finalize",):
-        response = client.post(f"/investigations/session_001/{suffix}")
-        assert response.status_code == 404
+    response = client.post("/investigations/session_001/unknown-action")
+    assert response.status_code == 404
