@@ -6,12 +6,16 @@ from enum import Enum
 from pathlib import Path
 from types import MappingProxyType
 
-from multi_agent_personalities.llm.base import LLMProvider
-from multi_agent_personalities.llm.mock_provider import MockProvider
+from multi_agent_personalities.application.investigation_ids import (
+    DeterministicInvestigationIdFactory,
+)
 from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
     investigation_discussion_task_name,
 )
+from multi_agent_personalities.llm.base import LLMProvider
+from multi_agent_personalities.llm.mock_provider import MockProvider
+from multi_agent_personalities.models import GenerationResult
 
 
 SHERLOCK_HOLMES_ID = "sherlock_holmes"
@@ -105,6 +109,25 @@ _PARTICIPANT_TASKS: Mapping[str, tuple[InvestigationMockTask, ...]] = (
 _DEFAULT_FIXTURES_ROOT = (
     Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "investigation"
 )
+_SOURCE_SESSION_ID = DeterministicInvestigationIdFactory(1).session_id
+
+
+@dataclass(frozen=True)
+class _SessionScopedInvestigationMockProvider:
+    """Scope canonical fixture references without specializing MockProvider."""
+
+    provider: LLMProvider
+    target_session_id: str
+
+    def generate(self, prompt: str, *, task_name: str) -> GenerationResult:
+        generation = self.provider.generate(prompt, task_name=task_name)
+        scoped_text = generation.text.replace(
+            _SOURCE_SESSION_ID,
+            self.target_session_id,
+        )
+        if scoped_text == generation.text:
+            return generation
+        return GenerationResult(text=scoped_text, metadata=generation.metadata)
 
 
 @dataclass(frozen=True)
@@ -128,29 +151,56 @@ def _paths_for_tasks(
     )
 
 
+def _scope_provider(
+    provider: LLMProvider,
+    *,
+    target_session_id: str,
+) -> LLMProvider:
+    if target_session_id == _SOURCE_SESSION_ID:
+        return provider
+    return _SessionScopedInvestigationMockProvider(
+        provider=provider,
+        target_session_id=target_session_id,
+    )
+
+
 def build_investigation_mock_bindings(
     fixtures_root: Path | None = None,
+    *,
+    session_sequence: int = 1,
 ) -> InvestigationMockBindings:
-    """Build call-order-independent providers over the fixed fixture inventory."""
+    """Build fixed fixture providers scoped to one deterministic session."""
+    target_session_id = DeterministicInvestigationIdFactory(
+        session_sequence
+    ).session_id
     root = _DEFAULT_FIXTURES_ROOT if fixtures_root is None else Path(fixtures_root)
     participant_providers = MappingProxyType(
         {
-            participant_id: MockProvider(_paths_for_tasks(root, tasks))
+            participant_id: _scope_provider(
+                MockProvider(_paths_for_tasks(root, tasks)),
+                target_session_id=target_session_id,
+            )
             for participant_id, tasks in _PARTICIPANT_TASKS.items()
         }
     )
     return InvestigationMockBindings(
         participant_providers=participant_providers,
-        decision_provider=MockProvider(
-            _paths_for_tasks(
-                root,
-                (
-                    InvestigationMockTask.DECISION_ROUND_0001,
-                    InvestigationMockTask.DECISION_ROUND_0002,
+        decision_provider=_scope_provider(
+            MockProvider(
+                _paths_for_tasks(
+                    root,
+                    (
+                        InvestigationMockTask.DECISION_ROUND_0001,
+                        InvestigationMockTask.DECISION_ROUND_0002,
+                    ),
                 ),
-            )
+            ),
+            target_session_id=target_session_id,
         ),
-        final_theory_provider=MockProvider(
-            _paths_for_tasks(root, (InvestigationMockTask.FINAL_THEORY,))
+        final_theory_provider=_scope_provider(
+            MockProvider(
+                _paths_for_tasks(root, (InvestigationMockTask.FINAL_THEORY,))
+            ),
+            target_session_id=target_session_id,
         ),
     )

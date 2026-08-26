@@ -48,10 +48,12 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket.socket, "connect", fail)
 
 
-def participant_bindings() -> tuple[
-    ConversationParticipant, ConversationParticipant
-]:
-    mock = build_investigation_mock_bindings()
+def participant_bindings_for_session(
+    session_sequence: int,
+) -> tuple[ConversationParticipant, ConversationParticipant]:
+    mock = build_investigation_mock_bindings(
+        session_sequence=session_sequence
+    )
     personas = tuple(
         Persona.model_validate_json(
             (ROOT / "tests" / "fixtures" / filename).read_text(encoding="utf-8")
@@ -85,10 +87,12 @@ class WorkflowTrace:
     finalization: FinalizationResult
 
 
-def run_two_round_workflow() -> WorkflowTrace:
+def run_two_round_workflow(session_sequence: int = 1) -> WorkflowTrace:
     """Call every public workflow operation explicitly with fixed inputs."""
-    factory = DeterministicInvestigationIdFactory(1)
-    mock = build_investigation_mock_bindings()
+    factory = DeterministicInvestigationIdFactory(session_sequence)
+    mock = build_investigation_mock_bindings(
+        session_sequence=session_sequence
+    )
 
     created = create_session(
         id_factory=factory,
@@ -102,12 +106,12 @@ def run_two_round_workflow() -> WorkflowTrace:
     )
     round_one_analyses = run_independent_analyses(
         round_one_revealed,
-        participant_bindings=participant_bindings(),
+        participant_bindings=participant_bindings_for_session(session_sequence),
         id_factory=factory,
     )
     round_one_discussion = run_group_discussion(
         round_one_analyses.session,
-        participant_bindings=participant_bindings(),
+        participant_bindings=participant_bindings_for_session(session_sequence),
         id_factory=factory,
         turn_count=TURN_COUNT,
         seed=SEED,
@@ -126,12 +130,12 @@ def run_two_round_workflow() -> WorkflowTrace:
     )
     round_two_analyses = run_independent_analyses(
         round_two_revealed,
-        participant_bindings=participant_bindings(),
+        participant_bindings=participant_bindings_for_session(session_sequence),
         id_factory=factory,
     )
     round_two_discussion = run_group_discussion(
         round_two_analyses.session,
-        participant_bindings=participant_bindings(),
+        participant_bindings=participant_bindings_for_session(session_sequence),
         id_factory=factory,
         turn_count=TURN_COUNT,
         seed=SEED,
@@ -335,3 +339,20 @@ def test_two_round_investigation_workflow_is_explicit_deterministic_and_offline(
     assert second == first
     assert second.finalization.session.model_dump_json() == serialized
     assert tuple(tmp_path.iterdir()) == before_files
+
+
+def test_two_round_workflow_accepts_session_two_scoped_mock_outputs() -> None:
+    trace = run_two_round_workflow(session_sequence=2)
+    completed = trace.finalization.session
+
+    assert completed.session_id == "session_002"
+    assert completed.status is InvestigationStatus.COMPLETED
+    assert completed.final_theory is not None
+    serialized = completed.model_dump_json()
+    assert "session_001" not in serialized
+    assert "session_002_clue_0001" in serialized
+    assert "session_002_clue_0002" in serialized
+    assert "session_002_analysis_sherlock_holmes_0001" in serialized
+    assert "session_002_analysis_hercule_poirot_0002" in serialized
+    assert "session_002_hypothesis_0001" in serialized
+    assert "session_002_hypothesis_0002" in serialized

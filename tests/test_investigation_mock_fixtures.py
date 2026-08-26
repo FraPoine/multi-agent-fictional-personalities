@@ -14,6 +14,7 @@ from multi_agent_personalities.application import (
     GeneratedAnalysisPayload,
     GeneratedDecisionPayload,
     GeneratedFinalTheoryPayload,
+    InvestigationMockBindings,
     InvestigationMockTask,
     StructuredOutputError,
     build_investigation_mock_bindings,
@@ -39,8 +40,10 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket.socket, "connect", fail)
 
 
-def generate(task: InvestigationMockTask) -> GenerationResult:
-    bindings = build_investigation_mock_bindings()
+def generate_from_bindings(
+    bindings: InvestigationMockBindings,
+    task: InvestigationMockTask,
+) -> GenerationResult:
     if "sherlock_holmes" in task.value:
         provider = bindings.participant_providers[SHERLOCK_HOLMES_ID]
     elif "hercule_poirot" in task.value:
@@ -50,6 +53,17 @@ def generate(task: InvestigationMockTask) -> GenerationResult:
     else:
         provider = bindings.final_theory_provider
     return provider.generate(PROMPT, task_name=task.value)
+
+
+def generate(
+    task: InvestigationMockTask,
+    *,
+    session_sequence: int = 1,
+) -> GenerationResult:
+    return generate_from_bindings(
+        build_investigation_mock_bindings(session_sequence=session_sequence),
+        task,
+    )
 
 
 def test_fixture_inventory_is_complete_unique_and_explicit() -> None:
@@ -268,40 +282,64 @@ def test_extra_structured_field_is_rejected_by_existing_schema(
         parse_structured_generation(generation, GeneratedDecisionPayload)
 
 
-def test_two_round_references_follow_deterministic_chronology() -> None:
-    factory = DeterministicInvestigationIdFactory(1)
+@pytest.mark.parametrize("session_sequence", [1, 2])
+def test_two_round_references_follow_deterministic_chronology(
+    session_sequence: int,
+) -> None:
+    factory = DeterministicInvestigationIdFactory(session_sequence)
     clue_one = factory.clue_id(0)
     clue_two = factory.clue_id(1)
     round_one_analyses = (
         parse_structured_generation(
-            generate(InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0001),
+            generate(
+                InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0001,
+                session_sequence=session_sequence,
+            ),
             GeneratedAnalysisPayload,
         ).value,
         parse_structured_generation(
-            generate(InvestigationMockTask.POIROT_ANALYSIS_ROUND_0001),
+            generate(
+                InvestigationMockTask.POIROT_ANALYSIS_ROUND_0001,
+                session_sequence=session_sequence,
+            ),
             GeneratedAnalysisPayload,
         ).value,
     )
     round_two_analyses = (
         parse_structured_generation(
-            generate(InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0002),
+            generate(
+                InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0002,
+                session_sequence=session_sequence,
+            ),
             GeneratedAnalysisPayload,
         ).value,
         parse_structured_generation(
-            generate(InvestigationMockTask.POIROT_ANALYSIS_ROUND_0002),
+            generate(
+                InvestigationMockTask.POIROT_ANALYSIS_ROUND_0002,
+                session_sequence=session_sequence,
+            ),
             GeneratedAnalysisPayload,
         ).value,
     )
     decision_one = parse_structured_generation(
-        generate(InvestigationMockTask.DECISION_ROUND_0001),
+        generate(
+            InvestigationMockTask.DECISION_ROUND_0001,
+            session_sequence=session_sequence,
+        ),
         GeneratedDecisionPayload,
     ).value
     decision_two = parse_structured_generation(
-        generate(InvestigationMockTask.DECISION_ROUND_0002),
+        generate(
+            InvestigationMockTask.DECISION_ROUND_0002,
+            session_sequence=session_sequence,
+        ),
         GeneratedDecisionPayload,
     ).value
     final = parse_structured_generation(
-        generate(InvestigationMockTask.FINAL_THEORY),
+        generate(
+            InvestigationMockTask.FINAL_THEORY,
+            session_sequence=session_sequence,
+        ),
         GeneratedFinalTheoryPayload,
     ).value
 
@@ -332,6 +370,83 @@ def test_two_round_references_follow_deterministic_chronology() -> None:
     assert decision_two.hypothesis_ids == (factory.hypothesis_id(2),)
     assert final.hypothesis_ids == (factory.hypothesis_id(2),)
     assert {item.clue_id for item in final.evidence} <= {clue_one, clue_two}
+
+
+def test_explicit_session_one_matches_default_fixture_bytes() -> None:
+    default_bindings = build_investigation_mock_bindings()
+    explicit_bindings = build_investigation_mock_bindings(session_sequence=1)
+
+    for task in InvestigationMockTask:
+        default = generate_from_bindings(default_bindings, task)
+        explicit = generate_from_bindings(explicit_bindings, task)
+        assert explicit == default
+        assert explicit.text.encode("utf-8") == (
+            FIXTURES_ROOT / INVESTIGATION_FIXTURE_FILES[task]
+        ).read_bytes()
+
+
+@pytest.mark.parametrize(
+    ("task", "model"),
+    [
+        (InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0001, GeneratedAnalysisPayload),
+        (InvestigationMockTask.POIROT_ANALYSIS_ROUND_0001, GeneratedAnalysisPayload),
+        (InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0002, GeneratedAnalysisPayload),
+        (InvestigationMockTask.POIROT_ANALYSIS_ROUND_0002, GeneratedAnalysisPayload),
+        (InvestigationMockTask.DECISION_ROUND_0001, GeneratedDecisionPayload),
+        (InvestigationMockTask.DECISION_ROUND_0002, GeneratedDecisionPayload),
+        (InvestigationMockTask.FINAL_THEORY, GeneratedFinalTheoryPayload),
+    ],
+)
+def test_all_structured_outputs_are_scoped_to_session_two(
+    task: InvestigationMockTask,
+    model: type[BaseModel],
+) -> None:
+    generation = generate(task, session_sequence=2)
+    parsed = parse_structured_generation(generation, model)
+
+    assert isinstance(parsed.value, model)
+    assert "session_001" not in generation.text
+    assert "session_002" in generation.text
+    assert generation.metadata.provider == "mock"
+    assert generation.metadata.finish_reason == "completed"
+
+
+def test_session_scoped_bindings_are_independent_and_byte_deterministic() -> None:
+    session_one = build_investigation_mock_bindings(session_sequence=1)
+    session_two = build_investigation_mock_bindings(session_sequence=2)
+    tasks = (
+        InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0001,
+        InvestigationMockTask.SHERLOCK_ANALYSIS_ROUND_0002,
+        InvestigationMockTask.DECISION_ROUND_0001,
+        InvestigationMockTask.DECISION_ROUND_0002,
+        InvestigationMockTask.FINAL_THEORY,
+    )
+
+    session_one_before = tuple(
+        generate_from_bindings(session_one, task) for task in tasks
+    )
+    session_two_reordered = tuple(
+        generate_from_bindings(session_two, task) for task in reversed(tasks)
+    )
+    session_one_after = tuple(
+        generate_from_bindings(session_one, task) for task in tasks
+    )
+    session_two_again = tuple(
+        generate_from_bindings(session_two, task) for task in reversed(tasks)
+    )
+
+    assert session_one_after == session_one_before
+    assert session_two_again == session_two_reordered
+    assert all("session_002" not in item.text for item in session_one_after)
+    assert all("session_001" not in item.text for item in session_two_again)
+
+
+@pytest.mark.parametrize("value", [0, -1, True, 1.0, "1"])
+def test_bindings_reject_invalid_session_sequences(value: object) -> None:
+    with pytest.raises(ValueError, match="session_sequence"):
+        build_investigation_mock_bindings(
+            session_sequence=value  # type: ignore[arg-type]
+        )
 
 
 def test_repeated_and_reordered_calls_are_byte_deterministic() -> None:
