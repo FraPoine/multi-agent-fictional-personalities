@@ -12,8 +12,7 @@ from multi_agent_personalities.application import (
     GroupDecisionResult,
     GroupDiscussionResult,
     IndependentAnalysesResult,
-    DeterministicInvestigationIdFactory,
-    build_investigation_mock_bindings,
+    build_investigation_mock_runtime,
     create_group_decision,
     create_session,
     finalize_investigation,
@@ -25,9 +24,7 @@ from multi_agent_personalities.models import (
     InvestigationRoundStatus,
     InvestigationSession,
     InvestigationStatus,
-    Persona,
 )
-from multi_agent_personalities.simulation.participant import ConversationParticipant
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,31 +45,6 @@ def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(socket.socket, "connect", fail)
 
 
-def participant_bindings_for_session(
-    session_sequence: int,
-) -> tuple[ConversationParticipant, ConversationParticipant]:
-    mock = build_investigation_mock_bindings(
-        session_sequence=session_sequence
-    )
-    personas = tuple(
-        Persona.model_validate_json(
-            (ROOT / "tests" / "fixtures" / filename).read_text(encoding="utf-8")
-        )
-        for filename in (
-            "sherlock_persona_response.json",
-            "poirot_persona_response.json",
-        )
-    )
-    return tuple(
-        ConversationParticipant(
-            persona=persona,
-            provider=mock.participant_providers[persona.character_id],
-            provider_name="mock",
-        )
-        for persona in personas
-    )  # type: ignore[return-value]
-
-
 @dataclass(frozen=True)
 class WorkflowTrace:
     created: InvestigationSession
@@ -89,67 +61,68 @@ class WorkflowTrace:
 
 def run_two_round_workflow(session_sequence: int = 1) -> WorkflowTrace:
     """Call every public workflow operation explicitly with fixed inputs."""
-    factory = DeterministicInvestigationIdFactory(session_sequence)
-    mock = build_investigation_mock_bindings(
-        session_sequence=session_sequence
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=session_sequence,
+        project_root=ROOT,
     )
 
     created = create_session(
-        id_factory=factory,
+        id_factory=runtime.id_factory,
         introduction="A researcher disappears from a locked archive room.",
-        participant_ids=PARTICIPANT_IDS,
+        participant_ids=runtime.participant_ids,
     )
     round_one_revealed = reveal_clue(
         created,
         clue_text="The archive-room window was found open.",
-        id_factory=factory,
+        id_factory=runtime.id_factory,
     )
     round_one_analyses = run_independent_analyses(
         round_one_revealed,
-        participant_bindings=participant_bindings_for_session(session_sequence),
-        id_factory=factory,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
     )
     round_one_discussion = run_group_discussion(
         round_one_analyses.session,
-        participant_bindings=participant_bindings_for_session(session_sequence),
-        id_factory=factory,
-        turn_count=TURN_COUNT,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
+        turn_count=runtime.capabilities.discussion_turns,
         seed=SEED,
         timestamp=FIXED_TIME,
     )
     round_one_decision = create_group_decision(
         round_one_discussion.session,
-        decision_provider=mock.decision_provider,
-        id_factory=factory,
+        decision_provider=runtime.decision_provider,
+        id_factory=runtime.id_factory,
     )
 
     round_two_revealed = reveal_clue(
         round_one_decision.session,
         clue_text="The wet soil below the window contained no footprints.",
-        id_factory=factory,
+        id_factory=runtime.id_factory,
     )
     round_two_analyses = run_independent_analyses(
         round_two_revealed,
-        participant_bindings=participant_bindings_for_session(session_sequence),
-        id_factory=factory,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
     )
     round_two_discussion = run_group_discussion(
         round_two_analyses.session,
-        participant_bindings=participant_bindings_for_session(session_sequence),
-        id_factory=factory,
-        turn_count=TURN_COUNT,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
+        turn_count=runtime.capabilities.discussion_turns,
         seed=SEED,
         timestamp=FIXED_TIME,
     )
     round_two_decision = create_group_decision(
         round_two_discussion.session,
-        decision_provider=mock.decision_provider,
-        id_factory=factory,
+        decision_provider=runtime.decision_provider,
+        id_factory=runtime.id_factory,
     )
     finalization = finalize_investigation(
         round_two_decision.session,
-        final_theory_provider=mock.final_theory_provider,
-        id_factory=factory,
+        final_theory_provider=runtime.final_theory_provider,
+        id_factory=runtime.id_factory,
     )
     return WorkflowTrace(
         created=created,

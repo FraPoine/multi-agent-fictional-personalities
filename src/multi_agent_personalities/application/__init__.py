@@ -33,6 +33,11 @@ from multi_agent_personalities.application.investigation_mock import (
     InvestigationMockTask,
     build_investigation_mock_bindings,
 )
+from multi_agent_personalities.application.investigation_mock_runtime import (
+    InvestigationMockCapabilities,
+    InvestigationMockRuntime,
+    build_investigation_mock_runtime,
+)
 from multi_agent_personalities.application.investigation_tasks import (
     investigation_analysis_task_name,
     investigation_decision_task_name,
@@ -71,11 +76,12 @@ __all__ = [
     "IndependentAnalysesResult",
     "InvestigationPromptError", "InvestigationPromptName",
     "InvestigationPromptTemplate", "InvestigationMockBindings",
+    "InvestigationMockCapabilities", "InvestigationMockRuntime",
     "InvestigationMockTask", "MAX_DISCUSSION_TURNS", "PilotPreparationResult",
     "SHERLOCK_HOLMES_ID",
     "StructuredGenerationResult", "StructuredOutputError", "create_group_decision",
     "create_session",
-    "finalize_investigation",
+    "finalize_investigation", "build_investigation_mock_runtime",
     "build_investigation_mock_bindings", "investigation_analysis_task_name",
     "investigation_decision_task_name", "investigation_discussion_task_name",
     "investigation_final_theory_task_name",
