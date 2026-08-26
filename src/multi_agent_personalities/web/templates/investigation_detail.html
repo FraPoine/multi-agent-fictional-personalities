@@ -73,7 +73,7 @@
                         {% if clue_error %}
                             <p class="field-error" id="clue-error" role="alert">{{ clue_error }}</p>
                         {% endif %}
-                        <form method="post" action="{{ url_for('reveal_investigation_clue', session_id=record.session_id) }}">
+                        <form class="investigation-mutation-form" method="post" action="{{ url_for('reveal_investigation_clue', session_id=record.session_id) }}" data-loading-label="Revealing clue…">
                             <label for="clue" class="field-label">Clue</label>
                             <textarea id="clue" name="clue" rows="6" maxlength="{{ max_clue_length }}" required{% if clue_error %} aria-invalid="true" aria-describedby="clue-error"{% endif %}>{{ clue_value }}</textarea>
                             <button type="submit" class="primary-button">Reveal clue</button>
@@ -86,7 +86,7 @@
                         <p class="eyebrow">Explicit investigation action</p>
                         <h2 id="analysis-control-title">Independent investigator reasoning</h2>
                         <p>Generate one isolated analysis for each investigator from the currently visible clues.</p>
-                        <form method="post" action="{{ url_for('run_investigation_analyses', session_id=record.session_id) }}">
+                        <form class="investigation-mutation-form" method="post" action="{{ url_for('run_investigation_analyses', session_id=record.session_id) }}" data-loading-label="Running analyses…">
                             <button type="submit" class="primary-button">Run independent analyses</button>
                         </form>
                     </section>
@@ -97,7 +97,7 @@
                         <p class="eyebrow">Explicit investigation action</p>
                         <h2 id="discussion-control-title">Round-robin group discussion</h2>
                         <p>The deterministic mock runs {{ record.runtime.capabilities.discussion_turns }} ordered discussion turns.</p>
-                        <form method="post" action="{{ url_for('run_investigation_discussion', session_id=record.session_id) }}">
+                        <form class="investigation-mutation-form" method="post" action="{{ url_for('run_investigation_discussion', session_id=record.session_id) }}" data-loading-label="Running discussion…">
                             <button type="submit" class="primary-button">Run group discussion</button>
                         </form>
                     </section>
@@ -108,7 +108,7 @@
                         <p class="eyebrow">Explicit investigation action</p>
                         <h2 id="decision-control-title">Complete the current round</h2>
                         <p>Create the group decision from the completed discussion and return control to the Game Master.</p>
-                        <form method="post" action="{{ url_for('create_investigation_decision', session_id=record.session_id) }}">
+                        <form class="investigation-mutation-form" method="post" action="{{ url_for('create_investigation_decision', session_id=record.session_id) }}" data-loading-label="Creating decision…">
                             <button type="submit" class="primary-button">Create group decision</button>
                         </form>
                     </section>
@@ -119,7 +119,7 @@
                         <p class="eyebrow">Explicit Game Master action</p>
                         <h2 id="finalization-control-title">Finalize the exhausted mock investigation</h2>
                         <p>All supported clue rounds are complete. Final theory generation begins only when this action is submitted.</p>
-                        <form method="post" action="{{ url_for('finalize_investigation_session', session_id=record.session_id) }}">
+                        <form class="investigation-mutation-form" method="post" action="{{ url_for('finalize_investigation_session', session_id=record.session_id) }}" data-loading-label="Finalizing investigation…">
                             <button type="submit" class="primary-button">Finalize investigation</button>
                         </form>
                     </section>
@@ -255,5 +255,6 @@
     </main>
 
     <footer class="app-footer"><p>Local deterministic mock</p><span aria-hidden="true">•</span><p>No API key required</p></footer>
+    <script src="{{ url_for('static', path='investigation.js') }}" defer></script>
 </body>
 </html>

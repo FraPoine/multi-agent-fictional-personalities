@@ -1517,7 +1517,7 @@ def test_revealed_clue_is_html_escaped(
     assert clue not in detail.text
     assert "&lt;script&gt;alert" in detail.text
     assert "&lt;/script&gt;" in detail.text
-    assert "<script" not in detail.text
+    assert "<script>alert('clue')" not in detail.text
 
 
 @pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
@@ -1984,7 +1984,7 @@ def test_case_introduction_is_html_escaped(
     assert introduction not in detail.text
     assert "&lt;script&gt;alert" in detail.text
     assert "&lt;/script&gt;" in detail.text
-    assert "<script" not in detail.text
+    assert "<script>alert('x')" not in detail.text
 
 
 def test_unknown_investigation_mutation_route_does_not_exist(
@@ -1997,3 +1997,129 @@ def test_unknown_investigation_mutation_route_does_not_exist(
     client, _, _ = investigation_client
     response = client.post("/investigations/session_001/unknown-action")
     assert response.status_code == 404
+
+
+def test_investigation_progressive_enhancement_is_accessible_and_bounded(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, _, _ = investigation_client
+    index = client.get("/investigations")
+    assert "investigation-mutation-form" in index.text
+    assert 'data-loading-label="Creating investigation…"' in index.text
+    assert "/static/investigation.js" in index.text
+
+    client.post("/investigations", data=VALID_FORM)
+    detail = client.get("/investigations/session_001")
+    assert 'data-loading-label="Revealing clue…"' in detail.text
+    assert "/static/investigation.js" in detail.text
+
+    script = client.get("/static/investigation.js")
+    assert script.status_code == 200
+    assert "form.checkValidity()" in script.text
+    assert 'form.setAttribute("aria-busy", "true")' in script.text
+    assert "button.disabled = true" in script.text
+    assert "button.textContent = loadingLabel" in script.text
+    assert 'window.addEventListener("pageshow"' in script.text
+
+
+def test_known_phase_conflicts_do_not_call_generation_operations(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    empty = registry.get("session_001")
+
+    def unexpected(*args: object, **kwargs: object) -> None:
+        raise AssertionError("application operation must not run")
+
+    monkeypatch.setattr(
+        investigation_routes,
+        "run_independent_analyses",
+        unexpected,
+    )
+    monkeypatch.setattr(
+        investigation_routes,
+        "run_group_discussion",
+        unexpected,
+    )
+    monkeypatch.setattr(
+        investigation_routes,
+        "create_group_decision",
+        unexpected,
+    )
+    for suffix in ("analyses", "discussion", "decision"):
+        response = client.post(f"/investigations/session_001/{suffix}")
+        assert_html(response, 409)
+        assert registry.get("session_001") is empty
+
+
+def test_premature_and_repeated_actions_do_not_call_provider_operations(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, registry, _ = investigation_client
+    advance_first_session_to_decision(client)
+    client.post("/investigations/session_001/decision")
+    round_one = registry.get("session_001")
+
+    def unexpected(*args: object, **kwargs: object) -> None:
+        raise AssertionError("provider-backed operation must not run")
+
+    monkeypatch.setattr(
+        investigation_routes,
+        "finalize_investigation",
+        unexpected,
+    )
+    response = client.post("/investigations/session_001/finalize")
+    assert_html(response, 409)
+    assert registry.get("session_001") is round_one
+
+    monkeypatch.setattr(
+        investigation_routes,
+        "create_group_decision",
+        unexpected,
+    )
+    response = client.post("/investigations/session_001/decision")
+    assert_html(response, 409)
+    assert registry.get("session_001") is round_one
+
+
+def test_unexpected_clue_service_value_error_is_500_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    before = registry.get("session_001")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise ValueError("private impossible clue invariant")
+
+    monkeypatch.setattr(investigation_routes, "reveal_clue", fail)
+    response = client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "A valid clue."},
+    )
+
+    assert_html(response, 500)
+    assert "unexpected local error" in response.text
+    assert "private impossible clue invariant" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before

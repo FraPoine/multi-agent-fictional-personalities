@@ -1109,6 +1109,15 @@ body {
     font-size: 1.125rem;
 }
 
+.investigation-mutation-form[aria-busy="true"] {
+    cursor: progress;
+    opacity: 0.78;
+}
+
+.investigation-mutation-form button[type="submit"]:disabled {
+    cursor: wait;
+}
+
 .investigation-empty-state {
     min-height: 150px;
     padding: var(--spacing-xl);

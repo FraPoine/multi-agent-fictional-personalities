@@ -705,12 +705,9 @@ def create_investigation_router(
         def mutate_clue(
             record: InvestigationSessionRecord,
         ) -> InvestigationSessionMutation[None]:
-            if (
-                len(record.session.rounds)
-                >= record.runtime.capabilities.supported_rounds
-            ):
+            if not _can_reveal_clue(record):
                 raise InvestigationWorkflowConflictError(
-                    "mock clue-round capability exhausted"
+                    "clue revelation is unavailable in the latest state"
                 )
             updated = reveal_clue(
                 record.session,
@@ -744,7 +741,7 @@ def create_investigation_router(
                     "local error. The previous investigation state was kept."
                 ),
             )
-        except (InvestigationWorkflowConflictError, ValueError):
+        except InvestigationWorkflowConflictError:
             return render_error(
                 request,
                 status_code=409,

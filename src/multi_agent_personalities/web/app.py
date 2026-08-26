@@ -286,10 +286,11 @@ def create_app(
     application.state.investigation_registry = resolved_investigation_registry
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
-        """Serve the two fixed local assets without a worker-thread hop."""
+        """Serve the fixed local assets without a worker-thread hop."""
         media_types = {
             "styles.css": "text/css",
             "conversation.js": "text/javascript",
+            "investigation.js": "text/javascript",
         }
         if path not in media_types:
             return Response(status_code=404)

@@ -31,7 +31,7 @@
                     <h1 id="new-investigation-title">New investigation session</h1>
                 </div>
             </header>
-            <form class="panel-body configuration-stack" method="post" action="{{ url_for('create_investigation') }}">
+            <form class="panel-body configuration-stack investigation-mutation-form" method="post" action="{{ url_for('create_investigation') }}" data-loading-label="Creating investigation…">
                 {% if error_message %}
                     <div class="form-error-summary" role="alert">
                         <h2>Unable to create investigation</h2>
@@ -128,5 +128,6 @@
     </main>
 
     <footer class="app-footer"><p>Process-local state</p><span aria-hidden="true">•</span><p>No investigation files are written</p></footer>
+    <script src="{{ url_for('static', path='investigation.js') }}" defer></script>
 </body>
 </html>
