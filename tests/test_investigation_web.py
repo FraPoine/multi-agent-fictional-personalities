@@ -76,6 +76,16 @@ def assert_no_output(output_root: Path) -> None:
     assert not output_root.exists()
 
 
+def advance_first_session_to_discussion(client: ASGITestClient) -> None:
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    response = client.post("/investigations/session_001/analyses")
+    assert response.status_code == 303
+
+
 def test_index_is_side_effect_free_and_catalogue_driven(
     investigation_client: tuple[
         ASGITestClient,
@@ -248,12 +258,311 @@ def test_first_round_analyses_use_303_prg_and_render_reasoning(
     assert "Sherlock hypotheses" not in detail.text
     assert "Poirot hypotheses" not in detail.text
     assert "Run independent analyses" not in detail.text
-    for suffix in ("discussion", "decision", "finalize"):
+    assert "Run group discussion" in detail.text
+    assert (
+        'action="http://testserver/investigations/session_001/discussion"'
+        in detail.text
+    )
+    assert "runs 2 ordered discussion turns" in detail.text
+    for suffix in ("decision", "finalize"):
         assert f"/investigations/session_001/{suffix}" not in detail.text
     for _ in range(2):
         assert client.get(response.headers["location"]).status_code == 200
     assert registry.get("session_001") is updated
     assert_no_output(output_root)
+
+
+def test_first_round_discussion_uses_303_prg_and_renders_stored_order(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, output_root = investigation_client
+    advance_first_session_to_discussion(client)
+    before = registry.get("session_001")
+    runtime = before.runtime
+    analyses = before.session.analyses
+    hypotheses = before.session.hypotheses
+
+    response = client.post("/investigations/session_001/discussion")
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/investigations/session_001"
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.clues == before.session.clues
+    assert updated.session.analyses == analyses
+    assert updated.session.hypotheses == hypotheses
+    current_round = updated.session.rounds[-1]
+    assert current_round.status is InvestigationRoundStatus.AWAITING_DECISION
+    discussion = current_round.discussion_run
+    assert discussion is not None
+    assert len(discussion.messages) == runtime.capabilities.discussion_turns
+    assert tuple(item.speaker_character_id for item in discussion.messages) == (
+        updated.session.participant_ids
+    )
+
+    detail = client.get(response.headers["location"])
+    assert_html(detail, 200)
+    assert "Waiting for a group decision." in detail.text
+    assert "Round 1 discussion" in detail.text
+    assert detail.text.index("SHERLOCK_DISCUSSION_R1") < detail.text.index(
+        "POIROT_DISCUSSION_R1"
+    )
+    assert "Sherlock Holmes" in detail.text
+    assert "Hercule Poirot" in detail.text
+    assert "Run group discussion" not in detail.text
+    assert "/investigations/session_001/decision" not in detail.text
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is updated
+    assert_no_output(output_root)
+
+
+def test_discussion_before_analyses_is_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    empty = registry.get("session_001")
+    response = client.post("/investigations/session_001/discussion")
+    assert_html(response, 409)
+    assert registry.get("session_001") is empty
+
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    awaiting = registry.get("session_001")
+    response = client.post("/investigations/session_001/discussion")
+    assert_html(response, 409)
+    assert registry.get("session_001") is awaiting
+    assert awaiting.session.rounds[-1].discussion_run is None
+
+
+def test_repeated_discussion_is_409_and_keeps_committed_record(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    advance_first_session_to_discussion(client)
+    client.post("/investigations/session_001/discussion")
+    committed = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/discussion")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is committed
+    assert committed.session.rounds[-1].discussion_run is not None
+
+
+@pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
+def test_discussion_post_to_malformed_or_unknown_session_is_404(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    session_id: str,
+) -> None:
+    client, registry, output_root = investigation_client
+
+    response = client.post(f"/investigations/{session_id}/discussion")
+
+    assert_html(response, 404)
+    assert "Traceback" not in response.text
+    assert registry.session_ids == ()
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        FileNotFoundError("/private/discussion-fixture.txt"),
+        ValueError("private mock discussion task mismatch"),
+        RuntimeError("private simulation failure"),
+    ],
+)
+def test_discussion_failures_are_safe_500_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+    failure: Exception,
+) -> None:
+    client, registry, output_root = investigation_client
+    advance_first_session_to_discussion(client)
+    before = registry.get("session_001")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise failure
+
+    monkeypatch.setattr(investigation_routes, "run_group_discussion", fail)
+    response = client.post("/investigations/session_001/discussion")
+
+    assert_html(response, 500)
+    assert response.status_code != 409
+    assert "unexpected local generation error" in response.text
+    assert "private" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before
+    assert before.session.rounds[-1].status is (
+        InvestigationRoundStatus.AWAITING_DISCUSSION
+    )
+    assert before.session.rounds[-1].discussion_run is None
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "trace_attribute",
+    ["round_one_discussion", "round_one_decision", "finalization"],
+)
+def test_discussion_wrong_later_phase_is_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    trace_attribute: str,
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    snapshot = getattr(trace, trace_attribute)
+    session = getattr(snapshot, "session", snapshot)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=session,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_001/discussion")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+
+
+def test_second_round_discussion_preserves_first_round_history(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_analyses.session,
+            runtime=runtime,
+        )
+    )
+    first_discussion = before.session.rounds[0].discussion_run
+
+    response = client.post("/investigations/session_001/discussion")
+
+    assert response.status_code == 303
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.rounds[0].discussion_run == first_discussion
+    assert updated.session.rounds[1].discussion_run is not None
+    assert updated.session.rounds[1].status is (
+        InvestigationRoundStatus.AWAITING_DECISION
+    )
+    detail = client.get(response.headers["location"])
+    assert "Round 1 discussion" in detail.text
+    assert "Round 2 discussion" in detail.text
+    assert "Waiting for a group decision." in detail.text
+    assert "no more clue rounds available" not in detail.text
+
+
+def test_session_two_discussion_namespace_and_isolation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations",
+        data={**VALID_FORM, "introduction": "Second discussion case."},
+    )
+    first_before = registry.get("session_001")
+    client.post(
+        "/investigations/session_002/clues",
+        data={"clue": "A clue scoped to session two."},
+    )
+    client.post("/investigations/session_002/analyses")
+
+    response = client.post("/investigations/session_002/discussion")
+
+    assert response.status_code == 303
+    assert registry.get("session_001") is first_before
+    second = registry.get("session_002")
+    serialized = second.session.model_dump_json()
+    assert second.session.rounds[-1].discussion_run is not None
+    assert "session_002_round_0001_discussion" in serialized
+    assert "session_001_" not in serialized
+
+
+def test_discussion_message_text_is_html_escaped(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    payload = trace.round_one_discussion.session.model_dump(mode="python")
+    payload["rounds"][0]["discussion_run"]["messages"][0]["text"] = (
+        "<script>discussion()</script>"
+    )
+    escaped_session = type(trace.round_one_discussion.session).model_validate(
+        payload
+    )
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=escaped_session,
+            runtime=runtime,
+        )
+    )
+
+    detail = client.get("/investigations/session_001")
+
+    assert "<script>discussion()" not in detail.text
+    assert "&lt;script&gt;discussion()&lt;/script&gt;" in detail.text
 
 
 def test_analyses_before_a_clue_are_409_without_mutation(
@@ -1076,6 +1385,6 @@ def test_later_investigation_mutation_routes_do_not_exist(
     ],
 ) -> None:
     client, _, _ = investigation_client
-    for suffix in ("discussion", "decision", "finalize"):
+    for suffix in ("decision", "finalize"):
         response = client.post(f"/investigations/session_001/{suffix}")
         assert response.status_code == 404

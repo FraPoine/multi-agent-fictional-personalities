@@ -996,6 +996,7 @@ body {
 
 .clue-control,
 .analysis-control,
+.discussion-control,
 .clue-history li {
     padding: var(--spacing-md);
     border: 1px solid var(--border-default);
@@ -1051,6 +1052,29 @@ body {
 
 .hypothesis-history {
     margin-top: var(--spacing-md);
+}
+
+.discussion-history {
+    margin-top: var(--spacing-lg);
+}
+
+.discussion-transcript {
+    display: grid;
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.discussion-transcript li {
+    padding: var(--spacing-md);
+    border-left: 4px solid var(--color-accent);
+    background: var(--surface-subtle);
+}
+
+.discussion-text {
+    margin-top: var(--spacing-xs);
+    white-space: pre-wrap;
 }
 
 .investigation-empty-state {

@@ -92,6 +92,17 @@
                     </section>
                 {% endif %}
 
+                {% if can_run_discussion %}
+                    <section class="discussion-control" aria-labelledby="discussion-control-title">
+                        <p class="eyebrow">Explicit investigation action</p>
+                        <h2 id="discussion-control-title">Round-robin group discussion</h2>
+                        <p>The deterministic mock runs {{ record.runtime.capabilities.discussion_turns }} ordered discussion turns.</p>
+                        <form method="post" action="{{ url_for('run_investigation_discussion', session_id=record.session_id) }}">
+                            <button type="submit" class="primary-button">Run group discussion</button>
+                        </form>
+                    </section>
+                {% endif %}
+
                 <section aria-labelledby="clues-title">
                     <h2 id="clues-title">Revealed clues</h2>
                     {% if not record.session.clues %}
@@ -158,6 +169,20 @@
                                                 </ul>
                                             {% endif %}
                                             {% if hypothesis.previous_hypothesis_id %}<p class="metadata-note">Revises an earlier investigation hypothesis.</p>{% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </div>
+                        {% endif %}
+                        {% if group.discussion %}
+                            <div class="discussion-history">
+                                <h3>Round {{ group.round_index }} discussion</h3>
+                                <ol class="discussion-transcript">
+                                    {% for message in group.discussion %}
+                                        <li>
+                                            <p class="eyebrow">Turn {{ message.turn_number }}</p>
+                                            <h4>{{ message.display_name }}</h4>
+                                            <p class="discussion-text">{{ message.text }}</p>
                                         </li>
                                     {% endfor %}
                                 </ol>

@@ -11,10 +11,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
+    GroupDiscussionResult,
     IndependentAnalysesResult,
     InvestigationMockCapabilities,
+    MAX_DISCUSSION_TURNS,
     investigation_mock_capabilities,
     reveal_clue,
+    run_group_discussion,
     run_independent_analyses,
 )
 from multi_agent_personalities.models import (
@@ -82,12 +85,22 @@ class InvestigationHypothesisPresentation:
 
 
 @dataclass(frozen=True)
+class InvestigationDiscussionMessagePresentation:
+    """One stored discussion message with catalogue display identity."""
+
+    turn_number: int
+    display_name: str
+    text: str
+
+
+@dataclass(frozen=True)
 class InvestigationReasoningGroupPresentation:
     """Ordered analysis and hypothesis history belonging to one round."""
 
     round_index: int
     analyses: tuple[InvestigationAnalysisPresentation, ...]
     hypotheses: tuple[InvestigationHypothesisPresentation, ...]
+    discussion: tuple[InvestigationDiscussionMessagePresentation, ...]
 
 
 def _supported_configs(
@@ -205,6 +218,22 @@ def _can_run_analyses(record: InvestigationSessionRecord) -> bool:
     )
 
 
+def _can_run_discussion(record: InvestigationSessionRecord) -> bool:
+    session = record.session
+    turn_count = record.runtime.capabilities.discussion_turns
+    return (
+        session.status is InvestigationStatus.ACTIVE
+        and bool(session.rounds)
+        and session.rounds[-1].status
+        is InvestigationRoundStatus.AWAITING_DISCUSSION
+        and session.rounds[-1].round_index
+        <= record.runtime.capabilities.supported_rounds
+        and not isinstance(turn_count, bool)
+        and isinstance(turn_count, int)
+        and 1 <= turn_count <= MAX_DISCUSSION_TURNS
+    )
+
+
 def _reasoning_groups(
     record: InvestigationSessionRecord,
 ) -> tuple[InvestigationReasoningGroupPresentation, ...]:
@@ -265,12 +294,28 @@ def _reasoning_groups(
             for hypothesis in session.hypotheses
             if hypothesis.round_id == investigation_round.round_id
         )
-        if analyses or hypotheses:
+        discussion_run = investigation_round.discussion_run
+        discussion = (
+            tuple(
+                InvestigationDiscussionMessagePresentation(
+                    turn_number=message.turn_index + 1,
+                    display_name=(
+                        config_by_id[message.speaker_character_id].display_name
+                    ),
+                    text=message.text,
+                )
+                for message in discussion_run.messages
+            )
+            if discussion_run is not None
+            else ()
+        )
+        if analyses or hypotheses or discussion:
             groups.append(
                 InvestigationReasoningGroupPresentation(
                     round_index=investigation_round.round_index,
                     analyses=analyses,
                     hypotheses=hypotheses,
+                    discussion=discussion,
                 )
             )
     return tuple(groups)
@@ -363,6 +408,7 @@ def create_investigation_router(
                 "workflow_message": _workflow_message(record),
                 "can_reveal_clue": _can_reveal_clue(record),
                 "can_run_analyses": _can_run_analyses(record),
+                "can_run_discussion": _can_run_discussion(record),
                 "reasoning_groups": _reasoning_groups(record),
                 "clue_value": clue_value,
                 "clue_error": clue_error,
@@ -693,6 +739,95 @@ def create_investigation_router(
                 message=(
                     "Independent analyses could not be completed because of "
                     "an unexpected local generation error. The previous "
+                    "investigation state was kept."
+                ),
+            )
+
+        return RedirectResponse(
+            url=f"/investigations/{session_id}",
+            status_code=303,
+        )
+
+    @router.post(
+        "/investigations/{session_id}/discussion",
+        response_class=HTMLResponse,
+        name="run_investigation_discussion",
+    )
+    async def run_investigation_discussion(
+        request: Request,
+        session_id: str,
+    ) -> Response:
+        """Generate one complete round-robin discussion under the lock."""
+        try:
+            validate_run_id(session_id)
+        except ValueError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        def mutate_discussion(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[GroupDiscussionResult]:
+            if not _can_run_discussion(record):
+                raise InvestigationWorkflowConflictError(
+                    "group discussion is unavailable in the latest state"
+                )
+            result = run_group_discussion(
+                record.session,
+                participant_bindings=record.runtime.participants,
+                id_factory=record.runtime.id_factory,
+                turn_count=record.runtime.capabilities.discussion_turns,
+            )
+            return InvestigationSessionMutation(
+                session=result.session,
+                result=result,
+            )
+
+        try:
+            _updated_record, _discussion_result = registry.mutate(
+                session_id,
+                mutate_discussion,
+            )
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+        except InvestigationWorkflowConflictError:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Group discussion could not run",
+                message=(
+                    "Group discussion cannot run in the investigation's "
+                    "current workflow state. Refresh the session page and "
+                    "try again."
+                ),
+            )
+        except Exception:
+            logger.exception("Local investigation discussion failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Group discussion failed",
+                message=(
+                    "Group discussion could not be completed because of an "
+                    "unexpected local generation error. The previous "
                     "investigation state was kept."
                 ),
             )
