@@ -122,8 +122,11 @@ debugging.
 Every mutation corresponds to one submitted Game Master action and at most one
 application operation. A successful group decision leaves the session
 `active`, marks only its round `completed`, and returns control to the Game
-Master. The page then offers either another supported clue revelation or
-explicit finalization; it performs neither automatically.
+Master. While the configured mock scenario still has supported rounds, the
+page offers the next clue action. Once that mock scenario is exhausted, the
+page instead offers explicit finalization. Neither transition happens
+automatically. This browser flow reflects the mock runtime's capability and
+does not impose a minimum-round invariant on the investigation domain.
 
 Hiding invalid controls improves usability but is not authorization or phase
 validation. POST handlers must still delegate to the application service and
