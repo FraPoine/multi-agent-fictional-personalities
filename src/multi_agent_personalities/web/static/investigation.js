@@ -17,8 +17,13 @@ for (const form of mutationForms) {
         button.dataset.originalLabel = button.textContent;
     }
 
-    form.addEventListener("submit", () => {
-        if (!form.checkValidity() || form.getAttribute("aria-busy") === "true") {
+    form.addEventListener("submit", (event) => {
+        if (!form.checkValidity()) {
+            return;
+        }
+
+        if (form.getAttribute("aria-busy") === "true") {
+            event.preventDefault();
             return;
         }
 

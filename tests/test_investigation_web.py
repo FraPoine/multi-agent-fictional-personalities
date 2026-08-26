@@ -11,10 +11,12 @@ from tests.asgi_client import ASGITestClient
 
 import multi_agent_personalities.web.investigation_routes as investigation_routes
 from multi_agent_personalities.application import (
+    InvestigationMockCapabilities,
     StructuredOutputError,
     build_investigation_mock_runtime,
     reveal_clue,
 )
+from multi_agent_personalities.pipeline import character_registry
 from multi_agent_personalities.models import (
     InvestigationRoundStatus,
     InvestigationStatus,
@@ -23,6 +25,7 @@ from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_routes import (
     MAX_CASE_INTRODUCTION_LENGTH,
     MAX_CLUE_LENGTH,
+    _supported_configs,
     _validate_investigation_creation_form,
 )
 from multi_agent_personalities.web.investigation_store import (
@@ -2023,7 +2026,26 @@ def test_investigation_progressive_enhancement_is_accessible_and_bounded(
     assert 'form.setAttribute("aria-busy", "true")' in script.text
     assert "button.disabled = true" in script.text
     assert "button.textContent = loadingLabel" in script.text
+    assert 'form.addEventListener("submit", (event)' in script.text
+    assert "event.preventDefault()" in script.text
     assert 'window.addEventListener("pageshow"' in script.text
+
+    template_text = (
+        ROOT
+        / "src"
+        / "multi_agent_personalities"
+        / "web"
+        / "templates"
+        / "investigation_detail.html"
+    ).read_text(encoding="utf-8")
+    for label in (
+        "Revealing clue…",
+        "Running analyses…",
+        "Running discussion…",
+        "Creating decision…",
+        "Finalizing investigation…",
+    ):
+        assert f'data-loading-label="{label}"' in template_text
 
 
 def test_known_phase_conflicts_do_not_call_generation_operations(
@@ -2123,3 +2145,103 @@ def test_unexpected_clue_service_value_error_is_500_and_atomic(
     assert "private impossible clue invariant" not in response.text
     assert "Traceback" not in response.text
     assert registry.get("session_001") is before
+
+
+def test_supported_configs_require_every_mock_participant_in_declared_order() -> None:
+    catalogue = character_registry(ROOT)
+    by_id = {config.character_id: config for config in catalogue.values()}
+    reversed_ids = ("hercule_poirot", "sherlock_holmes")
+    capabilities = InvestigationMockCapabilities(
+        participant_ids=reversed_ids,
+        supported_rounds=2,
+        discussion_turns=2,
+    )
+
+    supported = _supported_configs(catalogue, capabilities)
+
+    assert tuple(config.character_id for config in supported) == reversed_ids
+    assert supported == tuple(by_id[item] for item in reversed_ids)
+
+    incomplete_catalogue = {
+        slug: config
+        for slug, config in catalogue.items()
+        if config.character_id != "hercule_poirot"
+    }
+    with pytest.raises(ValueError, match="hercule_poirot"):
+        _supported_configs(incomplete_catalogue, capabilities)
+
+
+def test_completed_session_rejects_every_mutation_without_reopening(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    completed = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.finalization.session,
+            runtime=runtime,
+        )
+    )
+    before_json = completed.session.model_dump_json()
+    counts = (
+        len(completed.session.clues),
+        len(completed.session.analyses),
+        sum(
+            len(item.discussion_run.messages)
+            for item in completed.session.rounds
+            if item.discussion_run is not None
+        ),
+        len(completed.session.decisions),
+    )
+    final_theory = completed.session.final_theory
+
+    def unexpected(*args: object, **kwargs: object) -> None:
+        raise AssertionError("completed workflow operation must not run")
+
+    for name in (
+        "reveal_clue",
+        "run_independent_analyses",
+        "run_group_discussion",
+        "create_group_decision",
+        "finalize_investigation",
+    ):
+        monkeypatch.setattr(investigation_routes, name, unexpected)
+
+    requests = (
+        ("clues", {"clue": "A forbidden clue."}),
+        ("analyses", None),
+        ("discussion", None),
+        ("decision", None),
+        ("finalize", None),
+    )
+    for suffix, data in requests:
+        response = client.post(
+            f"/investigations/session_001/{suffix}",
+            data=data,
+        )
+        assert_html(response, 409)
+        assert registry.get("session_001") is completed
+
+    assert completed.session.model_dump_json() == before_json
+    assert (
+        len(completed.session.clues),
+        len(completed.session.analyses),
+        sum(
+            len(item.discussion_run.messages)
+            for item in completed.session.rounds
+            if item.discussion_run is not None
+        ),
+        len(completed.session.decisions),
+    ) == counts
+    assert completed.session.final_theory is final_theory

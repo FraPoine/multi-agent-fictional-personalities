@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 import yaml
+from fastapi import APIRouter
 from tests.asgi_client import ASGITestClient
 
 from multi_agent_personalities.models import Persona
@@ -113,10 +114,26 @@ def create_synthetic_web_project(project_root: Path) -> None:
 @pytest.fixture
 def synthetic_web_client(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> Iterator[tuple[ASGITestClient, Path]]:
     project_root = tmp_path / "synthetic_project"
     output_root = project_root / "outputs"
     create_synthetic_web_project(project_root)
+
+    investigation_router = APIRouter()
+
+    @investigation_router.get(
+        "/investigations",
+        name="investigations_index",
+    )
+    async def synthetic_investigations_index() -> dict[str, str]:
+        return {"detail": "not part of the synthetic conversation fixture"}
+
+    monkeypatch.setattr(
+        web_module,
+        "create_investigation_router",
+        lambda **_: investigation_router,
+    )
     application = web_module.create_app(
         project_root=project_root,
         output_root=output_root,

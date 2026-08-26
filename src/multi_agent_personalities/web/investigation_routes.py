@@ -133,11 +133,17 @@ def _supported_configs(
     capabilities: InvestigationMockCapabilities,
 ) -> tuple[CharacterConfig, ...]:
     by_id = {config.character_id: config for config in catalogue.values()}
-    return tuple(
-        by_id[participant_id]
+    missing = tuple(
+        participant_id
         for participant_id in capabilities.participant_ids
-        if participant_id in by_id
+        if participant_id not in by_id
     )
+    if missing:
+        raise ValueError(
+            "investigation mock participant is missing from the catalogue: "
+            f"{missing[0]!r}"
+        )
+    return tuple(by_id[item] for item in capabilities.participant_ids)
 
 
 def _validate_investigation_creation_form(
