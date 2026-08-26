@@ -81,6 +81,17 @@
                     </section>
                 {% endif %}
 
+                {% if can_run_analyses %}
+                    <section class="analysis-control" aria-labelledby="analysis-control-title">
+                        <p class="eyebrow">Explicit investigation action</p>
+                        <h2 id="analysis-control-title">Independent investigator reasoning</h2>
+                        <p>Generate one isolated analysis for each investigator from the currently visible clues.</p>
+                        <form method="post" action="{{ url_for('run_investigation_analyses', session_id=record.session_id) }}">
+                            <button type="submit" class="primary-button">Run independent analyses</button>
+                        </form>
+                    </section>
+                {% endif %}
+
                 <section aria-labelledby="clues-title">
                     <h2 id="clues-title">Revealed clues</h2>
                     {% if not record.session.clues %}
@@ -110,6 +121,50 @@
                         </dl>
                     </section>
                 {% endif %}
+
+                {% for group in reasoning_groups %}
+                    <section class="reasoning-group" aria-labelledby="round-{{ group.round_index }}-analyses-title">
+                        <p class="eyebrow">Completed independent reasoning</p>
+                        <h2 id="round-{{ group.round_index }}-analyses-title">Round {{ group.round_index }} analyses</h2>
+                        <div class="analysis-grid">
+                            {% for analysis in group.analyses %}
+                                <article class="analysis-card">
+                                    <h3>{{ analysis.display_name }}</h3>
+                                    <h4>Facts</h4>
+                                    {% if analysis.facts %}<ul>{% for item in analysis.facts %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p>None recorded.</p>{% endif %}
+                                    <h4>Deductions</h4>
+                                    {% if analysis.deductions %}<ul>{% for item in analysis.deductions %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p>None recorded.</p>{% endif %}
+                                    <h4>Evidence</h4>
+                                    {% if analysis.evidence %}
+                                        <ul class="evidence-list">
+                                            {% for item in analysis.evidence %}<li><strong>{{ item.relation }} — Clue {{ item.clue_number }}</strong><span>{{ item.clue_text }}</span></li>{% endfor %}
+                                        </ul>
+                                    {% else %}<p>None referenced.</p>{% endif %}
+                                    <h4>Proposed leads</h4>
+                                    {% if analysis.proposed_leads %}<ul>{% for item in analysis.proposed_leads %}<li>{{ item }}</li>{% endfor %}</ul>{% else %}<p>None proposed.</p>{% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                        {% if group.hypotheses %}
+                            <div class="hypothesis-history">
+                                <h3>Hypotheses proposed in Round {{ group.round_index }}</h3>
+                                <ol>
+                                    {% for hypothesis in group.hypotheses %}
+                                        <li>
+                                            <p><strong>{{ hypothesis.status }}</strong> — {{ hypothesis.statement }}</p>
+                                            {% if hypothesis.evidence %}
+                                                <ul class="evidence-list">
+                                                    {% for item in hypothesis.evidence %}<li><strong>{{ item.relation }} — Clue {{ item.clue_number }}</strong><span>{{ item.clue_text }}</span></li>{% endfor %}
+                                                </ul>
+                                            {% endif %}
+                                            {% if hypothesis.previous_hypothesis_id %}<p class="metadata-note">Revises an earlier investigation hypothesis.</p>{% endif %}
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            </div>
+                        {% endif %}
+                    </section>
+                {% endfor %}
             </div>
         </section>
     </main>

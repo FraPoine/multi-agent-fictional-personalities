@@ -11,11 +11,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
+    IndependentAnalysesResult,
     InvestigationMockCapabilities,
     investigation_mock_capabilities,
     reveal_clue,
+    run_independent_analyses,
 )
 from multi_agent_personalities.models import (
+    EvidenceReference,
     InvestigationRoundStatus,
     InvestigationStatus,
     validate_run_id,
@@ -46,6 +49,45 @@ class InvestigationCharacterPresentation:
 
     config: CharacterConfig
     selected: bool
+
+
+@dataclass(frozen=True)
+class InvestigationEvidencePresentation:
+    """One evidence relation resolved to user-facing clue content."""
+
+    relation: str
+    clue_number: int
+    clue_text: str
+
+
+@dataclass(frozen=True)
+class InvestigationAnalysisPresentation:
+    """One catalogue-identified analysis for server-side rendering."""
+
+    display_name: str
+    facts: tuple[str, ...]
+    deductions: tuple[str, ...]
+    evidence: tuple[InvestigationEvidencePresentation, ...]
+    proposed_leads: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class InvestigationHypothesisPresentation:
+    """One round-owned hypothesis without invented participant attribution."""
+
+    statement: str
+    status: str
+    evidence: tuple[InvestigationEvidencePresentation, ...]
+    previous_hypothesis_id: str | None
+
+
+@dataclass(frozen=True)
+class InvestigationReasoningGroupPresentation:
+    """Ordered analysis and hypothesis history belonging to one round."""
+
+    round_index: int
+    analyses: tuple[InvestigationAnalysisPresentation, ...]
+    hypotheses: tuple[InvestigationHypothesisPresentation, ...]
 
 
 def _supported_configs(
@@ -151,6 +193,89 @@ def _can_reveal_clue(record: InvestigationSessionRecord) -> bool:
     )
 
 
+def _can_run_analyses(record: InvestigationSessionRecord) -> bool:
+    session = record.session
+    return (
+        session.status is InvestigationStatus.ACTIVE
+        and bool(session.rounds)
+        and session.rounds[-1].status
+        is InvestigationRoundStatus.AWAITING_ANALYSES
+        and session.rounds[-1].round_index
+        <= record.runtime.capabilities.supported_rounds
+    )
+
+
+def _reasoning_groups(
+    record: InvestigationSessionRecord,
+) -> tuple[InvestigationReasoningGroupPresentation, ...]:
+    session = record.session
+    clue_by_id = {
+        clue.clue_id: (clue.reveal_order + 1, clue.text)
+        for clue in session.clues
+    }
+    config_by_id = {
+        config.character_id: config
+        for config in record.runtime.character_configs
+    }
+
+    def evidence_items(references: Sequence[EvidenceReference]) -> tuple[
+        InvestigationEvidencePresentation, ...
+    ]:
+        resolved = []
+        for reference in references:
+            clue_number, clue_text = clue_by_id[reference.clue_id]
+            resolved.append(
+                InvestigationEvidencePresentation(
+                    relation=reference.relation.value.title(),
+                    clue_number=clue_number,
+                    clue_text=clue_text,
+                )
+            )
+        return tuple(resolved)
+
+    groups = []
+    for investigation_round in session.rounds:
+        analysis_by_participant = {
+            analysis.agent_id: analysis
+            for analysis in session.analyses
+            if analysis.round_id == investigation_round.round_id
+        }
+        analyses = tuple(
+            InvestigationAnalysisPresentation(
+                display_name=config_by_id[participant_id].display_name,
+                facts=analysis_by_participant[participant_id].facts,
+                deductions=analysis_by_participant[participant_id].deductions,
+                evidence=evidence_items(
+                    analysis_by_participant[participant_id].evidence
+                ),
+                proposed_leads=(
+                    analysis_by_participant[participant_id].proposed_leads
+                ),
+            )
+            for participant_id in session.participant_ids
+            if participant_id in analysis_by_participant
+        )
+        hypotheses = tuple(
+            InvestigationHypothesisPresentation(
+                statement=hypothesis.statement,
+                status=hypothesis.status.value.title(),
+                evidence=evidence_items(hypothesis.evidence),
+                previous_hypothesis_id=hypothesis.previous_hypothesis_id,
+            )
+            for hypothesis in session.hypotheses
+            if hypothesis.round_id == investigation_round.round_id
+        )
+        if analyses or hypotheses:
+            groups.append(
+                InvestigationReasoningGroupPresentation(
+                    round_index=investigation_round.round_index,
+                    analyses=analyses,
+                    hypotheses=hypotheses,
+                )
+            )
+    return tuple(groups)
+
+
 def _workflow_state(record: InvestigationSessionRecord) -> str:
     if not record.session.rounds:
         return "Awaiting first clue"
@@ -237,6 +362,8 @@ def create_investigation_router(
                 "workflow_state": _workflow_state(record),
                 "workflow_message": _workflow_message(record),
                 "can_reveal_clue": _can_reveal_clue(record),
+                "can_run_analyses": _can_run_analyses(record),
+                "reasoning_groups": _reasoning_groups(record),
                 "clue_value": clue_value,
                 "clue_error": clue_error,
                 "max_clue_length": MAX_CLUE_LENGTH,
@@ -479,6 +606,94 @@ def create_investigation_router(
                 message=(
                     "The clue could not be revealed because of an unexpected "
                     "local error. The previous investigation state was kept."
+                ),
+            )
+
+        return RedirectResponse(
+            url=f"/investigations/{session_id}",
+            status_code=303,
+        )
+
+    @router.post(
+        "/investigations/{session_id}/analyses",
+        response_class=HTMLResponse,
+        name="run_investigation_analyses",
+    )
+    async def run_investigation_analyses(
+        request: Request,
+        session_id: str,
+    ) -> Response:
+        """Generate all current-round analyses as one locked mutation."""
+        try:
+            validate_run_id(session_id)
+        except ValueError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+
+        def mutate_analyses(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[IndependentAnalysesResult]:
+            if not _can_run_analyses(record):
+                raise InvestigationWorkflowConflictError(
+                    "independent analyses are unavailable in the latest state"
+                )
+            result = run_independent_analyses(
+                record.session,
+                participant_bindings=record.runtime.participants,
+                id_factory=record.runtime.id_factory,
+            )
+            return InvestigationSessionMutation(
+                session=result.session,
+                result=result,
+            )
+
+        try:
+            _updated_record, _analysis_result = registry.mutate(
+                session_id,
+                mutate_analyses,
+            )
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message=(
+                    "The requested investigation is not available in this "
+                    "local process."
+                ),
+            )
+        except InvestigationWorkflowConflictError:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Independent analyses could not run",
+                message=(
+                    "Independent analyses cannot run in the investigation's "
+                    "current workflow state. Refresh the session page and "
+                    "try again."
+                ),
+            )
+        except Exception:
+            logger.exception("Local independent analysis generation failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Independent analyses failed",
+                message=(
+                    "Independent analyses could not be completed because of "
+                    "an unexpected local generation error. The previous "
+                    "investigation state was kept."
                 ),
             )
 

@@ -995,6 +995,7 @@ body {
 }
 
 .clue-control,
+.analysis-control,
 .clue-history li {
     padding: var(--spacing-md);
     border: 1px solid var(--border-default);
@@ -1022,6 +1023,34 @@ body {
 .clue-text {
     margin-top: var(--spacing-xs);
     white-space: pre-wrap;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+}
+
+.analysis-card,
+.hypothesis-history {
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-medium);
+    background: var(--surface-subtle);
+}
+
+.analysis-card h4 {
+    margin-top: var(--spacing-md);
+}
+
+.evidence-list li {
+    display: grid;
+    gap: var(--spacing-xs);
+}
+
+.hypothesis-history {
+    margin-top: var(--spacing-md);
 }
 
 .investigation-empty-state {

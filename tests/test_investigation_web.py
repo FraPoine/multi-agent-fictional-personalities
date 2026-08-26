@@ -9,7 +9,12 @@ import pytest
 
 from tests.asgi_client import ASGITestClient
 
-from multi_agent_personalities.application import build_investigation_mock_runtime
+import multi_agent_personalities.web.investigation_routes as investigation_routes
+from multi_agent_personalities.application import (
+    StructuredOutputError,
+    build_investigation_mock_runtime,
+    reveal_clue,
+)
 from multi_agent_personalities.models import (
     InvestigationRoundStatus,
     InvestigationStatus,
@@ -174,6 +179,11 @@ def test_first_clue_uses_303_prg_and_waits_for_analyses(
     assert "Clue 1 · Round 1" in detail.text
     assert "Round 1" in detail.text
     assert "Waiting for independent analyses." in detail.text
+    assert "Run independent analyses" in detail.text
+    assert (
+        'action="http://testserver/investigations/session_001/analyses"'
+        in detail.text
+    )
     assert (
         'action="http://testserver/investigations/session_001/clues"'
         not in detail.text
@@ -183,6 +193,356 @@ def test_first_clue_uses_303_prg_and_waits_for_analyses(
     assert registry.get("session_001") is updated
     assert registry.session_ids == ("session_001",)
     assert_no_output(output_root)
+
+
+def test_first_round_analyses_use_303_prg_and_render_reasoning(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, output_root = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    before = registry.get("session_001")
+    runtime = before.runtime
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/investigations/session_001"
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.clues == before.session.clues
+    assert len(updated.session.rounds) == 1
+    current_round = updated.session.rounds[-1]
+    assert current_round.status is InvestigationRoundStatus.AWAITING_DISCUSSION
+    assert tuple(item.agent_id for item in updated.session.analyses) == (
+        updated.session.participant_ids
+    )
+    assert current_round.analysis_ids == tuple(
+        item.analysis_id for item in updated.session.analyses
+    )
+    assert all(
+        item.round_id == current_round.round_id
+        for item in updated.session.analyses
+    )
+    assert len(updated.session.hypotheses) == 1
+    assert updated.session.hypotheses[0].round_id == current_round.round_id
+
+    detail = client.get(response.headers["location"])
+    assert_html(detail, 200)
+    assert "Waiting for group discussion." in detail.text
+    assert detail.text.index("SHERLOCK_R1") < detail.text.index("POIROT_R1")
+    assert "Facts" in detail.text
+    assert "Deductions" in detail.text
+    assert "Supports — Clue 1" in detail.text
+    assert "Proposed leads" in detail.text
+    assert "Inspect the ground beneath the window." in detail.text
+    assert "Hypotheses proposed in Round 1" in detail.text
+    assert "The visitor left through the study window." in detail.text
+    assert "Sherlock hypotheses" not in detail.text
+    assert "Poirot hypotheses" not in detail.text
+    assert "Run independent analyses" not in detail.text
+    for suffix in ("discussion", "decision", "finalize"):
+        assert f"/investigations/session_001/{suffix}" not in detail.text
+    for _ in range(2):
+        assert client.get(response.headers["location"]).status_code == 200
+    assert registry.get("session_001") is updated
+    assert_no_output(output_root)
+
+
+def test_analyses_before_a_clue_are_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    before = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert_html(response, 409)
+    assert "cannot run" in response.text
+    assert registry.get("session_001") is before
+    assert before.session.rounds == before.session.analyses == ()
+
+
+def test_repeated_analyses_are_409_and_keep_committed_record(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    client.post("/investigations/session_001/analyses")
+    committed = registry.get("session_001")
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is committed
+    assert len(committed.session.analyses) == 2
+    assert len(committed.session.hypotheses) == 1
+
+
+@pytest.mark.parametrize("session_id", ["bad$id", "session_999"])
+def test_analysis_post_to_malformed_or_unknown_session_is_404(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    session_id: str,
+) -> None:
+    client, registry, output_root = investigation_client
+
+    response = client.post(f"/investigations/{session_id}/analyses")
+
+    assert_html(response, 404)
+    assert "Traceback" not in response.text
+    assert registry.session_ids == ()
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        StructuredOutputError("private malformed generated JSON"),
+        FileNotFoundError("/private/fixture/path.json"),
+        ValueError("private provider metadata mismatch"),
+    ],
+)
+def test_analysis_generation_failures_are_safe_500_and_atomic(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    monkeypatch: pytest.MonkeyPatch,
+    failure: Exception,
+) -> None:
+    client, registry, output_root = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/clues",
+        data={"clue": "The study window was open."},
+    )
+    before = registry.get("session_001")
+
+    def fail(*args: object, **kwargs: object) -> None:
+        raise failure
+
+    monkeypatch.setattr(investigation_routes, "run_independent_analyses", fail)
+    response = client.post("/investigations/session_001/analyses")
+
+    assert_html(response, 500)
+    assert response.status_code != 409
+    assert "unexpected local generation error" in response.text
+    assert "private" not in response.text
+    assert "Traceback" not in response.text
+    assert registry.get("session_001") is before
+    assert before.session.analyses == before.session.hypotheses == ()
+    assert before.session.rounds[-1].analysis_ids == ()
+    assert_no_output(output_root)
+
+
+@pytest.mark.parametrize(
+    "trace_attribute",
+    [
+        "round_one_analyses",
+        "round_one_discussion",
+        "round_one_decision",
+        "finalization",
+    ],
+)
+def test_analysis_wrong_later_phase_is_409_without_mutation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    trace_attribute: str,
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    snapshot = getattr(trace, trace_attribute)
+    session = getattr(snapshot, "session", snapshot)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=session,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+
+
+def test_second_round_analyses_preserve_first_round_history(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=trace.round_two_revealed,
+            runtime=runtime,
+        )
+    )
+    round_one_analyses = before.session.analyses
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert response.status_code == 303
+    updated = registry.get("session_001")
+    assert updated.runtime is runtime
+    assert updated.session.analyses[:2] == round_one_analyses
+    assert len(updated.session.analyses) == 4
+    assert all(
+        item.round_id == updated.session.rounds[1].round_id
+        for item in updated.session.analyses[2:]
+    )
+    assert updated.session.rounds[1].status is (
+        InvestigationRoundStatus.AWAITING_DISCUSSION
+    )
+    detail = client.get(response.headers["location"])
+    assert "Round 1 analyses" in detail.text
+    assert "Round 2 analyses" in detail.text
+    assert "Waiting for group discussion." in detail.text
+    assert "no more clue rounds available" not in detail.text
+    assert 'name="clue"' not in detail.text
+
+
+def test_session_two_analysis_namespace_and_isolation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations",
+        data={**VALID_FORM, "introduction": "Second namespace case."},
+    )
+    first_before = registry.get("session_001")
+    client.post(
+        "/investigations/session_002/clues",
+        data={"clue": "A clue scoped to session two."},
+    )
+
+    response = client.post("/investigations/session_002/analyses")
+
+    assert response.status_code == 303
+    assert registry.get("session_001") is first_before
+    second = registry.get("session_002")
+    serialized = second.session.model_dump_json()
+    assert len(second.session.analyses) == 2
+    assert "session_002_analysis_" in serialized
+    assert "session_002_hypothesis_" in serialized
+    assert "session_001_" not in serialized
+
+
+def test_unsupported_third_round_analysis_is_409_before_generation(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    third_round = reveal_clue(
+        trace.round_two_decision.session,
+        clue_text="A domain-valid clue beyond the mock fixture capability.",
+        id_factory=runtime.id_factory,
+    )
+    before = registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=third_round,
+            runtime=runtime,
+        )
+    )
+
+    response = client.post("/investigations/session_001/analyses")
+
+    assert_html(response, 409)
+    assert registry.get("session_001") is before
+    assert before.session.rounds[-1].round_index == 3
+    assert before.session.analyses == trace.round_two_decision.session.analyses
+
+
+def test_generated_reasoning_text_is_html_escaped(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    payload = trace.round_one_analyses.session.model_dump(mode="python")
+    payload["analyses"][0]["facts"] = ("<script>analysis()</script>",)
+    payload["hypotheses"][0]["statement"] = "<img src=x onerror=theory()>"
+    escaped_session = type(trace.round_one_analyses.session).model_validate(payload)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=escaped_session,
+            runtime=runtime,
+        )
+    )
+
+    detail = client.get("/investigations/session_001")
+
+    assert "<script>analysis()" not in detail.text
+    assert "&lt;script&gt;analysis()&lt;/script&gt;" in detail.text
+    assert "<img src=x" not in detail.text
+    assert "&lt;img src=x onerror=theory()&gt;" in detail.text
 
 
 @pytest.mark.parametrize(
@@ -716,6 +1076,6 @@ def test_later_investigation_mutation_routes_do_not_exist(
     ],
 ) -> None:
     client, _, _ = investigation_client
-    for suffix in ("analyses", "discussion", "decision", "finalize"):
+    for suffix in ("discussion", "decision", "finalize"):
         response = client.post(f"/investigations/session_001/{suffix}")
         assert response.status_code == 404
