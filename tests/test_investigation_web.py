@@ -313,6 +313,48 @@ def _register_completed_mock_record(
     )
 
 
+@pytest.mark.parametrize(
+    ("trace_attribute", "expected_message"),
+    [
+        ("round_two_revealed", "Waiting for independent analyses."),
+        ("round_two_analyses", "Waiting for group discussion."),
+        ("round_two_discussion", "Waiting for a group decision."),
+    ],
+)
+def test_active_second_round_preserves_current_workflow_message(
+    investigation_client: tuple[
+        ASGITestClient,
+        InMemoryInvestigationRegistry,
+        Path,
+    ],
+    trace_attribute: str,
+    expected_message: str,
+) -> None:
+    client, registry, _ = investigation_client
+    trace = run_two_round_workflow()
+    snapshot = getattr(trace, trace_attribute)
+    session = getattr(snapshot, "session", snapshot)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"),
+        session_sequence=1,
+        project_root=ROOT,
+    )
+    registry.register(
+        InvestigationSessionRecord(
+            session_sequence=1,
+            session=session,
+            runtime=runtime,
+        )
+    )
+
+    detail = client.get("/investigations/session_001")
+
+    assert_html(detail, 200)
+    assert expected_message in detail.text
+    assert "no more clue rounds available" not in detail.text
+    assert 'name="clue"' not in detail.text
+
+
 @pytest.mark.parametrize("completed_session", [False, True])
 def test_exhausted_or_completed_session_rejects_clue_without_mutation(
     investigation_client: tuple[

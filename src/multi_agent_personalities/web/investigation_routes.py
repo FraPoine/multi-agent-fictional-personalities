@@ -161,14 +161,16 @@ def _workflow_message(record: InvestigationSessionRecord) -> str:
     session = record.session
     if session.status is InvestigationStatus.COMPLETED:
         return "This investigation is completed."
-    if (
-        len(session.rounds)
-        >= record.runtime.capabilities.supported_rounds
-    ):
-        return "The deterministic mock scenario has no more clue rounds available."
     if not session.rounds:
         return "Waiting for the Game Master to reveal the first clue."
     status = session.rounds[-1].status
+    if status is InvestigationRoundStatus.COMPLETED:
+        if len(session.rounds) >= record.runtime.capabilities.supported_rounds:
+            return (
+                "The deterministic mock scenario has no more clue rounds "
+                "available."
+            )
+        return "Waiting for the Game Master to reveal the next clue."
     messages = {
         InvestigationRoundStatus.AWAITING_ANALYSES: (
             "Waiting for independent analyses."
@@ -178,9 +180,6 @@ def _workflow_message(record: InvestigationSessionRecord) -> str:
         ),
         InvestigationRoundStatus.AWAITING_DECISION: (
             "Waiting for a group decision."
-        ),
-        InvestigationRoundStatus.COMPLETED: (
-            "Waiting for the Game Master to reveal the next clue."
         ),
     }
     return messages[status]
