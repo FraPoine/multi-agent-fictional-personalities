@@ -4,9 +4,9 @@
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.
 
-This document distinguishes the completed offline conversation and Sprint 6
-investigation workflows from later provider, delivery, persistence, and
-experiment work.
+This document distinguishes the completed offline conversation and
+investigation application workflows, plus the implemented Sprint 7 local web
+delivery, from later live-provider, durable-persistence, and experiment work.
 
 The first delivered interface was the CLI. Sprint 4 completed an additional
 minimal local FastAPI/Jinja web interface over the same importable conversation
@@ -61,15 +61,15 @@ paths reuse the agent runtime, deterministic round-robin simulation, and atomic
 conversation persistence. A two-character mock evaluation builder, rater app,
 and analyzer are also implemented as technical tooling, not a scientific
 experiment. Selector abstractions, engine injection, participant-bound mocks,
-structured generation results, investigation models, and the deterministic
-Sprint 6 investigation application workflow are implemented. A dynamic
-manager, investigation delivery/persistence, and live provider remain later
-work.
+structured generation results, investigation models, the deterministic Sprint
+6 investigation application workflow, and its Sprint 7 browser delivery are
+implemented. A dynamic manager, investigation persistence, and live provider
+remain later work.
 
 The implemented investigation dependency flow is:
 
 ```text
-Caller / future delivery layer
+Main FastAPI investigation router / other caller
         ↓
 Investigation application service
         ├── deterministic ID factory
@@ -87,7 +87,8 @@ Immutable InvestigationSession aggregate
 Each operation reconstructs and validates one complete immutable snapshot or
 raises without returning a partial update. A decision ends its round and pauses
 the workflow; finalization is separate and explicit. No investigation
-persistence, CLI, or web connection is implemented.
+persistence or CLI is implemented. The web layer stores the latest snapshots
+and their runtime dependencies only in an app-owned process-local registry.
 
 ## Main components
 
@@ -458,8 +459,9 @@ with the stable provider-neutral `investigation.final_theory` task, parses the
 result through the shared structured adapter, validates nonempty hypothesis and
 evidence references, and assigns the service-owned deterministic final-theory
 ID. The theory and completed status are inserted in one aggregate rebuild.
-There is no automatic finalization, official-solution scoring, persistence, or
-investigation web exposure.
+There is no automatic finalization, official-solution scoring, or persistence.
+The main web application exposes this operation only through an explicit
+finalization POST when the configured mock scenario is exhausted.
 
 ## Synthetic two-round workflow test
 
@@ -469,10 +471,11 @@ window in round one, pauses after the first decision, then explicitly reveals
 that wet soil below the window has no footprints for round two. The workflow
 again pauses after its decision and completes only when the caller invokes
 finalization. Committed mock fixtures drive every provider boundary with no
-network or secrets. The test exists to verify deterministic orchestration,
-temporal clue visibility, metadata propagation, and aggregate serialization;
-it does not provide persistence, UI exposure, live-provider support, scoring,
-or compatibility with any commercial case.
+network or secrets. The service-level test verifies deterministic
+orchestration, temporal clue visibility, metadata propagation, and aggregate
+serialization. Separate HTTP E2E tests verify browser delivery; neither layer
+provides persistence, live-provider support, scoring, or compatibility with
+any commercial case.
 
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
@@ -622,6 +625,40 @@ Simulation or persistence failure
 → web layer renders a concise message
 → failure is not reported as success
 ```
+
+## Investigation web delivery and process-local state
+
+Sprint 7 mounts an investigation router in the same main FastAPI application
+as the conversation UI. The blind-rater application remains separate. The
+router provides the list/create page, one canonical state-driven detail page,
+and explicit POST routes for clue revelation, analyses, discussion, decision,
+and finalization. Successful mutations use `303` POST/Redirect/GET; GET routes
+only render the latest snapshot.
+
+`InMemoryInvestigationRegistry` is injected by the application factory and
+owns monotonic session allocation plus one record per process-local session.
+Each `InvestigationSessionRecord` pairs the latest immutable domain aggregate
+with its `InvestigationMockRuntime`; providers, participant bindings,
+capabilities, and locks therefore remain outside the domain model. A
+per-session lock reads the latest record, runs one application operation, and
+atomically replaces the record only after a complete validated result. Locks
+for distinct sessions are independent.
+
+Runtime assembly resolves participants and presentation from the character
+catalogue, constructs participant-specific fixture providers, scopes
+structured mock references to the owning `session_NNN` namespace, and exposes
+the fixed mock capability of two rounds and two discussion turns. The browser
+stops offering clues when that fixture-backed capability is exhausted and then
+offers explicit finalization. This is not a domain minimum or maximum-round
+rule, and the web layer does not reinterpret application invariants.
+
+The registry writes no investigation JSON, JSONL, Markdown, database, or
+browser storage. Navigation works only while one application process remains
+alive; restart discards all investigation sessions. This boundary is separate
+from the unchanged conversation artifact persistence described elsewhere.
+Validation, lookup, workflow conflicts, and unexpected local failures render
+readable `400`, `404`, `409`, and `500` responses while retaining the last
+valid registered snapshot.
 
 ## Logger
 

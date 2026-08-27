@@ -94,6 +94,15 @@ execution, automatic clues/actions/finalization, scoring, or recognizability
 evaluation of investigation output. See the
 [Sprint 6 completion record](docs/sprint_6_completion.md).
 
+Sprint 7 exposes that workflow in the existing main FastAPI/Jinja application.
+The browser delivery uses catalogue-backed mock participants, a process-local
+in-memory registry, one canonical state-driven detail page, and an explicit
+Game Master POST for each transition. The current mock browser scenario
+supports two rounds and then offers explicit finalization; this is a runtime
+capability, not a two-round domain invariant. Investigation state is not
+persisted and vanishes when the application process restarts. See the
+[Sprint 7 verification record](docs/sprint_7_completion.md).
+
 ### Implemented workflows
 
 - validated persona loading and deterministic local single-agent generation;
@@ -101,7 +110,8 @@ evaluation of investigation output. See the
 - atomic persistence for conversation runs;
 - technical evaluation-pilot preparation, rating, and analysis tooling; and
 - deterministic two-round mock investigation orchestration with explicit clue
-  revelation, analysis, discussion, decisions, pauses, and finalization.
+  revelation, analysis, discussion, decisions, pauses, and finalization,
+  available through the main local web application.
 
 ## Technical blind-evaluation pilot
 
@@ -153,6 +163,13 @@ python scripts/run_web.py
 Open <http://127.0.0.1:8000/> and stop the server with `Ctrl+C`. The startup
 command resolves the repository's `src/` layout itself; it does not require an
 editable install or a manually configured `PYTHONPATH`.
+
+The conversation page is at `/`. The investigation list and creation page is
+at <http://127.0.0.1:8000/investigations>. Investigation execution uses the
+committed deterministic mock fixtures, requires no OpenAI API key, and writes
+no investigation session artifacts. Its process-local sessions are lost on
+server restart; conversation runs continue to use the persistence described
+below.
 
 ## Local web interface
 
@@ -259,6 +276,8 @@ Focused web checks are also available:
 ```bash
 python -m pytest tests/test_web_app.py -q
 python -m pytest tests/test_web_startup.py -q
+python -m pytest tests/test_investigation_web.py -q
+python -m pytest tests/test_investigation_web_e2e.py -q
 ```
 
 The complete investigation workflow check is:
@@ -286,17 +305,20 @@ critical-path tests reject attempted network access.
   history browser.
 - Normal application scheduling uses deterministic round-robin. There is no
   dynamic conversation manager or content-dependent speaker priority.
-- Investigation has no persistence, CLI, web UI, live provider, automatic clue
+- Investigation has no persistence, CLI, live provider, automatic clue
   generation, automatic lead execution, automatic finalization, official-case
-  scoring, or recognizability evaluation.
+  scoring, or recognizability evaluation. Its implemented web UI is local,
+  deterministic, mock-only, and process-local.
 - Real token usage, latency, request IDs, retries, and monetary costs are not
   collected.
 
 ## Future work
 
-Sprint 6's offline mock investigation workflow is complete and verified.
-Sprint 7 adds its web UI, Sprint 8 generalizes the
-recognizability evaluation, and Sprint 9 completes the offline system. Live-
+Sprint 6's offline mock investigation workflow and Sprint 7's local browser
+delivery are implemented. Sprint 7 automated and terminal HTTP verification is
+recorded, while final interactive browser smoke confirmation remains pending.
+Sprint 8 generalizes the recognizability evaluation, and Sprint 9 completes
+the offline system. Live-
 provider integration, real observability, characters three and four,
 pre-registration, and real experimental data remain later work.
 
@@ -342,6 +364,9 @@ guaranteed to be committed.
 - [Sprint 4 smoke test](docs/sprint_4_smoke_test.md)
 - [Sprint 5 plan](docs/sprint_5_plan.md)
 - [Sprint 5 completion record](docs/sprint_5_completion.md)
+- [Sprint 6 completion record](docs/sprint_6_completion.md)
+- [Sprint 7 plan](docs/sprint_7_plan.md)
+- [Sprint 7 verification record](docs/sprint_7_completion.md)
 
 ## Historical development details
 

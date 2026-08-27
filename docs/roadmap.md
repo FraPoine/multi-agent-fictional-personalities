@@ -63,7 +63,15 @@ real investigation game.
 
 ## Sprint 7 — Investigation web UI
 
-- Add a local interface over the mock investigation workflow.
+- Implementation and automated verification are complete. The existing main
+  FastAPI application now provides a catalogue-backed deterministic mock
+  investigation UI with process-local state, explicit Game Master transitions,
+  a two-round browser-runtime capability, and explicit finalization.
+- Full HTTP workflow and interleaved-session isolation tests pass offline. The
+  investigation path writes no session artifacts and state disappears on
+  restart. Final interactive browser smoke confirmation remains pending, so
+  Sprint 7 closure is not yet declared complete. See the
+  [Sprint 7 verification record](sprint_7_completion.md).
 
 ## Sprint 8 — Generic recognizability evaluation
 

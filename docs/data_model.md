@@ -457,8 +457,9 @@ are unique within a validated collection.
 
 `EvidenceReference` points to a clue through its stable ID rather than copying
 the clue text. Deductions, explanations, and agent interpretations belong to
-the implemented reasoning records below. Investigation-session persistence,
-UI loading and provider-driven clue disclosure are not implemented.
+the implemented reasoning records below. Investigation-session persistence and
+provider-driven clue disclosure are not implemented; the Sprint 7 browser
+renders these records from process-local state.
 
 ## 8. Investigation reasoning and decisions
 
@@ -528,8 +529,8 @@ in both directions. Non-completed rounds have no decision, while a completed
 round has exactly one valid linked decision. A completed round may still have
 no hypotheses and a decision may keep an empty `hypothesis_ids` tuple.
 Cross-record referential integrity is enforced without automatic hypothesis or
-decision execution. Provider-neutral prompt and generation orchestration is
-implemented; investigation persistence and UI are not.
+decision execution. Provider-neutral prompt and generation orchestration and
+local web delivery are implemented; investigation persistence is not.
 
 ### InvestigationSession aggregate
 
@@ -571,9 +572,36 @@ without clues, analyses, hypotheses, decisions, or a final theory. Only a
 `completed` session requires a `FinalTheory`. The first stateless operations
 create an active session and explicitly reveal one caller-supplied clue while
 opening its round; they require an immutable deterministic ID factory and do
-not perform a `setup`-to-`active` transition. No complete controller, game loop,
-persistence, UI, later-round orchestration, or automatic clue disclosure
-exists.
+not perform a `setup`-to-`active` transition. No autonomous controller, game
+loop, persistence, or automatic clue disclosure exists. The implemented web
+delivery invokes these operations one explicit action at a time.
+
+### Web registry records are outside the aggregate
+
+Sprint 7 adds no runtime fields to `InvestigationSession`. The web application
+instead owns an `InMemoryInvestigationRegistry` whose process-local records
+have this delivery/runtime shape:
+
+```text
+InvestigationSessionRecord
+├── session_sequence
+├── session: InvestigationSession
+└── runtime: InvestigationMockRuntime
+```
+
+The runtime contains the deterministic ID factory, catalogue-derived character
+configuration, participant/provider bindings, decision and final-theory
+providers, and mock capabilities. Registry locks and allocation counters are
+also infrastructure state, not Pydantic domain fields. A successful mutation
+replaces the record with a new immutable session snapshot while retaining its
+runtime; failed mutations retain the prior record.
+
+The current runtime advertises two supported clue rounds and two discussion
+turns because that is the committed fixture inventory. The aggregate and its
+public operations do not encode a two-round limit. Final-theory semantics are
+unchanged: only an explicit successful finalization creates both the theory
+and `completed` status. Registry records are neither serialized nor restored,
+and application restart discards them.
 
 ### Investigation provider payloads
 
@@ -610,8 +638,9 @@ the provider result traverses the same structured adapter. The service owns
 `session_NNN_final_theory` identity and atomically adds the theory together
 with `completed` status. The aggregate enforces both directions: completed
 sessions require a final theory, and non-completed sessions cannot contain one.
-`ready_for_final` does not trigger generation. No official-solution scoring,
-persistence, or web route is implemented.
+`ready_for_final` does not trigger generation. No official-solution scoring or
+persistence is implemented. The web finalization route delegates to this
+operation only after an explicit Game Master submission.
 
 Prompt context comes from four version-1 files under `prompts/`. Their closed
 placeholder contracts are loaded and rendered in the application layer, while

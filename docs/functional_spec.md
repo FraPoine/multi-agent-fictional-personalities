@@ -5,8 +5,8 @@
 This document describes what the system should do from the point of view of its users.
 
 The system supports the creation, simulation, and blind recognizability
-evaluation of persona-seeded fictional-character agents. It also plans a
-user-moderated *Sherlock Holmes: Consulting Detective* capability in which the
+evaluation of persona-seeded fictional-character agents. It also implements a
+deterministic mock, user-moderated investigation capability in which the
 project user controls case information. Recognizability is the primary
 quantitative experiment; investigation behavior is secondary and exploratory.
 
@@ -36,8 +36,9 @@ The project user needs to:
 - inspect transcripts and logs;
 - export evaluation trials;
 - analyze results.
-- act as investigation game master by supplying an introduction and revealing
-  clues progressively in future investigation sessions.
+- act as investigation Game Master through the local web interface by
+  supplying an introduction, revealing clues, and explicitly requesting each
+  reasoning phase and finalization.
 
 ### 2. Rater
 
@@ -405,8 +406,59 @@ Conceptual entities include `InvestigationSession`, `Clue`,
 `active`; only explicit finalization creates `completed`, and final theory and
 completed status require each other.
 
-Investigation persistence, CLI/web delivery, live providers, automatic clues
-or lead execution, scoring, and recognizability evaluation remain future work.
+Investigation persistence, CLI delivery, live providers, automatic clues or
+lead execution, scoring, and recognizability evaluation remain future work.
+The local deterministic browser delivery described below is implemented.
+
+## F11 — Local moderated investigation web interface
+
+### Description
+
+The existing main FastAPI/Jinja application exposes the Sprint 6 workflow to a
+Game Master without changing its domain rules. `GET /investigations` lists
+process-local sessions and provides catalogue-backed creation. Each session is
+rendered at one canonical `/investigations/{session_id}` detail page whose
+controls reflect the latest immutable snapshot.
+
+### Explicit browser flow
+
+```text
+create → reveal clue → analyses → discussion → decision → Game Master pause
+→ reveal next clue → analyses → discussion → decision → mock exhaustion
+→ explicit finalization → completed session and final theory
+```
+
+Every mutation requires its own POST and successful mutations redirect with
+`303` to the canonical detail page. GET and refresh are side-effect free. A
+decision completes only its round and never creates another round or finalizes
+the session. The current fixture-backed runtime supports two clue rounds and
+two discussion turns; after exhaustion the page removes the clue action and
+offers finalization. This capability is not a general domain round limit.
+
+### State and error behaviour
+
+- The main app owns an in-memory registry; sessions survive navigation within
+  one process but disappear on restart.
+- Investigation actions create no investigation JSON, JSONL, Markdown,
+  database, or browser-storage records. Existing conversation persistence is
+  unchanged and separate.
+- Session runtimes and generated references are independently scoped to their
+  deterministic `session_NNN` namespace.
+- Invalid input, unknown sessions, stale/wrong-phase actions, and unexpected
+  local failures render readable `400`, `404`, `409`, and `500` responses.
+  Failed operations retain the latest valid snapshot.
+- The deterministic mock flow requires no network access or OpenAI API key.
+
+### Acceptance criteria
+
+- Sherlock Holmes and Hercule Poirot are selected through the validated
+  catalogue and displayed in configured participant order.
+- Clues, analyses, hypotheses, ordered discussion messages, decisions, pauses,
+  and the final theory remain visible as history accumulates.
+- No phase executes automatically, and completed sessions expose no mutation
+  controls.
+- Two sessions can be advanced independently without record or identifier
+  leakage.
 
 ## Non-functional requirements
 
@@ -480,6 +532,13 @@ evaluation statistics, or live-provider configuration.
 The implemented technical-pilot rater interface remains separate: it presents
 anonymized mock evaluation trials and collects local responses without exposing
 ground truth. It is not the Sprint 4 conversation UI or a final experiment.
+
+The main app also provides the Sprint 7 investigation interface. It presents
+only the currently valid explicit Game Master action, retains earlier-round
+reasoning on the canonical session page, and uses small loading/double-submit
+feedback without making JavaScript necessary for correctness. This is a local
+mock workflow, not an authentication, deployment, durable-history, or live-
+provider interface.
 
 ## Security and ethics
 
