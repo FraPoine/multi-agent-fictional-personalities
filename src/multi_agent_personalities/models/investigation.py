@@ -196,7 +196,9 @@ class AgentAnalysis(BaseModel):
 
     analysis_id: NonEmptyStr
     session_id: NonEmptyStr
-    round_id: NonEmptyStr
+    round_id: NonEmptyStr | None = None
+    origin_visit_id: NonEmptyStr | None = None
+    lead_id: NonEmptyStr | None = None
     agent_id: NonEmptyStr
     visible_clue_ids: tuple[NonEmptyStr, ...]
     facts: tuple[NonEmptyStr, ...] = ()
@@ -231,6 +233,20 @@ class AgentAnalysis(BaseModel):
             raise ValueError(
                 "analysis requires at least one fact, deduction, or proposed lead"
             )
+        legacy = self.round_id is not None
+        lead_visit = self.origin_visit_id is not None or self.lead_id is not None
+        if legacy == lead_visit:
+            raise ValueError(
+                "analysis requires either round_id or origin_visit_id with lead_id"
+            )
+        if lead_visit and (
+            self.origin_visit_id is None or self.lead_id is None
+        ):
+            raise ValueError(
+                "visit analysis requires origin_visit_id and lead_id"
+            )
+        if lead_visit and self.visible_clue_ids:
+            raise ValueError("visit analysis must not use visible_clue_ids")
         return self
 
 
@@ -241,7 +257,8 @@ class Hypothesis(BaseModel):
 
     hypothesis_id: NonEmptyStr
     session_id: NonEmptyStr
-    round_id: NonEmptyStr
+    round_id: NonEmptyStr | None = None
+    origin_visit_id: NonEmptyStr | None = None
     statement: StrictStr
     status: HypothesisStatus
     evidence: tuple[EvidenceReference, ...] = ()
@@ -266,6 +283,10 @@ class Hypothesis(BaseModel):
     def validate_revision_reference(self) -> "Hypothesis":
         if self.previous_hypothesis_id == self.hypothesis_id:
             raise ValueError("a hypothesis cannot reference itself as previous")
+        if (self.round_id is None) == (self.origin_visit_id is None):
+            raise ValueError(
+                "hypothesis requires exactly one round_id or origin_visit_id"
+            )
         return self
 
 
@@ -276,7 +297,9 @@ class GroupDecision(BaseModel):
 
     decision_id: NonEmptyStr
     session_id: NonEmptyStr
-    round_id: NonEmptyStr
+    round_id: NonEmptyStr | None = None
+    origin_visit_id: NonEmptyStr | None = None
+    lead_id: NonEmptyStr | None = None
     decision_type: GroupDecisionType
     summary: StrictStr
     analysis_ids: tuple[NonEmptyStr, ...] = ()
@@ -306,6 +329,20 @@ class GroupDecision(BaseModel):
         value: tuple[EvidenceReference, ...],
     ) -> tuple[EvidenceReference, ...]:
         return _reject_duplicate_evidence(value)
+
+    @model_validator(mode="after")
+    def validate_origin(self) -> "GroupDecision":
+        legacy = self.round_id is not None
+        lead_visit = self.origin_visit_id is not None or self.lead_id is not None
+        if legacy == lead_visit:
+            raise ValueError(
+                "decision requires either round_id or origin_visit_id with lead_id"
+            )
+        if lead_visit and (
+            self.origin_visit_id is None or self.lead_id is None
+        ):
+            raise ValueError("visit decision requires origin_visit_id and lead_id")
+        return self
 
 
 class FinalTheory(BaseModel):
@@ -417,30 +454,38 @@ class InvestigationSession(BaseModel):
                     f"hypothesis {hypothesis.hypothesis_id!r} belongs to "
                     "another session"
                 )
-            if hypothesis.round_id not in round_by_id:
+            owning_round = None
+            if hypothesis.round_id is not None:
+                if hypothesis.round_id not in round_by_id:
+                    raise ValueError(
+                        f"hypothesis {hypothesis.hypothesis_id!r} references an "
+                        "unknown round"
+                    )
+                owning_round = round_by_id[hypothesis.round_id]
+                for reference in hypothesis.evidence:
+                    if (
+                        reference.clue_id is not None
+                        and reference.clue_id not in clue_ids
+                    ):
+                        raise ValueError(
+                            f"hypothesis {hypothesis.hypothesis_id!r} references "
+                            "an unknown clue"
+                        )
+                    if (
+                        reference.clue_id is not None
+                        and reference.clue_id not in owning_round.visible_clue_ids
+                    ):
+                        raise ValueError(
+                            f"hypothesis {hypothesis.hypothesis_id!r} references "
+                            "a clue outside its round visibility snapshot"
+                        )
+            elif hypothesis.origin_visit_id not in {
+                item.visit_id for item in self.visits
+            }:
                 raise ValueError(
                     f"hypothesis {hypothesis.hypothesis_id!r} references an "
-                    "unknown round"
+                    "unknown visit"
                 )
-
-            owning_round = round_by_id[hypothesis.round_id]
-            for reference in hypothesis.evidence:
-                if (
-                    reference.clue_id is not None
-                    and reference.clue_id not in clue_ids
-                ):
-                    raise ValueError(
-                        f"hypothesis {hypothesis.hypothesis_id!r} references "
-                        "an unknown clue"
-                    )
-                if (
-                    reference.clue_id is not None
-                    and reference.clue_id not in owning_round.visible_clue_ids
-                ):
-                    raise ValueError(
-                        f"hypothesis {hypothesis.hypothesis_id!r} references "
-                        "a clue outside its round visibility snapshot"
-                    )
 
             previous_id = hypothesis.previous_hypothesis_id
             if previous_id is None:
@@ -455,7 +500,7 @@ class InvestigationSession(BaseModel):
                 raise ValueError(
                     "previous hypothesis must belong to the same session"
                 )
-            if (
+            if owning_round is not None and previous.round_id is not None and (
                 round_by_id[previous.round_id].round_index
                 > owning_round.round_index
             ):
@@ -481,6 +526,24 @@ class InvestigationSession(BaseModel):
                 raise ValueError(
                     f"decision {decision.decision_id!r} belongs to another session"
                 )
+            if decision.round_id is None:
+                visit_by_id = {item.visit_id: item for item in self.visits}
+                if decision.origin_visit_id not in visit_by_id:
+                    raise ValueError(
+                        f"decision {decision.decision_id!r} references an unknown visit"
+                    )
+                visit = visit_by_id[decision.origin_visit_id]
+                if decision.lead_id != visit.lead_id:
+                    raise ValueError("decision lead_id must match its origin visit")
+                for analysis_id in decision.analysis_ids:
+                    if analysis_id not in analysis_by_id:
+                        raise ValueError("decision references an unknown analysis")
+                    if analysis_by_id[analysis_id].session_id != self.session_id:
+                        raise ValueError("decision analysis belongs to another session")
+                for hypothesis_id in decision.hypothesis_ids:
+                    if hypothesis_id not in hypothesis_positions:
+                        raise ValueError("decision references an unknown hypothesis")
+                continue
             if decision.round_id not in round_by_id:
                 raise ValueError(
                     f"decision {decision.decision_id!r} references an unknown round"
@@ -509,6 +572,10 @@ class InvestigationSession(BaseModel):
                 hypothesis = self.hypotheses[
                     hypothesis_positions[hypothesis_id]
                 ]
+                if hypothesis.round_id is None:
+                    raise ValueError(
+                        "legacy round decision cannot reference a visit hypothesis"
+                    )
                 hypothesis_round = round_by_id[hypothesis.round_id]
                 if hypothesis_round.round_index > owning_round.round_index:
                     raise ValueError(
@@ -555,6 +622,8 @@ class InvestigationSession(BaseModel):
                     )
 
         for decision in self.decisions:
+            if decision.round_id is None:
+                continue
             if (
                 round_by_id[decision.round_id].decision_id
                 != decision.decision_id
@@ -725,6 +794,15 @@ class InvestigationSession(BaseModel):
                     f"analysis {analysis.analysis_id!r} must belong to a "
                     "session participants collection"
                 )
+            if analysis.round_id is None:
+                visit_by_id = {item.visit_id: item for item in self.visits}
+                if analysis.origin_visit_id not in visit_by_id:
+                    raise ValueError(
+                        f"analysis {analysis.analysis_id!r} references an unknown visit"
+                    )
+                if analysis.lead_id != visit_by_id[analysis.origin_visit_id].lead_id:
+                    raise ValueError("analysis lead_id must match its origin visit")
+                continue
             if analysis.round_id not in round_by_id:
                 raise ValueError(
                     f"analysis {analysis.analysis_id!r} references an unknown round"

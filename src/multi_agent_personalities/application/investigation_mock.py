@@ -106,6 +106,25 @@ _PARTICIPANT_TASKS: Mapping[str, tuple[InvestigationMockTask, ...]] = (
     )
 )
 
+_LEAD_DISCUSSION_FIXTURES = {
+    SHERLOCK_HOLMES_ID: "lead_visit_sherlock_discussion.txt",
+    HERCULE_POIROT_ID: "lead_visit_poirot_discussion.txt",
+}
+
+
+def _lead_discussion_paths(
+    root: Path, participant_id: str
+) -> dict[str, Path]:
+    fixture = root / _LEAD_DISCUSSION_FIXTURES[participant_id]
+    return {
+        (
+            f"investigation.lead_visit.discussion.{participant_id}."
+            f"visit_{visit_index:04d}.segment_0001.turn_{turn_index:04d}"
+        ): fixture
+        for visit_index in range(1, 4)
+        for turn_index in range(1, 3)
+    }
+
 _DEFAULT_FIXTURES_ROOT = (
     Path(__file__).resolve().parents[3] / "tests" / "fixtures" / "investigation"
 )
@@ -177,7 +196,12 @@ def build_investigation_mock_bindings(
     participant_providers = MappingProxyType(
         {
             participant_id: _scope_provider(
-                MockProvider(_paths_for_tasks(root, tasks)),
+                MockProvider(
+                    {
+                        **_paths_for_tasks(root, tasks),
+                        **_lead_discussion_paths(root, participant_id),
+                    }
+                ),
                 target_session_id=target_session_id,
             )
             for participant_id, tasks in _PARTICIPANT_TASKS.items()
@@ -199,7 +223,14 @@ def build_investigation_mock_bindings(
         ),
         final_theory_provider=_scope_provider(
             MockProvider(
-                _paths_for_tasks(root, (InvestigationMockTask.FINAL_THEORY,))
+                {
+                    **_paths_for_tasks(
+                        root, (InvestigationMockTask.FINAL_THEORY,)
+                    ),
+                    "investigation.lead_visit.final_theory": (
+                        root / "lead_visit_final_theory.json"
+                    ),
+                }
             ),
             target_session_id=target_session_id,
         ),

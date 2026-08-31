@@ -99,11 +99,13 @@ def generate_reply(
     provider_name: str,
     model_name: str | None = None,
     timestamp: datetime | None = None,
+    task_name: str = "agent_reply",
 ) -> Message:
     """Generate exactly one message for a caller-selected persona and turn."""
     _require_non_empty(topic, "topic")
     _require_non_empty(run_id, "run_id")
     _require_non_empty(provider_name, "provider_name")
+    _require_non_empty(task_name, "task_name")
     if turn_index < 0:
         raise ValueError("turn_index must be greater than or equal to zero")
     _validate_history(history, run_id=run_id, turn_index=turn_index)
@@ -119,7 +121,7 @@ def generate_reply(
     )
     result = provider.generate(
         resolved_prompt,
-        task_name="agent_reply",
+        task_name=task_name,
     )
     if provider_name != result.metadata.provider:
         raise ValueError(

@@ -36,6 +36,7 @@ class InvestigationPromptName(str, Enum):
     DISCUSSION = "discussion"
     DECISION = "decision"
     FINAL_THEORY = "final_theory"
+    LEAD_FINAL_THEORY = "lead_final_theory"
 
 
 _PROMPT_FILES = {
@@ -43,6 +44,9 @@ _PROMPT_FILES = {
     InvestigationPromptName.DISCUSSION: "investigation_discussion.md",
     InvestigationPromptName.DECISION: "investigation_decision.md",
     InvestigationPromptName.FINAL_THEORY: "investigation_final_theory.md",
+    InvestigationPromptName.LEAD_FINAL_THEORY: (
+        "investigation_lead_final_theory.md"
+    ),
 }
 
 _REQUIRED_PLACEHOLDERS = {
@@ -79,6 +83,16 @@ _REQUIRED_PLACEHOLDERS = {
         "session_id",
         "case_introduction",
         "visible_clues",
+        "hypotheses",
+        "decisions",
+    ),
+    InvestigationPromptName.LEAD_FINAL_THEORY: (
+        "session_id",
+        "case_introduction",
+        "leads",
+        "visits",
+        "revealed_information",
+        "discussion_history",
         "hypotheses",
         "decisions",
     ),
@@ -222,7 +236,7 @@ def _render_evidence(items: Sequence[EvidenceReference]) -> str:
     if not items:
         return "none"
     return ", ".join(
-        f"{item.clue_id}:{item.relation.value}" for item in items
+        f"{item.target_id}:{item.relation.value}" for item in items
     )
 
 

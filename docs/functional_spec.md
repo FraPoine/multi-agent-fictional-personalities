@@ -1,6 +1,6 @@
 # Functional Specification
 
-## Lead/Visit application pathway (redesign Tasks 1–2)
+## Lead/Visit application pathway (redesign Tasks 1–3)
 
 The application creates an active investigation with `create_session()` and
 supports these provider-neutral operations:
@@ -24,9 +24,18 @@ earlier conversation. Generation failures leave the caller's prior immutable
 snapshot unchanged. Provider replies remain discussion messages and never
 become disclosed case information automatically.
 
-The older clue/analysis/discussion/decision operations remain available for
-the current Sprint 6/Sprint 7 compatibility path. Structured reasoning,
-finalization, deterministic mock-runtime, and web cutover remain deferred.
+Optional visit-aware reasoning is recorded through `record_visit_analysis()`,
+`record_hypothesis()`, and `record_group_decision()`. None changes navigation
+permission. `finalize_lead_investigation()` completes an active Lead/Visit
+session from its opening, leads, visits, global information, discussions, and
+optional reasoning. It requires no analysis, decision, hypothesis, or round.
+
+Deterministic mock discussion lookup uses semantic participant/visit/segment/
+turn task names. Lead/Visit finalization has a separate versioned prompt and
+fixture. Fixture coverage is not a maximum enforced by the domain.
+
+The older clue/analysis/discussion/decision/finalization operations remain for
+Sprint 7 compatibility. Final legacy removal and web cutover remain Task 4.
 
 ## Purpose
 

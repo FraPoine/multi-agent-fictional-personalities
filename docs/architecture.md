@@ -509,7 +509,7 @@ provider objects are distinct. The validated uniform values populate the
 unchanged run-level and message-level fields; heterogeneous provider/model
 conversations remain future work.
 
-## Lead/Visit investigation redesign (Tasks 1–2 foundation)
+## Lead/Visit investigation redesign (Tasks 1–3 foundation)
 
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:
@@ -565,15 +565,28 @@ ordering, source consistency, and resolvable information evidence. It encodes
 no fixed lead or visit maximum and imposes no analysis, discussion, decision,
 or visit-completion phase.
 
-The Sprint 6/Sprint 7 reasoning, mock-runtime, finalization, and web workflow
-has not yet migrated. Its
+Sprint 6 reasoning, deterministic mock execution, and explicit finalization now
+have an authoritative Lead/Visit path. Analyses, hypotheses, and decisions are
+optional visit-originated artifacts and never transition or complete a visit.
+Their legacy round fields remain mutually exclusive compatibility alternatives.
+
+`finalize_lead_investigation()` requires an active session with a visit and
+explicitly revealed information. It does not require analyses, hypotheses,
+decisions, or completed rounds. Its versioned prompt receives leads, visits,
+global information, bounded discussions, and optional reasoning. The service
+owns the final ID and strictly validates information and hypothesis references.
+
+The deterministic mock exposes lead fixture references and available segments.
+Semantic task names include participant, visit, segment, and turn. Fixture
+coverage is not a domain maximum; additional leads and visits remain valid.
+
+The Sprint 7 web workflow has not yet migrated. Its
 `Clue`, `InvestigationRound`, and `InvestigationRoundStatus` types remain as
 isolated transitional fields on the aggregate so existing offline behavior
 continues to work. `EvidenceReference.clue_id` is accepted only for that legacy
 graph, with exactly one of `information_id` or `clue_id` required. The new
-Lead/Visit graph does not depend on the round state machine. Structured
-reasoning migration, fixture redesign, finalization migration, and delivery
-cutover belong to later redesign tasks.
+Lead/Visit graph does not depend on the round state machine. Final legacy
+removal and delivery cutover belong to Task 4.
 
 ## Sprint 5 investigation domain (historical foundation)
 

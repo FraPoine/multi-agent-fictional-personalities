@@ -520,6 +520,17 @@ and agent interpretations belong to the reasoning records below.
 
 ## 8. Investigation reasoning and decisions
 
+On the authoritative Lead/Visit path, reasoning is optional and non-gating.
+`AgentAnalysis` uses `origin_visit_id` plus `lead_id`; `Hypothesis` may use an
+`origin_visit_id` with backward-only revisions; and `GroupDecision` uses an
+origin visit and lead without completing that visit. Their evidence targets
+revealed information. Zero analyses, hypotheses, and decisions is valid.
+
+The old `round_id` fields remain mutually exclusive compatibility alternatives
+until Task 4. Legacy validators apply only to round-owned records; Lead/Visit
+records validate visit ownership, lead agreement, session references, and
+revealed-information evidence.
+
 The investigation reasoning layer uses three distinct immutable record types:
 
 ```text

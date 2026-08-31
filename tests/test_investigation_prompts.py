@@ -50,6 +50,11 @@ EXPECTED_PLACEHOLDERS = {
         "session_id", "case_introduction", "visible_clues", "hypotheses",
         "decisions",
     ),
+    InvestigationPromptName.LEAD_FINAL_THEORY: (
+        "session_id", "case_introduction", "leads", "visits",
+        "revealed_information", "discussion_history", "hypotheses",
+        "decisions",
+    ),
 }
 
 

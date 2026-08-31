@@ -94,6 +94,14 @@ execution, automatic clues/actions/finalization, scoring, or recognizability
 evaluation of investigation output. See the
 [Sprint 6 completion record](docs/sprint_6_completion.md).
 
+The redesigned Sprint 6 application path now uses persistent leads,
+chronological visits, explicit globally retained information, and repeatable
+bounded conversation segments. Optional analyses, hypotheses, and decisions
+are visit-aware and do not gate navigation or discussion. Explicit Lead/Visit
+finalization uses retained history and requires no analysis or decision per
+visit. The original round workflow remains temporarily available for Sprint 7
+compatibility pending the final Task 4 cutover.
+
 Sprint 7 exposes that workflow in the existing main FastAPI/Jinja application.
 The browser delivery uses catalogue-backed mock participants, a process-local
 in-memory registry, one canonical state-driven detail page, and an explicit

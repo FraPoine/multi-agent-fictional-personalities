@@ -407,6 +407,8 @@ def test_group_decision_references_records_only_by_id() -> None:
         "decision_id",
         "session_id",
         "round_id",
+        "origin_visit_id",
+        "lead_id",
         "decision_type",
         "summary",
         "analysis_ids",

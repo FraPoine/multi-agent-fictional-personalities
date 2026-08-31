@@ -1,0 +1,8 @@
+{
+  "summary": "The retained visit history indicates that the apparent exit was staged and the visitor used the interior route.",
+  "hypothesis_ids": [],
+  "evidence": [
+    {"information_id": "session_001_info_0001", "relation": "context"},
+    {"information_id": "session_001_info_0002", "relation": "supports"}
+  ]
+}

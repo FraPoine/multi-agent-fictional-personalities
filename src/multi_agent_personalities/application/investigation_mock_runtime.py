@@ -30,6 +30,12 @@ class InvestigationMockCapabilities:
     participant_ids: tuple[str, ...]
     supported_rounds: int
     discussion_turns: int
+    available_lead_fixture_refs: tuple[str, ...] = (
+        "lead_a",
+        "lead_b",
+        "lead_a_revisit",
+    )
+    available_discussion_segments: int = 3
 
 
 @dataclass(frozen=True)
