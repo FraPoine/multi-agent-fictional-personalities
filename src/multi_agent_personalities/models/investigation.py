@@ -70,7 +70,7 @@ class InvestigationRoundStatus(str, Enum):
 
 
 class Clue(BaseModel):
-    """Information explicitly revealed by the game master."""
+    """Legacy round-workflow record for revealed information."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
@@ -88,12 +88,87 @@ class Clue(BaseModel):
 
 
 class EvidenceReference(BaseModel):
-    """A stable clue reference used by future investigation models."""
+    """A stable reference to revealed information or a transitional clue."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    clue_id: NonEmptyStr
+    information_id: NonEmptyStr | None = None
+    clue_id: NonEmptyStr | None = None
     relation: EvidenceRelation
+
+    @model_validator(mode="after")
+    def validate_exactly_one_target(self) -> "EvidenceReference":
+        if (self.information_id is None) == (self.clue_id is None):
+            raise ValueError(
+                "evidence requires exactly one information_id or legacy clue_id"
+            )
+        return self
+
+    @property
+    def target_id(self) -> str:
+        """Return the canonical referenced identifier."""
+        return self.information_id or self.clue_id  # type: ignore[return-value]
+
+
+class InvestigationLead(BaseModel):
+    """A persistent semantic investigative track within one session."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    lead_id: NonEmptyStr
+    session_id: NonEmptyStr
+    label: NonEmptyStr
+    kind: NonEmptyStr
+
+
+class LeadVisit(BaseModel):
+    """One chronological period of focus on an existing lead."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    visit_id: NonEmptyStr
+    session_id: NonEmptyStr
+    lead_id: NonEmptyStr
+    visit_index: PositiveStrictInt
+    revealed_information_ids: tuple[NonEmptyStr, ...] = ()
+    conversation_run_ids: tuple[NonEmptyStr, ...] = ()
+
+    @field_validator("revealed_information_ids", "conversation_run_ids")
+    @classmethod
+    def validate_unique_references(
+        cls, value: tuple[str, ...], info: ValidationInfo
+    ) -> tuple[str, ...]:
+        if len(value) != len(set(value)):
+            raise ValueError(f"{info.field_name} must not contain duplicates")
+        return value
+
+
+class RevealedInformation(BaseModel):
+    """Information explicitly disclosed and thereafter globally known."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    information_id: NonEmptyStr
+    session_id: NonEmptyStr
+    text: StrictStr
+    reveal_index: NonNegativeStrictInt
+    lead_id: NonEmptyStr | None = None
+    visit_id: NonEmptyStr | None = None
+    source_kind: NonEmptyStr | None = None
+    source_id: NonEmptyStr | None = None
+
+    @field_validator("text")
+    @classmethod
+    def validate_non_empty_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("revealed information text must not be empty")
+        return value
+
+    @model_validator(mode="after")
+    def validate_source_pair(self) -> "RevealedInformation":
+        if (self.source_kind is None) != (self.source_id is None):
+            raise ValueError("source_kind and source_id must be supplied together")
+        return self
 
 
 def _reject_duplicate_strings(
@@ -108,7 +183,7 @@ def _reject_duplicate_strings(
 def _reject_duplicate_evidence(
     values: tuple[EvidenceReference, ...],
 ) -> tuple[EvidenceReference, ...]:
-    keys = [(item.clue_id, item.relation) for item in values]
+    keys = [(item.target_id, item.relation) for item in values]
     if len(keys) != len(set(keys)):
         raise ValueError("evidence must not contain duplicate references")
     return values
@@ -300,6 +375,9 @@ class InvestigationSession(BaseModel):
     case_introduction: StrictStr
     participant_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
     status: InvestigationStatus
+    leads: tuple[InvestigationLead, ...] = ()
+    visits: tuple[LeadVisit, ...] = ()
+    revealed_information: tuple[RevealedInformation, ...] = ()
     clues: tuple[Clue, ...] = ()
     rounds: tuple[InvestigationRound, ...] = ()
     analyses: tuple[AgentAnalysis, ...] = ()
@@ -346,12 +424,18 @@ class InvestigationSession(BaseModel):
 
             owning_round = round_by_id[hypothesis.round_id]
             for reference in hypothesis.evidence:
-                if reference.clue_id not in clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in clue_ids
+                ):
                     raise ValueError(
                         f"hypothesis {hypothesis.hypothesis_id!r} references "
                         "an unknown clue"
                     )
-                if reference.clue_id not in owning_round.visible_clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in owning_round.visible_clue_ids
+                ):
                     raise ValueError(
                         f"hypothesis {hypothesis.hypothesis_id!r} references "
                         "a clue outside its round visibility snapshot"
@@ -431,12 +515,18 @@ class InvestigationSession(BaseModel):
                     )
 
             for reference in decision.evidence:
-                if reference.clue_id not in clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in clue_ids
+                ):
                     raise ValueError(
                         f"decision {decision.decision_id!r} references an "
                         "unknown clue"
                     )
-                if reference.clue_id not in owning_round.visible_clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in owning_round.visible_clue_ids
+                ):
                     raise ValueError(
                         f"decision {decision.decision_id!r} references a clue "
                         "outside its round visibility snapshot"
@@ -477,6 +567,12 @@ class InvestigationSession(BaseModel):
     def validate_investigation_graph(self) -> "InvestigationSession":
         """Validate ordering and references across the aggregate snapshot."""
         collection_ids = (
+            ("lead_id", [item.lead_id for item in self.leads]),
+            ("visit_id", [item.visit_id for item in self.visits]),
+            (
+                "information_id",
+                [item.information_id for item in self.revealed_information],
+            ),
             ("clue_id", [clue.clue_id for clue in self.clues]),
             ("round_id", [item.round_id for item in self.rounds]),
             ("analysis_id", [item.analysis_id for item in self.analyses]),
@@ -486,6 +582,84 @@ class InvestigationSession(BaseModel):
         for field_name, values in collection_ids:
             if len(values) != len(set(values)):
                 raise ValueError(f"{field_name} values must be unique")
+
+        if any(item.session_id != self.session_id for item in self.leads):
+            raise ValueError("all leads must belong to the investigation session")
+        lead_by_id = {item.lead_id: item for item in self.leads}
+
+        visit_indexes = [item.visit_index for item in self.visits]
+        if visit_indexes != list(range(1, len(self.visits) + 1)):
+            raise ValueError(
+                "visits must be ordered contiguously by visit_index from one"
+            )
+        visit_by_id = {item.visit_id: item for item in self.visits}
+        for visit in self.visits:
+            if visit.session_id != self.session_id:
+                raise ValueError("all visits must belong to the investigation session")
+            if visit.lead_id not in lead_by_id:
+                raise ValueError(f"visit {visit.visit_id!r} references an unknown lead")
+
+        reveal_indexes = [
+            item.reveal_index for item in self.revealed_information
+        ]
+        if reveal_indexes != list(range(len(self.revealed_information))):
+            raise ValueError(
+                "revealed information must be ordered contiguously by "
+                "reveal_index from zero"
+            )
+        information_by_id = {
+            item.information_id: item for item in self.revealed_information
+        }
+        for item in self.revealed_information:
+            if item.session_id != self.session_id:
+                raise ValueError(
+                    "all revealed information must belong to the investigation session"
+                )
+            if item.lead_id is not None and item.lead_id not in lead_by_id:
+                raise ValueError(
+                    f"revealed information {item.information_id!r} references "
+                    "an unknown lead"
+                )
+            if item.visit_id is not None:
+                if item.visit_id not in visit_by_id:
+                    raise ValueError(
+                        f"revealed information {item.information_id!r} references "
+                        "an unknown visit"
+                    )
+                visit = visit_by_id[item.visit_id]
+                if item.lead_id is not None and item.lead_id != visit.lead_id:
+                    raise ValueError(
+                        f"revealed information {item.information_id!r} lead_id "
+                        "does not match its visit lead"
+                    )
+
+        listed_information_ids: list[str] = []
+        conversation_run_ids: list[str] = []
+        for visit in self.visits:
+            conversation_run_ids.extend(visit.conversation_run_ids)
+            for information_id in visit.revealed_information_ids:
+                if information_id not in information_by_id:
+                    raise ValueError(
+                        f"visit {visit.visit_id!r} references unknown revealed information"
+                    )
+                information = information_by_id[information_id]
+                if information.visit_id != visit.visit_id:
+                    raise ValueError(
+                        "visit revealed_information_ids must match information visit_id"
+                    )
+                listed_information_ids.append(information_id)
+        if len(listed_information_ids) != len(set(listed_information_ids)):
+            raise ValueError("revealed information may be listed by only one visit")
+        if len(conversation_run_ids) != len(set(conversation_run_ids)):
+            raise ValueError("conversation_run_ids must be unique across visits")
+        for information in self.revealed_information:
+            if (
+                information.visit_id is not None
+                and information.information_id not in listed_information_ids
+            ):
+                raise ValueError(
+                    "visit-linked revealed information must be listed by its visit"
+                )
 
         reveal_orders = [clue.reveal_order for clue in self.clues]
         if reveal_orders != list(range(len(self.clues))):
@@ -555,12 +729,18 @@ class InvestigationSession(BaseModel):
             analysis_owners.add(owner)
 
             for reference in analysis.evidence:
-                if reference.clue_id not in clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in clue_ids
+                ):
                     raise ValueError(
                         f"analysis {analysis.analysis_id!r} references an "
                         "unknown clue"
                     )
-                if reference.clue_id not in analysis.visible_clue_ids:
+                if (
+                    reference.clue_id is not None
+                    and reference.clue_id not in analysis.visible_clue_ids
+                ):
                     raise ValueError(
                         f"analysis {analysis.analysis_id!r} references a clue "
                         "outside its visibility snapshot"
@@ -667,10 +847,23 @@ class InvestigationSession(BaseModel):
             raise ValueError("discussion run_id values must be unique across rounds")
 
         evidence_groups = []
+        evidence_groups.extend(item.evidence for item in self.analyses)
+        evidence_groups.extend(item.evidence for item in self.hypotheses)
+        evidence_groups.extend(item.evidence for item in self.decisions)
         if self.final_theory is not None:
             evidence_groups.append(self.final_theory.evidence)
         if any(
-            reference.clue_id not in clue_ids
+            reference.information_id is not None
+            and reference.information_id not in information_by_id
+            for evidence in evidence_groups
+            for reference in evidence
+        ):
+            raise ValueError(
+                "all information evidence must reference revealed information "
+                "in the session"
+            )
+        if any(
+            reference.clue_id is not None and reference.clue_id not in clue_ids
             for evidence in evidence_groups
             for reference in evidence
         ):

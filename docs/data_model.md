@@ -427,12 +427,63 @@ effective message model becomes the run model.
 - Each `Message` is produced by one `Agent`.
 - A `Message` can become the source for one or more `EvaluationTrial` records.
 
-## 7. Clue and EvidenceReference
+## 7. Lead, visit, revealed information, and evidence
+
+### Authoritative Lead/Visit foundation
+
+```text
+InvestigationLead
+├── lead_id
+├── session_id
+├── label
+└── kind
+
+LeadVisit
+├── visit_id
+├── session_id
+├── lead_id
+├── visit_index
+├── revealed_information_ids
+└── conversation_run_ids
+
+RevealedInformation
+├── information_id
+├── session_id
+├── text
+├── reveal_index
+├── optional lead_id and visit_id
+└── optional source_kind and source_id
+
+EvidenceReference
+├── information_id (authoritative) or clue_id (transitional)
+└── relation: supports | contradicts | context
+```
+
+Leads are persistent semantic tracks and carry no lifecycle state. Visits are
+one-based, contiguous, and chronological across the whole session. Multiple
+visits may reference the same lead, so `A → B → A` is valid without duplicating
+Lead A. There is no maximum collection size and no requirement to complete a
+lead or visit before focusing elsewhere.
+
+Revealed information is zero-based and contiguous in disclosure order. Once
+present in the aggregate it is globally known. Any number of information
+records may reference one lead or one visit; there is deliberately no
+one-information-per-visit rule. Optional generic source fields form a small
+future case-resource boundary without specialized PDF, map, newspaper, or
+directory models.
+
+The aggregate rejects duplicate IDs, foreign session ownership, unknown lead
+or visit references, mismatched visit/lead sources, inconsistent bidirectional
+visit-information links, and unknown information evidence. It never repairs a
+malformed snapshot. `conversation_run_ids` reserve attachment points for later
+bounded generation but Task 1 neither stores those runs on the new graph nor
+executes them.
+
+### Transitional round records
 
 ### Definition
 
-Immutable building blocks for information explicitly revealed by the game
-master:
+The existing Sprint 6/Sprint 7 workflow continues temporarily to use:
 
 ```text
 Clue
@@ -440,12 +491,7 @@ Clue
 ├── text
 └── reveal_order
 
-EvidenceReference
-├── clue_id
-└── relation
-    ├── supports
-    ├── contradicts
-    └── context
+EvidenceReference.clue_id (legacy target)
 ```
 
 `Clue.text` contains only revealed information, and `reveal_order` records its
@@ -455,11 +501,12 @@ IDs from a caller-injected deterministic namespace: `session_001`,
 information, deduction, interpretation, hypothesis, or confidence. Clue IDs
 are unique within a validated collection.
 
-`EvidenceReference` points to a clue through its stable ID rather than copying
-the clue text. Deductions, explanations, and agent interpretations belong to
-the implemented reasoning records below. Investigation-session persistence and
-provider-driven clue disclosure are not implemented; the Sprint 7 browser
-renders these records from process-local state.
+Legacy evidence points to a clue through its stable ID rather than copying the
+clue text. Exactly one target is required: new records use `information_id`;
+existing round records use `clue_id`. `Clue`, `InvestigationRound`, and
+`InvestigationRoundStatus` remain for application/web compatibility only and
+do not constrain the authoritative Lead/Visit graph. Deductions, explanations,
+and agent interpretations belong to the reasoning records below.
 
 ## 8. Investigation reasoning and decisions
 
@@ -539,6 +586,9 @@ InvestigationSession
 ├── case introduction
 ├── participant IDs
 ├── status
+├── persistent leads
+├── chronological lead visits
+├── revealed information
 ├── ordered revealed clues
 ├── ordered investigation rounds
 ├── agent analyses
@@ -547,7 +597,9 @@ InvestigationSession
 └── optional final theory
 ```
 
-`InvestigationSession` is the immutable aggregate root. It validates entity
+`InvestigationSession` is the immutable aggregate root. Its new authoritative
+collections are `leads`, `visits`, and `revealed_information`; the remaining
+round collections are transitional until later redesign tasks. It validates entity
 IDs, round and participant ownership, exact per-analysis temporal visibility,
 clue and record references, contiguous clue and round order, round-analysis
 consistency, and backward-only hypothesis revision links without executing

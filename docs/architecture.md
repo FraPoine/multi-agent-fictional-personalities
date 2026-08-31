@@ -509,7 +509,49 @@ provider objects are distinct. The validated uniform values populate the
 unchanged run-level and message-level fields; heterogeneous provider/model
 conversations remain future work.
 
-## Sprint 5 investigation domain
+## Lead/Visit investigation domain redesign (Task 1 foundation)
+
+The authoritative investigation-domain direction is now a persistent semantic
+lead graph with a chronological visit history:
+
+```text
+InvestigationSession
+├── InvestigationLead[]
+├── LeadVisit[]
+└── RevealedInformation[]
+```
+
+An `InvestigationLead` is a session-owned semantic track such as a person,
+place, informant, or topic. It persists independently of visits and has no
+completed state. A `LeadVisit` is one globally ordered period of focus on an
+existing lead. Consequently `A → B → A` creates three visits referencing two
+leads; returning to A does not duplicate or reopen the lead. Visits have
+contiguous one-based indexes and may reference zero or more bounded
+conversation-run IDs, but Task 1 does not execute those conversations.
+
+`RevealedInformation` is the authoritative disclosure record. It has a stable
+session-scoped ID and contiguous zero-based reveal index, remains globally
+known, and may identify a source lead, source visit, or generic external source
+pair. A visit can disclose any number of information records. When both a lead
+and visit are supplied they must agree, and visit/information links are checked
+in both directions. `EvidenceReference.information_id` targets these records.
+
+The immutable `InvestigationSession` aggregate owns and validates this graph:
+unique IDs, session ownership, existing lead/visit targets, chronological
+ordering, source consistency, and resolvable information evidence. It encodes
+no fixed lead or visit maximum and imposes no analysis, discussion, decision,
+or visit-completion phase.
+
+The Sprint 6/Sprint 7 provider and web workflow has not yet migrated. Its
+`Clue`, `InvestigationRound`, and `InvestigationRoundStatus` types remain as
+isolated transitional fields on the aggregate so existing offline behavior
+continues to work. `EvidenceReference.clue_id` is accepted only for that legacy
+graph, with exactly one of `information_id` or `clue_id` required. The new
+Lead/Visit graph does not depend on the round state machine. Application
+cutover, context generation, discussion execution, reasoning migration, and
+finalization migration belong to later redesign tasks.
+
+## Sprint 5 investigation domain (historical foundation)
 
 Sprint 5 models, but does not orchestrate, `InvestigationSession`, `Clue`,
 `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and

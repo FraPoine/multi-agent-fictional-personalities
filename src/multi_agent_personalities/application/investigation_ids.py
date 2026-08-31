@@ -40,6 +40,27 @@ class DeterministicInvestigationIdFactory:
             f"{self.session_id}_clue_{reveal_order + 1:04d}"
         )
 
+    def lead_id(self, lead_index: int) -> str:
+        """Return the canonical ID for a one-based semantic lead index."""
+        lead_index = _require_strict_integer(
+            lead_index, name="lead_index", minimum=1
+        )
+        return validate_run_id(f"{self.session_id}_lead_{lead_index:04d}")
+
+    def visit_id(self, visit_index: int) -> str:
+        """Return the canonical ID for a one-based chronological visit."""
+        visit_index = _require_strict_integer(
+            visit_index, name="visit_index", minimum=1
+        )
+        return validate_run_id(f"{self.session_id}_visit_{visit_index:04d}")
+
+    def information_id(self, reveal_index: int) -> str:
+        """Return a one-based ID for a zero-based information reveal index."""
+        reveal_index = _require_strict_integer(
+            reveal_index, name="reveal_index", minimum=0
+        )
+        return validate_run_id(f"{self.session_id}_info_{reveal_index + 1:04d}")
+
     def round_id(self, round_index: int) -> str:
         """Return an identifier for a one-based round index."""
         round_index = _require_strict_integer(

@@ -19,8 +19,11 @@ from multi_agent_personalities.models.investigation import (
     HypothesisStatus,
     InvestigationRound,
     InvestigationRoundStatus,
+    InvestigationLead,
     InvestigationSession,
     InvestigationStatus,
+    LeadVisit,
+    RevealedInformation,
     validate_unique_clue_ids,
 )
 from multi_agent_personalities.models.message import Message
@@ -36,8 +39,9 @@ __all__ = [
     "AgentAnalysis", "Clue", "ConversationRun", "EvidenceReference",
     "EvidenceRelation", "FinalTheory", "GenerationMetadata",
     "GenerationResult", "GroupDecision", "GroupDecisionType", "Hypothesis",
-    "HypothesisStatus", "InvestigationRound", "InvestigationRoundStatus",
+    "HypothesisStatus", "InvestigationLead", "InvestigationRound", "InvestigationRoundStatus",
     "InvestigationSession", "InvestigationStatus",
+    "LeadVisit", "RevealedInformation",
     "Message", "Persona", "PublicEvaluationTrial", "RaterResponse",
     "TokenUsage", "TrialAnswer", "EvaluationTrial", "validate_run_id",
     "validate_unique_clue_ids",
