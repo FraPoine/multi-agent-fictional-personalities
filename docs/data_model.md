@@ -465,6 +465,13 @@ visits may reference the same lead, so `A → B → A` is valid without duplicat
 Lead A. There is no maximum collection size and no requirement to complete a
 lead or visit before focusing elsewhere.
 
+Visit order is also an append boundary. New activity may target only the final
+visit in the chronological tuple. Superseded visits remain readable but cannot
+receive retroactive disclosures, runs, or reasoning artifacts; revisiting the
+same semantic lead creates another visit. For visit-originated hypothesis
+revisions, the previous hypothesis must both appear earlier in storage and
+originate at the same or an earlier `visit_index`.
+
 Revealed information is zero-based and contiguous in disclosure order. Once
 present in the aggregate it is globally known. Any number of information
 records may reference one lead or one visit; there is deliberately no

@@ -166,6 +166,18 @@ def _visit_by_id(session: InvestigationSession, visit_id: str) -> LeadVisit:
     raise ValueError(f"unknown visit_id: {visit_id!r}")
 
 
+def _require_current_visit(
+    session: InvestigationSession, visit_id: str
+) -> LeadVisit:
+    """Reject chronological writes to a visit superseded by a later visit."""
+    visit = _visit_by_id(session, visit_id)
+    if not session.visits or session.visits[-1].visit_id != visit.visit_id:
+        raise ValueError(
+            "new investigation activity must target the current latest visit"
+        )
+    return visit
+
+
 def _lead_by_id(
     session: InvestigationSession, lead_id: str
 ) -> InvestigationLead:
@@ -231,7 +243,7 @@ def reveal_information(
 ) -> InvestigationSession:
     """Explicitly disclose one or more globally retained information items."""
     snapshot = _validated_snapshot(session, id_factory)
-    visit = _visit_by_id(snapshot, visit_id)
+    visit = _require_current_visit(snapshot, visit_id)
     if isinstance(information_texts, (str, bytes)) or not isinstance(
         information_texts, Sequence
     ):
@@ -377,7 +389,7 @@ def continue_lead_discussion(
 ) -> LeadDiscussionResult:
     """Generate and atomically attach one bounded lead discussion segment."""
     snapshot = _validated_snapshot(session, id_factory)
-    visit = _visit_by_id(snapshot, visit_id)
+    visit = _require_current_visit(snapshot, visit_id)
     if (
         isinstance(turn_count, bool)
         or not isinstance(turn_count, int)
@@ -447,7 +459,7 @@ def record_visit_analysis(
 ) -> InvestigationSession:
     """Optionally append one caller-supplied visit analysis without gating."""
     snapshot = _validated_snapshot(session, id_factory)
-    visit = _visit_by_id(snapshot, visit_id)
+    visit = _require_current_visit(snapshot, visit_id)
     if agent_id not in snapshot.participant_ids:
         raise ValueError("analysis agent_id must be a session participant")
     analysis = AgentAnalysis(
@@ -479,7 +491,7 @@ def record_hypothesis(
 ) -> InvestigationSession:
     """Optionally append a visit-originated hypothesis."""
     snapshot = _validated_snapshot(session, id_factory)
-    _visit_by_id(snapshot, origin_visit_id)
+    _require_current_visit(snapshot, origin_visit_id)
     hypothesis = Hypothesis(
         hypothesis_id=id_factory.hypothesis_id(len(snapshot.hypotheses) + 1),
         session_id=snapshot.session_id,
@@ -507,7 +519,7 @@ def record_group_decision(
 ) -> InvestigationSession:
     """Optionally append a non-gating visit-originated group decision."""
     snapshot = _validated_snapshot(session, id_factory)
-    visit = _visit_by_id(snapshot, origin_visit_id)
+    visit = _require_current_visit(snapshot, origin_visit_id)
     decision = GroupDecision(
         decision_id=id_factory.decision_id(len(snapshot.decisions) + 1),
         session_id=snapshot.session_id,

@@ -448,6 +448,7 @@ class InvestigationSession(BaseModel):
             item.hypothesis_id: index
             for index, item in enumerate(self.hypotheses)
         }
+        visit_by_id = {item.visit_id: item for item in self.visits}
         for index, hypothesis in enumerate(self.hypotheses):
             if hypothesis.session_id != self.session_id:
                 raise ValueError(
@@ -479,9 +480,7 @@ class InvestigationSession(BaseModel):
                             f"hypothesis {hypothesis.hypothesis_id!r} references "
                             "a clue outside its round visibility snapshot"
                         )
-            elif hypothesis.origin_visit_id not in {
-                item.visit_id for item in self.visits
-            }:
+            elif hypothesis.origin_visit_id not in visit_by_id:
                 raise ValueError(
                     f"hypothesis {hypothesis.hypothesis_id!r} references an "
                     "unknown visit"
@@ -506,6 +505,15 @@ class InvestigationSession(BaseModel):
             ):
                 raise ValueError(
                     "previous hypothesis must not belong to a later round"
+                )
+            if (
+                hypothesis.origin_visit_id is not None
+                and previous.origin_visit_id is not None
+                and visit_by_id[previous.origin_visit_id].visit_index
+                > visit_by_id[hypothesis.origin_visit_id].visit_index
+            ):
+                raise ValueError(
+                    "previous hypothesis must not originate from a later visit"
                 )
         return hypothesis_positions
 

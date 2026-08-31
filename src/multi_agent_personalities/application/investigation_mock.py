@@ -116,12 +116,14 @@ def _lead_discussion_paths(
     root: Path, participant_id: str
 ) -> dict[str, Path]:
     fixture = root / _LEAD_DISCUSSION_FIXTURES[participant_id]
+    supported_segments = ((1, 1), (1, 2), (2, 1), (3, 1))
     return {
         (
             f"investigation.lead_visit.discussion.{participant_id}."
-            f"visit_{visit_index:04d}.segment_0001.turn_{turn_index:04d}"
+            f"visit_{visit_index:04d}.segment_{segment_index:04d}."
+            f"turn_{turn_index:04d}"
         ): fixture
-        for visit_index in range(1, 4)
+        for visit_index, segment_index in supported_segments
         for turn_index in range(1, 3)
     }
 

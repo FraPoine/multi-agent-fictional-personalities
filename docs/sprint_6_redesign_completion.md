@@ -15,6 +15,13 @@ visit-aware reasoning artifacts, and an explicitly generated `FinalTheory`.
 Revisiting a lead creates a new visit with the original lead ID. Analyses,
 discussion, decisions, and visit completion do not gate navigation.
 
+A corrective follow-up makes the chronological append boundary explicit:
+only the latest visit accepts new information, discussions, or reasoning.
+Earlier visits remain readable historical records. Visit-originated hypothesis
+revisions additionally require the previous hypothesis to originate at the
+same or an earlier visit index. The deterministic mock supports two bounded
+segments on Visit 1 and one segment on Visits 2 and 3.
+
 The application exposes deterministic creation, lead navigation, explicit
 information disclosure, repeatable discussion, same-lead conversation
 projection, optional reasoning, and explicit finalization. Context is rebuilt
@@ -111,3 +118,30 @@ does not claim every repository command is incapable of networking.
 - Live providers and API-key workflows
 - Scoring or official-solution comparison
 - Persona recognizability or game-performance experiments
+
+## Corrective chronology verification
+
+The 2026-08-31 corrective follow-up was verified after adding the latest-visit
+write invariant, visit-index hypothesis revision validation, and deterministic
+Visit 1 segment 2 fixture mapping.
+
+```bash
+PYTHONPATH=src env -u OPENAI_API_KEY .venv/bin/python -m pytest tests/test_investigation_lead_visit_models.py tests/test_investigation_visit_service.py tests/test_investigation_lead_finalization.py tests/test_investigation_cutover.py tests/test_investigation_mock_runtime.py tests/test_investigation_mock_fixtures.py
+```
+
+Result: `101 passed in 0.70s`. The repeat-segment test also replaces socket
+connection functions with immediate failures.
+
+```bash
+PYTHONPATH=src .venv/bin/python -m pytest tests/test_investigation_*.py
+```
+
+Result: `612 passed in 4.40s`.
+
+```bash
+PYTHONPATH=src .venv/bin/python -m compileall -q src tests scripts
+PYTHONPATH=src .venv/bin/python -m pytest
+```
+
+Compilation succeeded with no output. The full suite reported
+`952 passed in 6.60s`.

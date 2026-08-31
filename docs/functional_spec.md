@@ -18,6 +18,11 @@ supports these provider-neutral operations:
   visit, global disclosures, visit chronology, and prior same-lead conversation
   directly from the immutable session snapshot.
 
+All operations that append activity require the latest visit. After B is
+visited, Visit A is historical and remains readable, but adding more A activity
+requires `visit_lead(lead_a)` to create a new visit. This applies uniformly to
+information, discussion, analysis, hypothesis, and decision writes.
+
 Thus a caller can visit A, visit B, and revisit A with a new visit ID while
 retaining the original A lead ID, both leads' disclosed information, and A's
 earlier conversation. Generation failures leave the caller's prior immutable

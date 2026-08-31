@@ -8,6 +8,7 @@ from multi_agent_personalities.application import (
     DeterministicInvestigationIdFactory,
     StructuredOutputError,
     build_investigation_mock_runtime,
+    build_lead_discussion_context,
     continue_lead_discussion,
     create_session,
     finalize_lead_investigation,
@@ -24,6 +25,7 @@ from multi_agent_personalities.models import (
     GroupDecisionType,
     HypothesisStatus,
     InvestigationStatus,
+    InvestigationSession,
 )
 
 
@@ -284,3 +286,216 @@ def test_mock_runtime_headline_a_b_a_workflow_is_offline_and_retained(
     assert runtime.capabilities.available_lead_fixture_refs == (
         "lead_a", "lead_b", "lead_a_revisit"
     )
+
+
+def test_historical_visits_reject_new_activity_and_revisit_accepts_it() -> None:
+    session, factory = prepared_session()
+    lead_a = session.leads[0].lead_id
+    historical_visit_id = session.visits[0].visit_id
+    session = visit_lead(
+        session, id_factory=factory, label="Lead B", kind="location"
+    )
+    frozen = session.model_dump_json()
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"), session_sequence=1
+    )
+    historical_context = build_lead_discussion_context(
+        session, visit_id=historical_visit_id
+    )
+    assert "Lead A" in historical_context
+    assert "The window was open." in historical_context
+
+    operations = (
+        lambda: reveal_information(
+            session,
+            visit_id=historical_visit_id,
+            information_texts=("Retroactive information.",),
+            id_factory=factory,
+        ),
+        lambda: continue_lead_discussion(
+            session,
+            visit_id=historical_visit_id,
+            participant_bindings=runtime.participants,
+            id_factory=factory,
+            turn_count=2,
+            timestamp=NOW,
+        ),
+        lambda: record_visit_analysis(
+            session,
+            visit_id=historical_visit_id,
+            agent_id="sherlock_holmes",
+            facts=("Retroactive analysis.",),
+            id_factory=factory,
+        ),
+        lambda: record_hypothesis(
+            session,
+            origin_visit_id=historical_visit_id,
+            statement="Retroactive hypothesis.",
+            status=HypothesisStatus.ACTIVE,
+            id_factory=factory,
+        ),
+        lambda: record_group_decision(
+            session,
+            origin_visit_id=historical_visit_id,
+            decision_type=GroupDecisionType.REQUEST_INFORMATION,
+            summary="Retroactive decision.",
+            id_factory=factory,
+        ),
+    )
+    for operation in operations:
+        with pytest.raises(ValueError, match="current latest visit"):
+            operation()
+        assert session.model_dump_json() == frozen
+
+    session = visit_lead(session, id_factory=factory, lead_id=lead_a)
+    current_visit_id = session.visits[-1].visit_id
+    session = reveal_information(
+        session,
+        visit_id=current_visit_id,
+        information_texts=("Current revisit information.",),
+        id_factory=factory,
+    )
+    discussed = continue_lead_discussion(
+        session,
+        visit_id=current_visit_id,
+        participant_bindings=runtime.participants,
+        id_factory=factory,
+        turn_count=2,
+        timestamp=NOW,
+    )
+    session = record_visit_analysis(
+        discussed.session,
+        visit_id=current_visit_id,
+        agent_id="sherlock_holmes",
+        facts=("Current analysis.",),
+        id_factory=factory,
+    )
+    session = record_hypothesis(
+        session,
+        origin_visit_id=current_visit_id,
+        statement="Current hypothesis.",
+        status=HypothesisStatus.ACTIVE,
+        evidence=(info_ref(3),),
+        id_factory=factory,
+    )
+    session = record_group_decision(
+        session,
+        origin_visit_id=current_visit_id,
+        decision_type=GroupDecisionType.PURSUE_LEAD,
+        summary="Current decision.",
+        hypothesis_ids=(session.hypotheses[-1].hypothesis_id,),
+        evidence=(info_ref(3),),
+        id_factory=factory,
+    )
+
+    assert session.visits[0].revealed_information_ids == (
+        "session_001_info_0001", "session_001_info_0002"
+    )
+    assert session.visits[-1].revealed_information_ids == (
+        "session_001_info_0003",
+    )
+    assert session.visits[-1].conversation_run_ids == (
+        "session_001_visit_0003_discussion_0001",
+    )
+
+
+def test_visit_hypothesis_revision_respects_visit_chronology() -> None:
+    session, factory = prepared_session()
+    visit_one = session.visits[-1].visit_id
+    session = record_hypothesis(
+        session,
+        origin_visit_id=visit_one,
+        statement="First hypothesis.",
+        status=HypothesisStatus.ACTIVE,
+        id_factory=factory,
+    )
+    first_id = session.hypotheses[-1].hypothesis_id
+    session = visit_lead(
+        session, id_factory=factory, label="Lead B", kind="location"
+    )
+    session = record_hypothesis(
+        session,
+        origin_visit_id=session.visits[-1].visit_id,
+        statement="Later revision.",
+        status=HypothesisStatus.ACTIVE,
+        previous_hypothesis_id=first_id,
+        id_factory=factory,
+    )
+    assert session.hypotheses[-1].previous_hypothesis_id == first_id
+
+    payload = session.model_dump(mode="python")
+    payload["hypotheses"] = (
+        {
+            "hypothesis_id": "session_001_hypothesis_0001",
+            "session_id": "session_001",
+            "origin_visit_id": "session_001_visit_0002",
+            "statement": "Later-origin hypothesis.",
+            "status": "active",
+        },
+        {
+            "hypothesis_id": "session_001_hypothesis_0002",
+            "session_id": "session_001",
+            "origin_visit_id": "session_001_visit_0001",
+            "statement": "Invalid earlier-origin revision.",
+            "status": "active",
+            "previous_hypothesis_id": "session_001_hypothesis_0001",
+        },
+    )
+    with pytest.raises(ValueError, match="later visit"):
+        InvestigationSession.model_validate(payload)
+
+
+def test_real_mock_runtime_supports_two_segments_on_current_visit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import socket
+
+    def reject_network(*args: object, **kwargs: object) -> None:
+        raise AssertionError("network access attempted")
+
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(socket, "create_connection", reject_network)
+    monkeypatch.setattr(socket.socket, "connect", reject_network)
+    runtime = build_investigation_mock_runtime(
+        character_slugs=("sherlock", "poirot"), session_sequence=1
+    )
+    session = create_session(
+        id_factory=runtime.id_factory,
+        introduction="Repeatable discussion case.",
+        participant_ids=runtime.participant_ids,
+    )
+    session = visit_lead(
+        session, id_factory=runtime.id_factory, label="A", kind="person"
+    )
+    session = reveal_information(
+        session,
+        visit_id=session.visits[-1].visit_id,
+        information_texts=("A fact.",),
+        id_factory=runtime.id_factory,
+    )
+    first = continue_lead_discussion(
+        session,
+        visit_id=session.visits[-1].visit_id,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
+        turn_count=2,
+        timestamp=NOW,
+    )
+    frozen_first = first.conversation_run.model_dump_json()
+    second = continue_lead_discussion(
+        first.session,
+        visit_id=first.session.visits[-1].visit_id,
+        participant_bindings=runtime.participants,
+        id_factory=runtime.id_factory,
+        turn_count=2,
+        timestamp=NOW,
+    )
+
+    assert first.conversation_run.run_id.endswith("discussion_0001")
+    assert second.conversation_run.run_id.endswith("discussion_0002")
+    assert first.conversation_run.model_dump_json() == frozen_first
+    assert second.session.visits[-1].conversation_run_ids == (
+        first.conversation_run.run_id,
+        second.conversation_run.run_id,
+    )
+    assert runtime.capabilities.available_discussion_segments == 4

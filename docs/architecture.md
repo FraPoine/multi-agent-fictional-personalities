@@ -530,6 +530,12 @@ contiguous one-based indexes and may reference zero or more bounded
 conversation-run IDs. Task 2 stores and executes those bounded segments
 through the existing conversation engine.
 
+Only the latest visit accepts new chronological activity. Once a later visit
+exists, earlier visits are immutable historical activity records: information,
+discussion segments, analyses, hypotheses, and decisions cannot be appended to
+them. Historical reads and same-lead projections remain available. Returning
+to an earlier lead always creates a new `LeadVisit` before further activity.
+
 `RevealedInformation` is the authoritative disclosure record. It has a stable
 session-scoped ID and contiguous zero-based reveal index, remains globally
 known, and may identify a source lead, source visit, or generic external source
@@ -579,6 +585,9 @@ owns the final ID and strictly validates information and hypothesis references.
 The deterministic mock exposes lead fixture references and available segments.
 Semantic task names include participant, visit, segment, and turn. Fixture
 coverage is not a domain maximum; additional leads and visits remain valid.
+The committed coverage includes Visit 1 segments 1 and 2 plus segment 1 for
+Visits 2 and 3; `available_discussion_segments` counts these four supported
+visit/segment combinations rather than imposing a session-wide run limit.
 
 The Sprint 7 web workflow has not yet migrated. Its
 `Clue`, `InvestigationRound`, and `InvestigationRoundStatus` types remain as

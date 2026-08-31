@@ -25,7 +25,7 @@ _DISCUSSION_TURNS = 2
 
 @dataclass(frozen=True)
 class InvestigationMockCapabilities:
-    """Immutable limits and participant order of the fixed mock scenario."""
+    """Fixture coverage metadata, never aggregate/domain limits."""
 
     participant_ids: tuple[str, ...]
     supported_rounds: int
@@ -35,7 +35,8 @@ class InvestigationMockCapabilities:
         "lead_b",
         "lead_a_revisit",
     )
-    available_discussion_segments: int = 3
+    # Total supported (visit_index, segment_index) fixture combinations.
+    available_discussion_segments: int = 4
 
 
 @dataclass(frozen=True)
