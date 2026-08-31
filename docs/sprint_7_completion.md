@@ -1,5 +1,9 @@
 # Sprint 7 Completion Record
 
+> Historical notice: this record verifies web delivery over the original
+> round-based Sprint 6 contract. The screen is now a compatibility interface;
+> registry and locking infrastructure remain for a future Lead/Visit UX.
+
 ## Status
 
 Automated verification and terminal HTTP smoke verification completed locally

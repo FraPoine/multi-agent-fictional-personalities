@@ -13,7 +13,7 @@ from multi_agent_personalities.application.investigation_mock_runtime import (
     InvestigationMockRuntime,
     build_investigation_mock_runtime,
 )
-from multi_agent_personalities.application.investigation_service import (
+from multi_agent_personalities.application.investigation_visit_service import (
     create_session,
 )
 from multi_agent_personalities.models import InvestigationSession

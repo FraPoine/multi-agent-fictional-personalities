@@ -61,7 +61,7 @@ class InvestigationStatus(str, Enum):
 
 
 class InvestigationRoundStatus(str, Enum):
-    """Lifecycle states for one investigation clue-revelation cycle."""
+    """Deprecated lifecycle for the original Sprint 7 compatibility UI."""
 
     AWAITING_ANALYSES = "awaiting_analyses"
     AWAITING_DISCUSSION = "awaiting_discussion"
@@ -380,7 +380,7 @@ class FinalTheory(BaseModel):
 
 
 class InvestigationRound(BaseModel):
-    """Immutable structural record for one investigation cycle."""
+    """Deprecated round snapshot retained for original Sprint 7 imports."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 

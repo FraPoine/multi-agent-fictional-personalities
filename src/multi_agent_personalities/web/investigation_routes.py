@@ -1,4 +1,9 @@
-"""Server-rendered investigation creation and canonical session routes."""
+"""Original Sprint 7 round UI preserved pending its Lead/Visit UX redesign.
+
+Registry, locking, creation, PRG, isolation, and error handling remain useful.
+Phase-specific actions below are compatibility-only and are not the
+authoritative investigation application contract.
+"""
 
 import logging
 from collections.abc import Mapping, Sequence

@@ -1,5 +1,9 @@
 # Sprint 6 Completion Record
 
+> Historical notice: this record verifies the original round-based baseline.
+> It was later superseded architecturally by the Lead/Visit redesign recorded
+> in `docs/sprint_6_redesign_completion.md`.
+
 ## Status
 
 Completed and locally verified on 2026-08-06.

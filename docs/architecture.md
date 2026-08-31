@@ -509,7 +509,7 @@ provider objects are distinct. The validated uniform values populate the
 unchanged run-level and message-level fields; heterogeneous provider/model
 conversations remain future work.
 
-## Lead/Visit investigation redesign (Tasks 1–3 foundation)
+## Lead/Visit investigation architecture (redesign complete)
 
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:
@@ -585,8 +585,10 @@ The Sprint 7 web workflow has not yet migrated. Its
 isolated transitional fields on the aggregate so existing offline behavior
 continues to work. `EvidenceReference.clue_id` is accepted only for that legacy
 graph, with exactly one of `information_id` or `clue_id` required. The new
-Lead/Visit graph does not depend on the round state machine. Final legacy
-removal and delivery cutover belong to Task 4.
+Lead/Visit graph does not depend on the round state machine. Round symbols and
+services are excluded from authoritative public exports and remain directly
+importable only by the original Sprint 7 compatibility screen. The future
+visual Lead/Visit UX rewrite will remove that final private compatibility code.
 
 ## Sprint 5 investigation domain (historical foundation)
 

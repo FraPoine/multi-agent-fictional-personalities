@@ -1,4 +1,9 @@
-"""Stateless application operations for deterministic investigation work."""
+"""Legacy round workflow retained temporarily for the original Sprint 7 UI.
+
+The authoritative application contract is ``investigation_visit_service``.
+No new gameplay code should depend on this module; it is removed with the
+deferred Sprint 7 Lead/Visit UX rewrite.
+"""
 
 from collections.abc import Sequence
 from dataclasses import dataclass

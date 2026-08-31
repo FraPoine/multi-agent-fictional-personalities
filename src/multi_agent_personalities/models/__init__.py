@@ -36,13 +36,21 @@ from multi_agent_personalities.models.evaluation import (
 from multi_agent_personalities.models.persona import Persona
 
 __all__ = [
-    "AgentAnalysis", "Clue", "ConversationRun", "EvidenceReference",
+    "AgentAnalysis", "ConversationRun", "EvidenceReference",
     "EvidenceRelation", "FinalTheory", "GenerationMetadata",
     "GenerationResult", "GroupDecision", "GroupDecisionType", "Hypothesis",
-    "HypothesisStatus", "InvestigationLead", "InvestigationRound", "InvestigationRoundStatus",
+    "HypothesisStatus", "InvestigationLead",
     "InvestigationSession", "InvestigationStatus",
     "LeadVisit", "RevealedInformation",
     "Message", "Persona", "PublicEvaluationTrial", "RaterResponse",
     "TokenUsage", "TrialAnswer", "EvaluationTrial", "validate_run_id",
-    "validate_unique_clue_ids",
 ]
+
+# Legacy round symbols remain directly importable until the Sprint 7 UX rewrite,
+# but are deliberately absent from the authoritative wildcard export contract.
+LEGACY_ROUND_MODEL_NAMES = (
+    "Clue",
+    "InvestigationRound",
+    "InvestigationRoundStatus",
+    "validate_unique_clue_ids",
+)

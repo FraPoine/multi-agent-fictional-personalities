@@ -1,5 +1,9 @@
 # Sprint 6 Plan — Deterministic Investigation Workflow Contract
 
+> Historical notice: this document records the original round-based plan. The
+> later Lead/Visit redesign is documented in
+> `docs/sprint_6_redesign_completion.md`.
+
 > **Status:** Completed and verified on 2026-08-06. Implementation evidence is
 > recorded in the [Sprint 6 completion record](sprint_6_completion.md). The
 > requirements below remain the historical technical contract.

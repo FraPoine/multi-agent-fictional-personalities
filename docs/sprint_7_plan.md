@@ -1,5 +1,9 @@
 # Sprint 7 Plan — Investigation Web UI Technical Contract
 
+> Historical notice: this plan targets the original round-based Sprint 6
+> contract. Its infrastructure is preserved, while a future UX redesign must
+> target the later Lead/Visit architecture.
+
 ## 1. Sprint objective
 
 Sprint 7 adds a local, server-rendered browser interface over the completed

@@ -1,6 +1,6 @@
 # Functional Specification
 
-## Lead/Visit application pathway (redesign Tasks 1–3)
+## Lead/Visit application pathway (redesign complete)
 
 The application creates an active investigation with `create_session()` and
 supports these provider-neutral operations:
@@ -34,8 +34,10 @@ Deterministic mock discussion lookup uses semantic participant/visit/segment/
 turn task names. Lead/Visit finalization has a separate versioned prompt and
 fixture. Fixture coverage is not a maximum enforced by the domain.
 
-The older clue/analysis/discussion/decision/finalization operations remain for
-Sprint 7 compatibility. Final legacy removal and web cutover remain Task 4.
+The older clue/analysis/discussion/decision/finalization operations are absent
+from authoritative public exports. They remain directly importable only for
+the original Sprint 7 compatibility screen. A separate future UX effort will
+replace that screen and remove the final private compatibility implementation.
 
 ## Purpose
 

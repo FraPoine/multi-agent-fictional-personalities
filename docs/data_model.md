@@ -527,7 +527,8 @@ origin visit and lead without completing that visit. Their evidence targets
 revealed information. Zero analyses, hypotheses, and decisions is valid.
 
 The old `round_id` fields remain mutually exclusive compatibility alternatives
-until Task 4. Legacy validators apply only to round-owned records; Lead/Visit
+for the original Sprint 7 compatibility screen. They are excluded from the
+authoritative model export contract. Legacy validators apply only to round-owned records; Lead/Visit
 records validate visit ownership, lead agreement, session references, and
 revealed-information evidence.
 

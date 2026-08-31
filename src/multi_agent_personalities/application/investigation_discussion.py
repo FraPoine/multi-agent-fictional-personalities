@@ -1,4 +1,4 @@
-"""Investigation-specific reply generation over the generic simulation loop."""
+"""Legacy round-discussion adapter for the original Sprint 7 compatibility UI."""
 
 from dataclasses import dataclass
 from datetime import datetime

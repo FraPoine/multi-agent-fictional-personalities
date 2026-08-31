@@ -61,6 +61,16 @@ real investigation game.
   action execution, scoring, or investigation-output recognizability study.
 - See the [Sprint 6 completion record](sprint_6_completion.md).
 
+### Sprint 6 Lead/Visit redesign
+
+- Replaced the authoritative round state machine with persistent semantic
+  leads, chronological visits, global explicit information disclosure, and
+  repeatable bounded conversation segments.
+- Made analyses, hypotheses, and decisions optional and non-gating.
+- Added explicit Lead/Visit finalization and deterministic semantic mock tasks.
+- Isolated remaining round imports to the original Sprint 7 compatibility
+  screen. See the [redesign completion record](sprint_6_redesign_completion.md).
+
 ## Sprint 7 — Investigation web UI
 
 - Implementation and automated verification are complete. The existing main
@@ -72,6 +82,9 @@ real investigation game.
   restart. Final interactive browser smoke confirmation remains pending, so
   Sprint 7 closure is not yet declared complete. See the
   [Sprint 7 verification record](sprint_7_completion.md).
+- After the Lead/Visit redesign, registry, locking, allocation, isolation, app
+  startup, and error infrastructure remain useful. The round screen is now an
+  explicit compatibility interface; its Lead/Visit UX is future work.
 
 ## Sprint 8 — Generic recognizability evaluation
 

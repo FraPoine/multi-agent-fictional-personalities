@@ -48,12 +48,12 @@ OpenAI-backed conversation execution was not part of Sprint 4.
 
 The repository also contains a technical, two-character, mock-only blind-
 evaluation pilot. It verifies tooling rather than persona recognizability and
-does not provide scientifically interpretable results. Sprint 6 implements a
-complete deterministic two-round investigation application workflow using
-local fixtures and explicit caller-controlled clue revelation and finalization.
-There is no investigation persistence, CLI, web UI, live provider, dynamic
-manager, third or fourth runtime character, real investigation game, or final
-human/LLM-judge study.
+does not provide scientifically interpretable results. The redesigned Sprint 6
+application uses persistent leads, chronological visits, explicit globally
+retained information, repeatable bounded conversations, optional reasoning,
+and explicit finalization. Its deterministic mock path is fixture-backed and
+offline. There is no investigation persistence, investigation CLI, redesigned
+Lead/Visit web UX, live provider, real game content, or final human/LLM study.
 
 ## Sprint 5 foundation
 
@@ -99,16 +99,15 @@ The system has six main stages:
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
 6. **Investigation (offline application workflow implemented)**
-   - Let the project user act as game master, manually provide the case
-     introduction, and reveal clues progressively.
-   - Keep unrevealed information unavailable to agents.
-   - Use `create_session`, `reveal_clue`, `run_independent_analyses`,
-     `run_group_discussion`, `create_group_decision`, and
-     `finalize_investigation` as the public stateless operations.
-   - Keep clue-prefix visibility immutable, IDs service-owned and deterministic,
-     generated JSON on the shared structured adapter, and every update atomic.
-   - Reuse `simulate_chat()` and `RoundRobinSelector` for discussion. A round
-     ends after its decision; only explicit finalization completes a session.
+   - Let the project user provide the opening, choose or revisit semantic
+     leads, and disclose information explicitly.
+   - Use `create_session`, `visit_lead`, `reveal_information`,
+     `continue_lead_discussion`, optional reasoning-record operations, and
+     `finalize_lead_investigation` as the authoritative stateless API.
+   - Store chronological visits and bounded immutable `ConversationRun`
+     segments; project same-lead history explicitly with no hidden memory.
+   - Keep IDs service-owned, references session-scoped, and failures atomic.
+     Analyses, hypotheses, and decisions never gate navigation or completion.
 
 ## Coding conventions
 
@@ -132,17 +131,16 @@ The system has six main stages:
 - `Message`: one generated chat message.
 - `EvaluationTrial`: one anonymized rater task.
 - `RaterResponse`: one rater answer.
-- Investigation entities include `InvestigationSession`, `Clue`,
-  `EvidenceReference`, `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and
-  `FinalTheory`; their immutable aggregate and provider-neutral orchestration
-  are implemented without investigation persistence or UI.
+- Investigation entities include `InvestigationSession`, `InvestigationLead`,
+  `LeadVisit`, `RevealedInformation`, `EvidenceReference`, optional
+  `AgentAnalysis`, `Hypothesis`, `GroupDecision`, and `FinalTheory`.
 
 ## Investigation development checks
 
 The mock investigation path requires no network or API key. Stable task names
 select committed fixtures; do not make fixture selection depend on call order.
 Run `PYTHONPATH=src .venv/bin/python -m pytest
-tests/test_investigation_workflow_e2e.py` for the two-round flow and
+tests/test_investigation_lead_finalization.py` for the redesigned flow and
 `PYTHONPATH=src .venv/bin/python -m pytest` for the complete regression. Do not
 add persistence or delivery concerns to the application service.
 

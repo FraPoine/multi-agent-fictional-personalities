@@ -55,6 +55,36 @@ from multi_agent_personalities.simulation.participant import (
 MAX_LEAD_DISCUSSION_TURNS = 100
 
 
+def create_session(
+    *,
+    id_factory: DeterministicInvestigationIdFactory,
+    introduction: str,
+    participant_ids: Sequence[str],
+) -> InvestigationSession:
+    """Create one active investigation with an empty Lead/Visit graph."""
+    if not isinstance(id_factory, DeterministicInvestigationIdFactory):
+        raise ValueError(
+            "id_factory must be a DeterministicInvestigationIdFactory"
+        )
+    if not isinstance(introduction, str) or not introduction.strip():
+        raise ValueError("introduction must not be empty")
+    if isinstance(participant_ids, (str, bytes)) or not isinstance(
+        participant_ids, Sequence
+    ):
+        raise ValueError("participant_ids must be a sequence of identifiers")
+    # Prove the namespace can produce every authoritative first child ID.
+    id_factory.lead_id(1)
+    id_factory.visit_id(1)
+    id_factory.information_id(0)
+    id_factory.discussion_segment_id(1, 1)
+    return InvestigationSession(
+        session_id=id_factory.session_id,
+        case_introduction=introduction,
+        participant_ids=tuple(participant_ids),
+        status=InvestigationStatus.ACTIVE,
+    )
+
+
 @dataclass(frozen=True)
 class LeadDiscussionResult:
     """One atomic session update and its bounded discussion segment."""
