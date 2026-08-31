@@ -15,6 +15,17 @@ state is authoritative. Legacy round mutation routes and helpers remain
 physically present pending the later cleanup task, but the new templates do not
 link to or render their workflow controls.
 
+Task 2 extends that presentation boundary with one sidebar item per semantic
+`InvestigationLead`, visit counts/current state, and a selected-lead detail
+projection. Query-string lead selection is read-only. Mutation routes use the
+existing registry lock and immutable replacement protocol, delegating to
+`visit_lead()`, `reveal_information()`, and `continue_lead_discussion()`.
+
+The web projection groups information and messages beneath their originating
+visit marker while `project_lead_conversation()` supplies the authoritative
+semantic-thread ordering. Runtime participants provide catalogue identities;
+run IDs, visit IDs, provider metadata, and task names are not displayed.
+
 ## Purpose
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.

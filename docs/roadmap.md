@@ -89,6 +89,11 @@ real investigation game.
   lobby, authoritative Lead/Visit creation, shared game shell, Case Opening,
   and resource entry points. Lead navigation and persistent conversation
   projection remain later redesign tasks; this does not close the redesign.
+- Lead/Visit UX redesign Task 2 adds semantic lead navigation, explicit new
+  visits and revisits, current-visit information disclosure, historical
+  read-only protection, and repeatable bounded discussions projected as
+  persistent lead threads. Resource completion, finalization, and legacy-route
+  cleanup remain later tasks.
 
 ## Sprint 8 — Generic recognizability evaluation
 

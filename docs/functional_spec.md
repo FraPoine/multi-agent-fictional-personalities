@@ -19,6 +19,23 @@ projection, information revelation, revisit behavior, or finalization. The
 original round POST routes remain temporarily installed for compatibility, but
 their phase controls and round/provider terminology are no longer player-facing.
 
+Task 2 adds the core server-rendered Lead/Visit interaction. Selecting a
+semantic lead uses `GET /investigations/{session_id}?lead={lead_id}` and never
+changes the aggregate. The current lead is the lead referenced by the latest
+chronological visit; any other selected lead is historical and read-only until
+the user explicitly posts a revisit. A revisit appends a new `LeadVisit` while
+preserving the original `InvestigationLead` identity and all earlier visits.
+
+Game Master information disclosure and investigator discussion target only the
+latest visit. Historical writes return `409` without replacing the registry
+snapshot. Each discussion submission calls `continue_lead_discussion()` and
+attaches one bounded immutable `ConversationRun`. The UI projects all runs for
+the selected semantic lead through `project_lead_conversation()`, so an A → B
+→ A chronology renders both A visits as one persistent thread with subtle visit
+separators. Fixture exhaustion is a local `500` failure, not a domain limit.
+
+Finalization and the complete resource workspace remain outside Task 2.
+
 ## Lead/Visit application pathway (redesign complete)
 
 The application creates an active investigation with `create_session()` and

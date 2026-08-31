@@ -6,7 +6,7 @@ authoritative investigation application contract.
 """
 
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
@@ -22,12 +22,15 @@ from multi_agent_personalities.application import (
     IndependentAnalysesResult,
     InvestigationMockCapabilities,
     MAX_DISCUSSION_TURNS,
+    continue_lead_discussion,
     create_group_decision,
     finalize_investigation,
     investigation_mock_capabilities,
     reveal_clue,
+    reveal_information,
     run_group_discussion,
     run_independent_analyses,
+    visit_lead,
 )
 from multi_agent_personalities.models import (
     EvidenceReference,
@@ -53,11 +56,18 @@ from multi_agent_personalities.web.investigation_presentation import (
 
 MAX_CASE_INTRODUCTION_LENGTH = 4000
 MAX_CLUE_LENGTH = 4000
+MAX_LEAD_LABEL_LENGTH = 160
+MAX_LEAD_KIND_LENGTH = 80
+MAX_INFORMATION_LENGTH = 4000
 logger = logging.getLogger(__name__)
 
 
 class InvestigationWorkflowConflictError(ValueError):
     """Raised when a browser action conflicts with the latest snapshot."""
+
+
+class InvestigationResourceNotFoundError(ValueError):
+    """Raised when a session-scoped Lead/Visit resource is unknown."""
 
 
 @dataclass(frozen=True)
@@ -526,6 +536,7 @@ def create_investigation_router(
         request: Request,
         record: InvestigationSessionRecord,
         *,
+        selected_lead_id: str | None = None,
         status_code: int = 200,
         clue_value: str = "",
         clue_error: str | None = None,
@@ -536,7 +547,10 @@ def create_investigation_router(
             context={
                 "page_title": "Investigation session",
                 "provider_name": "mock",
-                "investigation": present_session(record),
+                "investigation": present_session(
+                    record,
+                    selected_lead_id=selected_lead_id,
+                ),
             },
             status_code=status_code,
         )
@@ -641,6 +655,7 @@ def create_investigation_router(
     async def investigation_detail(
         request: Request,
         session_id: str,
+        lead: str | None = None,
     ) -> HTMLResponse:
         """Render the latest immutable snapshot on its canonical page."""
         try:
@@ -658,7 +673,266 @@ def create_investigation_router(
                 ),
             )
 
-        return render_detail(request, record)
+        if lead is not None and not any(
+            item.lead_id == lead for item in record.session.leads
+        ):
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Lead not found",
+                heading="Lead not found",
+                message="The selected lead does not belong to this investigation.",
+            )
+        return render_detail(request, record, selected_lead_id=lead)
+
+    @router.post(
+        "/investigations/{session_id}/leads",
+        response_class=HTMLResponse,
+        name="visit_new_investigation_lead",
+    )
+    async def visit_new_investigation_lead(
+        request: Request,
+        session_id: str,
+        label: Annotated[str | None, Form()] = None,
+        kind: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        """Create and chronologically visit one new semantic lead."""
+        raw_label = label or ""
+        raw_kind = kind or ""
+        normalized_label = raw_label.strip()
+        normalized_kind = raw_kind.strip()
+        if (
+            not normalized_label
+            or not normalized_kind
+            or len(raw_label) > MAX_LEAD_LABEL_LENGTH
+            or len(raw_kind) > MAX_LEAD_KIND_LENGTH
+        ):
+            return render_error(
+                request,
+                status_code=400,
+                page_title="Invalid lead",
+                heading="Lead could not be visited",
+                message=(
+                    "Enter a lead name and type within the displayed limits."
+                ),
+            )
+
+        def mutate_new_lead(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[str]:
+            updated = visit_lead(
+                record.session,
+                id_factory=record.runtime.id_factory,
+                label=normalized_label,
+                kind=normalized_kind,
+            )
+            return InvestigationSessionMutation(
+                session=updated,
+                result=updated.leads[-1].lead_id,
+            )
+
+        try:
+            _record, lead_id = registry.mutate(session_id, mutate_new_lead)
+        except InvestigationSessionNotFoundError:
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation not found",
+                heading="Investigation not found",
+                message="The requested investigation is not available.",
+            )
+        except Exception:
+            logger.exception("Creating a new investigation lead failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading="Lead could not be visited",
+                message="The previous investigation state was kept.",
+            )
+        return RedirectResponse(
+            url=f"/investigations/{session_id}?lead={lead_id}", status_code=303
+        )
+
+    @router.post(
+        "/investigations/{session_id}/leads/{lead_id}/visit",
+        response_class=HTMLResponse,
+        name="revisit_investigation_lead",
+    )
+    async def revisit_investigation_lead(
+        request: Request, session_id: str, lead_id: str
+    ) -> Response:
+        """Explicitly create a new visit to an existing semantic lead."""
+        def mutate_revisit(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[None]:
+            if not any(item.lead_id == lead_id for item in record.session.leads):
+                raise InvestigationResourceNotFoundError(lead_id)
+            if record.session.visits[-1].lead_id == lead_id:
+                raise InvestigationWorkflowConflictError(
+                    "the selected lead is already current"
+                )
+            updated = visit_lead(
+                record.session,
+                id_factory=record.runtime.id_factory,
+                lead_id=lead_id,
+            )
+            return InvestigationSessionMutation(session=updated, result=None)
+
+        response = _run_lead_mutation(
+            request,
+            session_id,
+            mutate_revisit,
+            failure_heading="Lead could not be revisited",
+        )
+        if response is not None:
+            return response
+        return RedirectResponse(
+            url=f"/investigations/{session_id}?lead={lead_id}", status_code=303
+        )
+
+    def _current_visit_or_error(
+        record: InvestigationSessionRecord, visit_id: str
+    ) -> None:
+        if not any(item.visit_id == visit_id for item in record.session.visits):
+            raise InvestigationResourceNotFoundError(visit_id)
+        if (
+            not record.session.visits
+            or record.session.visits[-1].visit_id != visit_id
+        ):
+            raise InvestigationWorkflowConflictError(
+                "This historical visit is read-only. Revisit its lead explicitly."
+            )
+
+    def _run_lead_mutation(
+        request: Request,
+        session_id: str,
+        operation: Callable[
+            [InvestigationSessionRecord],
+            InvestigationSessionMutation[object],
+        ],
+        *,
+        failure_heading: str,
+    ) -> Response | None:
+        try:
+            registry.mutate(session_id, operation)
+        except (
+            InvestigationSessionNotFoundError,
+            InvestigationResourceNotFoundError,
+        ):
+            return render_error(
+                request,
+                status_code=404,
+                page_title="Investigation resource not found",
+                heading="Investigation resource not found",
+                message="The requested session resource is not available.",
+            )
+        except InvestigationWorkflowConflictError as error:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading=failure_heading,
+                message=str(error),
+            )
+        except Exception:
+            logger.exception("Lead/Visit investigation mutation failed")
+            return render_error(
+                request,
+                status_code=500,
+                page_title="Investigation error",
+                heading=failure_heading,
+                message="The previous investigation state was kept.",
+            )
+        return None
+
+    @router.post(
+        "/investigations/{session_id}/visits/{visit_id}/information",
+        response_class=HTMLResponse,
+        name="reveal_visit_information",
+    )
+    async def reveal_visit_information(
+        request: Request,
+        session_id: str,
+        visit_id: str,
+        information: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        """Explicitly disclose information against the current visit."""
+        raw = information or ""
+        normalized = raw.strip()
+        if not normalized or len(raw) > MAX_INFORMATION_LENGTH:
+            return render_error(
+                request,
+                status_code=400,
+                page_title="Invalid information",
+                heading="Information could not be added",
+                message=(
+                    "Enter information up to "
+                    f"{MAX_INFORMATION_LENGTH} characters."
+                ),
+            )
+
+        def mutate_information(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[None]:
+            _current_visit_or_error(record, visit_id)
+            updated = reveal_information(
+                record.session,
+                visit_id=visit_id,
+                information_texts=(normalized,),
+                id_factory=record.runtime.id_factory,
+            )
+            return InvestigationSessionMutation(session=updated, result=None)
+
+        response = _run_lead_mutation(
+            request,
+            session_id,
+            mutate_information,
+            failure_heading="Information could not be added",
+        )
+        if response is not None:
+            return response
+        record = registry.get(session_id)
+        return RedirectResponse(
+            url=f"/investigations/{session_id}?lead={record.session.visits[-1].lead_id}",
+            status_code=303,
+        )
+
+    @router.post(
+        "/investigations/{session_id}/visits/{visit_id}/discussion",
+        response_class=HTMLResponse,
+        name="continue_visit_discussion",
+    )
+    async def continue_visit_discussion(
+        request: Request, session_id: str, visit_id: str
+    ) -> Response:
+        """Append one bounded discussion segment to the current visit."""
+        def mutate_discussion(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[None]:
+            _current_visit_or_error(record, visit_id)
+            result = continue_lead_discussion(
+                record.session,
+                visit_id=visit_id,
+                participant_bindings=record.runtime.participants,
+                id_factory=record.runtime.id_factory,
+                turn_count=record.runtime.capabilities.discussion_turns,
+            )
+            return InvestigationSessionMutation(session=result.session, result=None)
+
+        response = _run_lead_mutation(
+            request,
+            session_id,
+            mutate_discussion,
+            failure_heading="Discussion could not continue",
+        )
+        if response is not None:
+            return response
+        record = registry.get(session_id)
+        return RedirectResponse(
+            url=f"/investigations/{session_id}?lead={record.session.visits[-1].lead_id}",
+            status_code=303,
+        )
 
     @router.post(
         "/investigations/{session_id}/clues",
