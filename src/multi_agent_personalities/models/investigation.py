@@ -378,6 +378,7 @@ class InvestigationSession(BaseModel):
     leads: tuple[InvestigationLead, ...] = ()
     visits: tuple[LeadVisit, ...] = ()
     revealed_information: tuple[RevealedInformation, ...] = ()
+    conversation_runs: tuple[ConversationRun, ...] = ()
     clues: tuple[Clue, ...] = ()
     rounds: tuple[InvestigationRound, ...] = ()
     analyses: tuple[AgentAnalysis, ...] = ()
@@ -573,6 +574,7 @@ class InvestigationSession(BaseModel):
                 "information_id",
                 [item.information_id for item in self.revealed_information],
             ),
+            ("run_id", [item.run_id for item in self.conversation_runs]),
             ("clue_id", [clue.clue_id for clue in self.clues]),
             ("round_id", [item.round_id for item in self.rounds]),
             ("analysis_id", [item.analysis_id for item in self.analyses]),
@@ -652,6 +654,20 @@ class InvestigationSession(BaseModel):
             raise ValueError("revealed information may be listed by only one visit")
         if len(conversation_run_ids) != len(set(conversation_run_ids)):
             raise ValueError("conversation_run_ids must be unique across visits")
+        run_by_id = {item.run_id: item for item in self.conversation_runs}
+        if any(item not in run_by_id for item in conversation_run_ids):
+            raise ValueError("visits must reference existing conversation runs")
+        if set(conversation_run_ids) != set(run_by_id):
+            raise ValueError(
+                "every session conversation run must be referenced by one visit"
+            )
+        if any(
+            item.character_ids != self.participant_ids
+            for item in self.conversation_runs
+        ):
+            raise ValueError(
+                "conversation run participants must match session participants"
+            )
         for information in self.revealed_information:
             if (
                 information.visit_id is not None

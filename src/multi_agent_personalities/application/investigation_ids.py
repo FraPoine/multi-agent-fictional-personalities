@@ -61,6 +61,20 @@ class DeterministicInvestigationIdFactory:
         )
         return validate_run_id(f"{self.session_id}_info_{reveal_index + 1:04d}")
 
+    def discussion_segment_id(
+        self, visit_index: int, segment_index: int
+    ) -> str:
+        """Return a visit-scoped ID for one bounded discussion segment."""
+        visit_index = _require_strict_integer(
+            visit_index, name="visit_index", minimum=1
+        )
+        segment_index = _require_strict_integer(
+            segment_index, name="segment_index", minimum=1
+        )
+        return validate_run_id(
+            f"{self.visit_id(visit_index)}_discussion_{segment_index:04d}"
+        )
+
     def round_id(self, round_index: int) -> str:
         """Return an identifier for a one-based round index."""
         round_index = _require_strict_integer(

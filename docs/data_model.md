@@ -475,9 +475,19 @@ directory models.
 The aggregate rejects duplicate IDs, foreign session ownership, unknown lead
 or visit references, mismatched visit/lead sources, inconsistent bidirectional
 visit-information links, and unknown information evidence. It never repairs a
-malformed snapshot. `conversation_run_ids` reserve attachment points for later
-bounded generation but Task 1 neither stores those runs on the new graph nor
-executes them.
+malformed snapshot. `conversation_run_ids` attach ordered bounded generation
+segments to visits. The aggregate owns the corresponding immutable
+`conversation_runs`, requires every referenced run to exist, requires every
+stored run to be referenced by one visit, rejects duplicate run IDs, and
+requires exact session participant order.
+
+The logical history for a semantic lead is projected by global visit
+chronology, then run order within a visit, then message turn index. It may span
+revisits while leaving every original `ConversationRun` unchanged. Application
+discussion context deterministically includes the case opening, current lead
+and visit, globally revealed information, visit chronology, and this same-lead
+projection. The participant runtime supplies persona context and the simulation
+engine supplies current-segment message history.
 
 ### Transitional round records
 

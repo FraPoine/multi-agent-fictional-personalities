@@ -25,6 +25,15 @@ from multi_agent_personalities.application.investigation_service import (
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
+from multi_agent_personalities.application.investigation_visit_service import (
+    LeadDiscussionResult,
+    MAX_LEAD_DISCUSSION_TURNS,
+    build_lead_discussion_context,
+    continue_lead_discussion,
+    project_lead_conversation,
+    reveal_information,
+    visit_lead,
+)
 from multi_agent_personalities.application.investigation_mock import (
     HERCULE_POIROT_ID,
     INVESTIGATION_FIXTURE_FILES,
@@ -78,10 +87,11 @@ __all__ = [
     "InvestigationPromptError", "InvestigationPromptName",
     "InvestigationPromptTemplate", "InvestigationMockBindings",
     "InvestigationMockCapabilities", "InvestigationMockRuntime",
-    "InvestigationMockTask", "MAX_DISCUSSION_TURNS", "PilotPreparationResult",
+    "InvestigationMockTask", "LeadDiscussionResult", "MAX_DISCUSSION_TURNS",
+    "MAX_LEAD_DISCUSSION_TURNS", "PilotPreparationResult",
     "SHERLOCK_HOLMES_ID",
     "StructuredGenerationResult", "StructuredOutputError", "create_group_decision",
-    "create_session",
+    "create_session", "continue_lead_discussion",
     "finalize_investigation", "build_investigation_mock_runtime",
     "investigation_mock_capabilities",
     "build_investigation_mock_bindings", "investigation_analysis_task_name",
@@ -91,7 +101,9 @@ __all__ = [
     "prepare_technical_pilot", "render_analyses", "render_decisions",
     "render_discussion_messages", "render_hypotheses",
     "render_investigation_prompt", "render_persona_context",
-    "render_visible_clues", "reveal_clue", "run_group_discussion",
+    "render_visible_clues", "reveal_clue", "reveal_information",
+    "run_group_discussion", "project_lead_conversation",
+    "build_lead_discussion_context", "visit_lead",
     "run_independent_analyses",
     "run_mock_conversation",
 ]

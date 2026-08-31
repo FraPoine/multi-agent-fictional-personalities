@@ -1,5 +1,33 @@
 # Functional Specification
 
+## Lead/Visit application pathway (redesign Tasks 1–2)
+
+The application creates an active investigation with `create_session()` and
+supports these provider-neutral operations:
+
+- `visit_lead()` creates and visits a caller-described lead, or revisits an
+  existing lead by stable ID. Every call creates a chronological visit.
+- `reveal_information()` appends one or more explicit Game Master disclosures
+  with service-owned IDs. Disclosures remain globally available afterward.
+- `continue_lead_discussion()` creates one bounded `ConversationRun`, attaches
+  it to the selected visit, and may run repeatedly without analysis, decision,
+  or visit-completion prerequisites.
+- `project_lead_conversation()` returns deterministic logical history without
+  mutating or merging stored runs.
+- `build_lead_discussion_context()` renders the case opening, current lead and
+  visit, global disclosures, visit chronology, and prior same-lead conversation
+  directly from the immutable session snapshot.
+
+Thus a caller can visit A, visit B, and revisit A with a new visit ID while
+retaining the original A lead ID, both leads' disclosed information, and A's
+earlier conversation. Generation failures leave the caller's prior immutable
+snapshot unchanged. Provider replies remain discussion messages and never
+become disclosed case information automatically.
+
+The older clue/analysis/discussion/decision operations remain available for
+the current Sprint 6/Sprint 7 compatibility path. Structured reasoning,
+finalization, deterministic mock-runtime, and web cutover remain deferred.
+
 ## Purpose
 
 This document describes what the system should do from the point of view of its users.

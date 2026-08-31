@@ -19,6 +19,9 @@ def test_factory_builds_valid_one_based_deterministic_ids() -> None:
     assert factory.lead_id(1) == "session_001_lead_0001"
     assert factory.visit_id(1) == "session_001_visit_0001"
     assert factory.information_id(0) == "session_001_info_0001"
+    assert factory.discussion_segment_id(1, 1) == (
+        "session_001_visit_0001_discussion_0001"
+    )
     assert factory.round_id(1) == "session_001_round_0001"
     assert factory.analysis_id("sherlock_holmes", 1) == (
         "session_001_analysis_sherlock_holmes_0001"
