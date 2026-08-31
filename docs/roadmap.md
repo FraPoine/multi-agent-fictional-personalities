@@ -85,6 +85,10 @@ real investigation game.
 - After the Lead/Visit redesign, registry, locking, allocation, isolation, app
   startup, and error infrastructure remain useful. The round screen is now an
   explicit compatibility interface; its Lead/Visit UX is future work.
+- Lead/Visit UX redesign Task 1 now establishes the catalogue-driven game
+  lobby, authoritative Lead/Visit creation, shared game shell, Case Opening,
+  and resource entry points. Lead navigation and persistent conversation
+  projection remain later redesign tasks; this does not close the redesign.
 
 ## Sprint 8 — Generic recognizability evaluation
 

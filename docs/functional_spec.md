@@ -1,5 +1,24 @@
 # Functional Specification
 
+## Sprint 7 Lead/Visit web redesign — Task 1 checkpoint
+
+The main FastAPI application now presents `GET /investigations` as a local
+game-start lobby. It offers one honest demonstration/Game Master case setup,
+renders investigator identities from the character catalogue, explains the
+fixed mock fixture limitation, and creates sessions through the authoritative
+Lead/Visit `create_session()` path owned by `InMemoryInvestigationRegistry`.
+
+The canonical detail page now uses a shared three-region investigation shell.
+An empty session renders Case Opening, catalogue-derived investigator
+identities, an empty future Leads area, and Rules/Case Notes resource entry
+points. Rules are a small local dialog; Case Notes and the Begin Investigation
+control are visible scaffolds for later tasks. No GET mutates the session.
+
+This checkpoint intentionally does not implement lead navigation, conversation
+projection, information revelation, revisit behavior, or finalization. The
+original round POST routes remain temporarily installed for compatibility, but
+their phase controls and round/provider terminology are no longer player-facing.
+
 ## Lead/Visit application pathway (redesign complete)
 
 The application creates an active investigation with `create_session()` and

@@ -3,137 +3,41 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Investigations · {{ page_title }}</title>
+    <title>Investigation · {{ page_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
 <body>
-    <header class="app-header">
-        <div class="header-inner">
-            <div class="brand-block">
-                <p class="brand-name">{{ page_title }}</p>
-                <p class="brand-description">Game Master investigation workspace</p>
-            </div>
-            <div class="header-actions">
-                <nav class="app-nav" aria-label="Primary navigation">
-                    <a href="{{ url_for('home') }}">Conversations</a>
-                    <a href="{{ url_for('investigations_index') }}" aria-current="page">Investigations</a>
-                </nav>
-                <span class="provider-badge">local {{ provider_name }}</span>
-            </div>
-        </div>
-    </header>
+    <header class="app-header"><div class="header-inner"><div class="brand-block"><p class="brand-name">{{ page_title }}</p><p class="brand-description">Fictional investigators, structured experiments</p></div><div class="header-actions"><nav class="app-nav" aria-label="Primary navigation"><a href="{{ url_for('home') }}">Conversations</a><a href="{{ url_for('investigations_index') }}" aria-current="page">Investigation</a></nav><span class="provider-badge">local {{ provider_name }}</span></div></div></header>
 
-    <main class="investigation-workspace">
-        <section class="panel" aria-label="Investigation redesign notice">
-            <div class="panel-body">
-                <p><strong>Compatibility interface:</strong> this original
-                round-based Sprint 7 screen is preserved temporarily. The
-                Lead/Visit investigation UX will be delivered separately.</p>
-            </div>
-        </section>
-        <section class="panel" aria-labelledby="new-investigation-title">
-            <header class="panel-header">
-                <div>
-                    <p class="eyebrow">Process-local mock scenario</p>
-                    <h1 id="new-investigation-title">New investigation session</h1>
+    <main class="investigation-lobby">
+        <header class="lobby-heading"><p class="eyebrow">Investigation workspace</p><h1>Open a new case</h1><p>Assemble the investigators, set the opening, and begin a process-local demonstration.</p></header>
+        <form class="lobby-setup investigation-mutation-form" method="post" action="{{ url_for('create_investigation') }}" data-loading-label="Opening case…">
+            {% if error_message %}<div class="form-error-summary" role="alert"><h2>Unable to start investigation</h2><p>{{ error_message }}</p></div>{% endif %}
+            <section class="lobby-step" aria-labelledby="case-selection-title">
+                <div class="step-number" aria-hidden="true">1</div>
+                <div class="step-content"><p class="eyebrow">Select case</p><h2 id="case-selection-title">{{ case_title }}</h2>
+                    <div class="case-choice" aria-label="Selected local case"><span class="case-choice-mark" aria-hidden="true">✓</span><div><strong>Local Game Master scenario</strong><p>Bring your own original case opening. No commercial case content is included.</p></div><span class="status-label">Selected</span></div>
+                    <label class="field-label" for="introduction">Case opening</label>
+                    <textarea id="introduction" name="introduction" rows="6" maxlength="{{ max_introduction_length }}" required{% if field_errors.get('introduction') %} aria-invalid="true" aria-describedby="introduction-error"{% endif %}>{{ introduction_value }}</textarea>
+                    <p class="field-note">Describe the situation the investigators know at the start.</p>
+                    {% if field_errors.get('introduction') %}<p class="field-error" id="introduction-error">{{ field_errors.get('introduction') }}</p>{% endif %}
                 </div>
-            </header>
-            <form class="panel-body configuration-stack investigation-mutation-form" method="post" action="{{ url_for('create_investigation') }}" data-loading-label="Creating investigation…">
-                {% if error_message %}
-                    <div class="form-error-summary" role="alert">
-                        <h2>Unable to create investigation</h2>
-                        <p>{{ error_message }}</p>
+            </section>
+            <fieldset class="lobby-step"{% if field_errors.get('characters') %} aria-invalid="true"{% endif %}>
+                <div class="step-number" aria-hidden="true">2</div>
+                <div class="step-content"><legend><span class="eyebrow">Select investigators</span><span class="legend-title">Your consulting team</span></legend>
+                    <div class="investigator-grid">
+                        {% for character in investigator_options %}<div class="investigator-choice{% if not character.supported %} is-unavailable{% endif %}"><input id="investigator-{{ character.slug }}" type="checkbox" name="characters" value="{{ character.slug }}"{% if character.selected %} checked{% endif %}{% if not character.supported %} disabled{% endif %}><label for="investigator-{{ character.slug }}"><span class="investigator-avatar">{{ character.initials }}</span><span><strong>{{ character.display_name }}</strong><small>{{ character.description }}</small>{% if not character.supported %}<em>Not available in this local fixture</em>{% endif %}</span><span class="selection-mark" aria-hidden="true">✓</span></label></div>{% endfor %}
                     </div>
-                {% endif %}
-
-                <fieldset class="character-fieldset" {% if field_errors.get('characters') %}aria-invalid="true"{% endif %}>
-                    <legend class="field-label">Investigators</legend>
-                    {% if supported_characters %}
-                        <div class="character-list">
-                            {% for character in supported_characters %}
-                                <div class="character-option">
-                                    <input
-                                        id="investigator-{{ character.config.slug }}"
-                                        type="checkbox"
-                                        name="characters"
-                                        value="{{ character.config.slug }}"
-                                        {% if character.selected %}checked{% endif %}
-                                    >
-                                    <label for="investigator-{{ character.config.slug }}" class="character-card">
-                                        <span class="character-copy">
-                                            <span class="character-name">{{ character.config.display_name }}</span>
-                                            <span class="character-description">{{ character.config.description }}</span>
-                                        </span>
-                                        <span class="selection-mark" aria-hidden="true">✓</span>
-                                    </label>
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <p class="field-note">The fixed mock scenario requires the complete supported set. Runtime order is canonical.</p>
-                    {% else %}
-                        <p class="field-error">This catalogue has no characters supported by the current investigation mock scenario.</p>
-                    {% endif %}
-                    {% if field_errors.get('characters') %}
-                        <p class="field-error" id="investigation-characters-error">{{ field_errors.get('characters') }}</p>
-                    {% endif %}
-                </fieldset>
-
-                <div class="form-group">
-                    <label class="field-label" for="introduction">Case introduction</label>
-                    <textarea
-                        class="form-control topic-input"
-                        id="introduction"
-                        name="introduction"
-                        rows="7"
-                        maxlength="{{ max_introduction_length }}"
-                        required
-                        {% if field_errors.get('introduction') %}aria-invalid="true"{% endif %}
-                    >{{ introduction_value }}</textarea>
-                    <p class="field-note">Up to {{ max_introduction_length }} characters. Clues will be revealed explicitly in later steps.</p>
-                    {% if field_errors.get('introduction') %}
-                        <p class="field-error" id="introduction-error">{{ field_errors.get('introduction') }}</p>
-                    {% endif %}
+                    <p class="field-note">The current deterministic scenario requires every supported investigator. This is fixture coverage, not a game rule.</p>
+                    {% if field_errors.get('characters') %}<p class="field-error" id="investigation-characters-error">{{ field_errors.get('characters') }}</p>{% endif %}
                 </div>
-
-                <section class="provider-card" aria-label="Mock scenario capability">
-                    <div class="provider-row"><span>Execution</span><strong>Offline deterministic mock</strong></div>
-                    <div class="provider-row"><span>Supported rounds</span><strong>{{ capabilities.supported_rounds }}</strong></div>
-                    <div class="provider-row"><span>Discussion turns</span><strong>{{ capabilities.discussion_turns }} per round</strong></div>
-                    <p>No API key or external network access is required.</p>
-                </section>
-
-                <button class="primary-action" type="submit" {% if not supported_characters %}disabled{% endif %}>Create investigation</button>
-            </form>
-        </section>
-
-        <section class="panel" aria-labelledby="existing-investigations-title">
-            <header class="panel-header">
-                <div>
-                    <p class="eyebrow">Current process</p>
-                    <h2 id="existing-investigations-title">Existing investigations</h2>
-                </div>
-            </header>
-            <div class="panel-body">
-                {% if existing_records %}
-                    <ul class="session-list">
-                        {% for record in existing_records %}
-                            <li class="session-list-item">
-                                <a href="{{ url_for('investigation_detail', session_id=record.session_id) }}"><code>{{ record.session_id }}</code></a>
-                                <span>{{ record.session.status.value }}</span>
-                                <p>{{ record.session.case_introduction }}</p>
-                            </li>
-                        {% endfor %}
-                    </ul>
-                {% else %}
-                    <div class="empty-state investigation-empty-state">
-                        <h3>No investigations in this process</h3>
-                        <p>Create a local session using the Game Master form.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </section>
+            </fieldset>
+            <div class="lobby-actions"><button class="secondary-button rules-trigger" type="button" data-rules-open>Read rules</button><button class="primary-action" type="submit">Start investigation</button></div>
+        </form>
+        {% if existing_records %}<section class="recent-cases" aria-labelledby="recent-cases-title"><h2 id="recent-cases-title">Open in this process</h2><ul>{% for record in existing_records %}<li><a href="{{ url_for('investigation_detail', session_id=record.session_id) }}"><strong>{{ case_title }}</strong><span>{{ record.session_id }} · {{ record.session.status.value|title }}</span></a></li>{% endfor %}</ul></section>{% endif %}
     </main>
-
+    <dialog class="rules-dialog" data-rules-dialog aria-labelledby="rules-title"><div class="rules-dialog-header"><div><p class="eyebrow">Local guide</p><h2 id="rules-title">How to investigate</h2></div><button type="button" class="icon-button" data-rules-close aria-label="Close rules">×</button></div><div class="rules-dialog-body"><ol><li>Read the case opening together.</li><li>Choose a lead to visit when lead controls become available.</li><li>The Game Master reveals information explicitly; known information remains available.</li><li>Returning to a lead creates a new chronological visit.</li><li>Conclude only when the group is ready.</li></ol><p>This generic guide does not reproduce a commercial rulebook.</p></div></dialog>
     <footer class="app-footer"><p>Process-local state</p><span aria-hidden="true">•</span><p>No investigation files are written</p></footer>
     <script src="{{ url_for('static', path='investigation.js') }}" defer></script>
 </body>

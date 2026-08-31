@@ -44,6 +44,11 @@ from multi_agent_personalities.web.investigation_store import (
     InvestigationSessionNotFoundError,
     InvestigationSessionRecord,
 )
+from multi_agent_personalities.web.investigation_presentation import (
+    DEMO_CASE_TITLE,
+    catalogue_participants,
+    present_session,
+)
 
 
 MAX_CASE_INTRODUCTION_LENGTH = 4000
@@ -196,6 +201,7 @@ def _validate_investigation_creation_form(
 def _index_context(
     *,
     registry: InMemoryInvestigationRegistry,
+    catalogue: Mapping[str, CharacterConfig],
     supported_configs: Sequence[CharacterConfig],
     capabilities: InvestigationMockCapabilities,
     selected_slugs: Sequence[str] | None = None,
@@ -221,6 +227,12 @@ def _index_context(
             )
             for config in supported_configs
         ),
+        "investigator_options": catalogue_participants(
+            catalogue,
+            supported_character_ids=capabilities.participant_ids,
+            selected_slugs=selected,
+        ),
+        "case_title": DEMO_CASE_TITLE,
         "capabilities": capabilities,
         "introduction_value": introduction_value,
         "field_errors": dict(field_errors or {}),
@@ -524,19 +536,7 @@ def create_investigation_router(
             context={
                 "page_title": "Investigation session",
                 "provider_name": "mock",
-                "record": record,
-                "workflow_state": _workflow_state(record),
-                "workflow_message": _workflow_message(record),
-                "can_reveal_clue": _can_reveal_clue(record),
-                "can_run_analyses": _can_run_analyses(record),
-                "can_run_discussion": _can_run_discussion(record),
-                "can_create_decision": _can_create_decision(record),
-                "can_finalize_investigation": _can_finalize_investigation(record),
-                "reasoning_groups": _reasoning_groups(record),
-                "final_theory": _final_theory_presentation(record),
-                "clue_value": clue_value,
-                "clue_error": clue_error,
-                "max_clue_length": MAX_CLUE_LENGTH,
+                "investigation": present_session(record),
             },
             status_code=status_code,
         )
@@ -552,6 +552,7 @@ def create_investigation_router(
             name="investigations.html",
             context=_index_context(
                 registry=registry,
+                catalogue=catalogue,
                 supported_configs=supported_configs,
                 capabilities=capabilities,
                 **context,

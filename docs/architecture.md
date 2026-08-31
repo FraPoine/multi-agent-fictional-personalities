@@ -1,5 +1,20 @@
 # Architecture
 
+## Lead/Visit web presentation checkpoint
+
+Sprint 7 redesign Task 1 adds a server-side presentation boundary in
+`web/investigation_presentation.py`. It projects catalogue identities and an
+immutable `InvestigationSessionRecord` into lobby, participant, resource, and
+session view data; Jinja does not traverse legacy round state to decide the
+new shell. Creation still runs through the existing registry, deterministic
+runtime assembly, and application-level `create_session()` operation.
+
+The detail shell reserves separate regions for chronological leads, central
+case content, and resources. At this checkpoint only the no-visits Case Opening
+state is authoritative. Legacy round mutation routes and helpers remain
+physically present pending the later cleanup task, but the new templates do not
+link to or render their workflow controls.
+
 ## Purpose
 
 This document describes the conceptual architecture, main components, data flow, and public interfaces of the project.

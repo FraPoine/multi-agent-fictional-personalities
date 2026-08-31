@@ -41,3 +41,16 @@ window.addEventListener("pageshow", () => {
         resetMutationForm(form);
     }
 });
+
+const rulesDialog = document.querySelector("[data-rules-dialog]");
+if (rulesDialog instanceof HTMLDialogElement) {
+    for (const trigger of document.querySelectorAll("[data-rules-open]")) {
+        trigger.addEventListener("click", () => rulesDialog.showModal());
+    }
+    for (const trigger of document.querySelectorAll("[data-rules-close]")) {
+        trigger.addEventListener("click", () => rulesDialog.close());
+    }
+    rulesDialog.addEventListener("click", (event) => {
+        if (event.target === rulesDialog) rulesDialog.close();
+    });
+}
