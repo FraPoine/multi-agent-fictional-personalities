@@ -201,7 +201,21 @@ def present_session(
     if resolved_lead_id is not None:
         selected_lead = lead_by_id[resolved_lead_id]
         projected_messages = project_lead_conversation(session, resolved_lead_id)
-        run_by_id = {run.run_id: run for run in session.conversation_runs}
+        visit_id_by_run_id = {
+            run_id: visit.visit_id
+            for visit in session.visits
+            if visit.lead_id == resolved_lead_id
+            for run_id in visit.conversation_run_ids
+        }
+        projected_messages_by_visit = {
+            visit.visit_id: []
+            for visit in session.visits
+            if visit.lead_id == resolved_lead_id
+        }
+        for message in projected_messages:
+            projected_messages_by_visit[
+                visit_id_by_run_id[message.run_id]
+            ].append(message)
         information_by_id = {
             item.information_id: item for item in session.revealed_information
         }
@@ -215,11 +229,6 @@ def present_session(
         for visit in session.visits:
             if visit.lead_id != resolved_lead_id:
                 continue
-            messages = tuple(
-                message
-                for run_id in visit.conversation_run_ids
-                for message in run_by_id[run_id].messages
-            )
             selected_visits.append(
                 InvestigationVisitPresentation(
                     visit_index=visit.visit_index,
@@ -240,7 +249,9 @@ def present_session(
                     ),
                     messages=tuple(
                         _message_presentation(message, participants_by_id)
-                        for message in messages
+                        for message in projected_messages_by_visit[
+                            visit.visit_id
+                        ]
                     ),
                 )
             )

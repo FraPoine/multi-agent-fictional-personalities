@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 import multi_agent_personalities.web.investigation_routes as routes
+import multi_agent_personalities.web.investigation_presentation as presentation
 from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_store import InMemoryInvestigationRegistry
 from tests.asgi_client import ASGITestClient
@@ -194,6 +195,84 @@ def test_a_b_a_discussion_projects_one_persistent_lead_thread(task2_client) -> N
     assert "6 discussion messages across 2 visits" in a_page.text
     assert b_page.text.count("The globally disclosed facts") == 1
     assert "Historical lead" in b_page.text
+
+
+def test_visit_groups_follow_authoritative_projected_message_order(
+    task2_client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    client, registry = task2_client
+    visit_new(client, "Scotland Yard")
+    session = registry.snapshot("session_001")
+    lead_a = session.leads[0]
+    visit_a1 = session.visits[-1]
+    assert client.post(
+        f"/investigations/session_001/visits/{visit_a1.visit_id}/discussion"
+    ).status_code == 303
+
+    visit_new(client, "Baker Street")
+    session = registry.snapshot("session_001")
+    lead_b = session.leads[1]
+    visit_b = session.visits[-1]
+    assert client.post(
+        f"/investigations/session_001/visits/{visit_b.visit_id}/discussion"
+    ).status_code == 303
+    assert client.post(
+        f"/investigations/session_001/leads/{lead_a.lead_id}/visit"
+    ).status_code == 303
+    visit_a2 = registry.snapshot("session_001").visits[-1]
+    assert client.post(
+        f"/investigations/session_001/visits/{visit_a2.visit_id}/discussion"
+    ).status_code == 303
+
+    session = registry.snapshot("session_001")
+    visit_by_id = {visit.visit_id: visit for visit in session.visits}
+    visit_a1 = visit_by_id[visit_a1.visit_id]
+    visit_b = visit_by_id[visit_b.visit_id]
+    visit_a2 = visit_by_id[visit_a2.visit_id]
+    authoritative = presentation.project_lead_conversation
+    projected_a = authoritative(session, lead_a.lead_id)
+    projected_b = authoritative(session, lead_b.lead_id)
+    assert [message.run_id for message in projected_a] == [
+        visit_a1.conversation_run_ids[0],
+        visit_a1.conversation_run_ids[0],
+        visit_a2.conversation_run_ids[0],
+        visit_a2.conversation_run_ids[0],
+    ]
+    assert [message.run_id for message in projected_b] == [
+        visit_b.conversation_run_ids[0],
+        visit_b.conversation_run_ids[0],
+    ]
+
+    # Reverse each run's authoritative message order. A presenter that walks
+    # ConversationRun.messages independently will fail these assertions.
+    def reverse_messages_within_runs(session, lead_id):
+        projected = authoritative(session, lead_id)
+        return tuple(
+            message
+            for run_id in dict.fromkeys(item.run_id for item in projected)
+            for message in reversed(
+                tuple(item for item in projected if item.run_id == run_id)
+            )
+        )
+
+    monkeypatch.setattr(
+        presentation,
+        "project_lead_conversation",
+        reverse_messages_within_runs,
+    )
+    a_page = client.get(f"/investigations/session_001?lead={lead_a.lead_id}")
+    b_page = client.get(f"/investigations/session_001?lead={lead_b.lead_id}")
+
+    assert a_page.status_code == b_page.status_code == 200
+    assert a_page.text.index("The chronology is useful") < a_page.text.index(
+        "The globally disclosed facts"
+    )
+    assert a_page.text.index("First visit") < a_page.text.index(
+        "Revisited · Visit 3"
+    )
+    assert b_page.text.index("The chronology is useful") < b_page.text.index(
+        "The globally disclosed facts"
+    )
 
 
 def test_discussion_provider_failure_is_500_and_atomic(
