@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEMO_CASE = load_case_catalog(default_case_catalog_directory(ROOT)).cases[0]
 VALID_FORM = {
     "characters": ["sherlock", "poirot"],
-    "introduction": "A sealed study waits beyond the rain-darkened street.",
+    "case_id": "archive-absence",
 }
 
 
@@ -42,7 +42,10 @@ def test_lobby_is_catalogue_backed_game_start(task1_client) -> None:
     assert response.status_code == 200
     assert registry.session_ids == ()
     assert "Open a new case" in response.text
-    assert "The Local Demonstration Case" in response.text
+    assert "The Archive Absence" in response.text
+    assert "The Observatory Signal" in response.text
+    assert 'name="case_id"' in response.text
+    assert 'name="introduction"' not in response.text
     assert "Select investigators" in response.text
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
@@ -55,16 +58,14 @@ def test_lobby_is_catalogue_backed_game_start(task1_client) -> None:
 
 def test_invalid_creation_preserves_values_without_registration(task1_client) -> None:
     client, registry = task1_client
-    introduction = "Keep this submitted opening."
-
     response = client.post(
         "/investigations",
-        data={"characters": ["sherlock"], "introduction": introduction},
+        data={"characters": ["sherlock"], "case_id": "observatory-signal"},
     )
 
     assert response.status_code == 400
     assert registry.session_ids == ()
-    assert introduction in response.text
+    assert 'value="observatory-signal" checked' in response.text
     assert 'value="sherlock" checked' in response.text
     assert "Select all supported investigators" in response.text
 
@@ -83,6 +84,42 @@ def test_creation_registers_authoritative_empty_lead_visit_session(task1_client)
     assert session.case_introduction == DEMO_CASE.opening
     assert session.leads == ()
     assert session.visits == ()
+
+
+def test_selected_case_supplies_trusted_opening(task1_client) -> None:
+    client, registry = task1_client
+    catalog = load_case_catalog(default_case_catalog_directory(ROOT))
+    selected = catalog.get("observatory-signal")
+
+    response = client.post(
+        "/investigations",
+        data={
+            "characters": ["sherlock", "poirot"],
+            "case_id": selected.case_id,
+            "introduction": "Browser-supplied text must be ignored.",
+        },
+    )
+
+    assert response.status_code == 303
+    session = registry.snapshot("session_001")
+    assert session.case_id == selected.case_id
+    assert session.case_introduction == selected.opening
+    assert "Browser-supplied text" not in session.case_introduction
+
+
+def test_unknown_case_is_404_and_atomic(task1_client) -> None:
+    client, registry = task1_client
+
+    response = client.post(
+        "/investigations",
+        data={
+            "characters": ["sherlock", "poirot"],
+            "case_id": "missing-case",
+        },
+    )
+
+    assert response.status_code == 404
+    assert registry.session_ids == ()
 
 
 def test_case_opening_shell_is_side_effect_free(task1_client) -> None:

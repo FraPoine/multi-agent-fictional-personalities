@@ -12,9 +12,6 @@ from multi_agent_personalities.application.investigation_visit_service import (
 from multi_agent_personalities.models import InvestigationStatus, Message
 from multi_agent_personalities.web.investigation_store import InvestigationSessionRecord
 
-DEMO_CASE_TITLE = "The Local Demonstration Case"
-
-
 def _initials(display_name: str) -> str:
     words = display_name.split()
     if not words:
@@ -107,6 +104,7 @@ class InvestigationLeadDetailPresentation:
     lead_id: str
     label: str
     kind: str
+    reference: str | None
     current: bool
     writable_visit_id: str | None
     visits: tuple[InvestigationVisitPresentation, ...]
@@ -279,6 +277,7 @@ def present_session(
             lead_id=selected_lead.lead_id,
             label=selected_lead.label,
             kind=selected_lead.kind,
+            reference=selected_lead.reference,
             current=is_current,
             writable_visit_id=current_visit.visit_id if is_current else None,
             visits=tuple(selected_visits),

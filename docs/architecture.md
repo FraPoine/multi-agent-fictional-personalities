@@ -557,8 +557,10 @@ Catalogue-backed creation resolves the selected `case_id` and copies the
 definition's opening into `case_introduction`. The complete definition is not
 stored in the aggregate. Consequently two sessions may independently reference
 the same case, and later configuration changes cannot rewrite either session's
-opening. The existing lobby remains on its temporary introduction-based
-compatibility path until the later catalogue UX task.
+opening. The browser lobby renders one selectable card per local case and posts
+only `case_id` plus the investigator selection. The server resolves the trusted
+title and opening from the configured catalogue; browser-supplied opening text
+is neither required nor used.
 
 ### Case lead reference resolution
 
@@ -580,6 +582,12 @@ first visit only when that definition has not been visited. Resolving a
 historical lead returns its existing identity without mutation; resolving the
 current lead is a conflict. A revisit remains an explicit `visit_lead(lead_id=)`
 operation, preserving A → B → A chronology without duplicating Lead A.
+
+The normal lead-entry form accepts only the player-facing reference. An
+unvisited reference creates the semantic lead and first visit, a historical
+reference opens existing history without mutation, and revisit remains an
+explicit action. URLs continue to carry internal `lead_id` values rather than
+physical-game references.
 
 ### Case-aware resource catalogue
 

@@ -1142,6 +1142,16 @@ body {
 .step-content h2, .legend-title { display: block; font-family: var(--font-serif); font-size: 1.35rem; color: var(--color-ink); }
 .case-choice { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--color-accent); border-radius: var(--radius-medium); background: var(--surface-success); }
 .case-choice-mark { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: white; background: var(--color-accent); }
+.case-catalogue { display: grid; gap: var(--spacing-md); }
+.case-card input { position: absolute; opacity: 0; pointer-events: none; }
+.case-card label { display: flex; justify-content: space-between; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--border-default); border-radius: var(--radius-medium); background: var(--surface-subtle); cursor: pointer; }
+.case-card label strong, .case-card label small { display: block; }
+.case-card label small { margin-top: var(--spacing-xs); color: var(--color-muted); }
+.case-card .status-label { visibility: hidden; }
+.case-card input:checked + label { border-color: var(--color-accent); box-shadow: inset 0 0 0 1px var(--color-accent); background: var(--surface-success); }
+.case-card input:checked + label .status-label { visibility: visible; }
+.case-card input:focus-visible + label { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.lead-reference { font-family: var(--font-mono); letter-spacing: .04em; }
 .investigator-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-md); }
 .investigator-choice input { position: absolute; opacity: 0; pointer-events: none; }
 .investigator-choice label { min-height: 120px; display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: var(--spacing-md); padding: var(--spacing-md); border: 1px solid var(--border-default); border-radius: var(--radius-medium); cursor: pointer; background: var(--surface-subtle); }

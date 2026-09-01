@@ -44,10 +44,10 @@ def http_workflow(
         yield client, registry, output_root
 
 
-def create_session(client: ASGITestClient, introduction: str) -> str:
+def create_session(client: ASGITestClient, case_id: str = "archive-absence") -> str:
     response = client.post(
         "/investigations",
-        data={"characters": CHARACTERS, "introduction": introduction},
+        data={"characters": CHARACTERS, "case_id": case_id},
     )
     assert response.status_code == 303
     return response.headers["location"].rsplit("/", 1)[-1]
@@ -57,19 +57,11 @@ def visit_lead(
     client: ASGITestClient,
     registry: InMemoryInvestigationRegistry,
     session_id: str,
-    label: str,
+    reference: str,
 ) -> tuple[str, str]:
-    references = {
-        "Scotland Yard": "42 NW",
-        "Baker Street": "95 NW",
-        "Observatory": "42 NW",
-        "Recital Room": "42 NW",
-        "Dome Entrance": "95 NW",
-        "Service Door": "95 NW",
-    }
     response = client.post(
         f"/investigations/{session_id}/leads",
-        data={"reference": references[label]},
+        data={"reference": reference},
     )
     assert response.status_code == 303
     session = registry.snapshot(session_id)
@@ -99,22 +91,19 @@ def discuss(client: ASGITestClient, session_id: str, visit_id: str) -> None:
 def test_complete_a_b_a_workflow_through_real_http(http_workflow) -> None:
     client, registry, output_root = http_workflow
     assert client.get("/investigations").status_code == 200
-    session_id = create_session(
-        client,
-        "A visitor disappears after delivering a coded letter.",
-    )
+    session_id = create_session(client)
     opening = client.get(f"/investigations/{session_id}")
     assert opening.status_code == 200
     assert "Case opening" in opening.text
 
-    lead_a, visit_a1 = visit_lead(client, registry, session_id, "Scotland Yard")
+    lead_a, visit_a1 = visit_lead(client, registry, session_id, "42 NW")
     reveal(client, session_id, visit_a1, "The window was open.")
     reveal(client, session_id, visit_a1, "The corridor was used.")
     discuss(client, session_id, visit_a1)
     a_first = client.get(f"/investigations/{session_id}?lead={lead_a}")
     assert "The globally disclosed facts" in a_first.text
 
-    lead_b, visit_b = visit_lead(client, registry, session_id, "Baker Street")
+    lead_b, visit_b = visit_lead(client, registry, session_id, "95 NW")
     reveal(client, session_id, visit_b, "A cipher key was left on the desk.")
     discuss(client, session_id, visit_b)
     before_selection = registry.snapshot(session_id)
@@ -172,12 +161,20 @@ def test_complete_a_b_a_workflow_through_real_http(http_workflow) -> None:
 
 def test_interleaved_sessions_are_isolated(http_workflow) -> None:
     client, registry, output_root = http_workflow
-    first = create_session(client, "The observatory ledger vanished.")
-    second = create_session(client, "A violin disappeared from a sealed room.")
+    first = create_session(client, "archive-absence")
+    second = create_session(client, "observatory-signal")
     assert (first, second) == ("session_001", "session_002")
+    first_page = client.get(f"/investigations/{first}")
+    second_page = client.get(f"/investigations/{second}")
+    assert "The Archive Absence" in first_page.text
+    assert "Synthetic London Overview" in first_page.text
+    assert "Observatory Floor Plan" not in first_page.text
+    assert "The Observatory Signal" in second_page.text
+    assert "Observatory Floor Plan" in second_page.text
+    assert "Archive Gazette" not in second_page.text
 
-    lead_a, visit_a = visit_lead(client, registry, first, "Observatory")
-    lead_x, visit_x = visit_lead(client, registry, second, "Recital Room")
+    lead_a, visit_a = visit_lead(client, registry, first, "42 NW")
+    lead_x, visit_x = visit_lead(client, registry, second, "GF-26")
     reveal(client, first, visit_a, "The window was open.")
     reveal(client, second, visit_x, "The window was open.")
     reveal(client, first, visit_a, "The corridor was used.")
@@ -188,8 +185,8 @@ def test_interleaved_sessions_are_isolated(http_workflow) -> None:
     assert registry.snapshot(second).conversation_runs[0].run_id.startswith(second)
     assert registry.snapshot(first).conversation_runs[0].run_id.startswith(first)
 
-    lead_b, _visit_b = visit_lead(client, registry, first, "Dome Entrance")
-    lead_y, _visit_y = visit_lead(client, registry, second, "Service Door")
+    lead_b, _visit_b = visit_lead(client, registry, first, "95 NW")
+    lead_y, _visit_y = visit_lead(client, registry, second, "FF-1")
     first_selected = registry.snapshot(first)
     second_selected = registry.snapshot(second)
     assert client.get(f"/investigations/{first}?lead={lead_a}").status_code == 200

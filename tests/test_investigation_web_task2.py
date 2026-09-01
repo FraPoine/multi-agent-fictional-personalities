@@ -14,7 +14,7 @@ from tests.asgi_client import ASGITestClient
 ROOT = Path(__file__).resolve().parents[1]
 CREATE_FORM = {
     "characters": ["sherlock", "poirot"],
-    "introduction": "A coded letter arrives without a sender.",
+    "case_id": "archive-absence",
 }
 
 
@@ -146,6 +146,7 @@ def test_new_lead_and_explicit_revisit_preserve_semantic_identity(task2_client) 
     assert session.visits[0].lead_id == session.visits[2].lead_id == lead_a.lead_id
     page = client.get(response.headers["location"])
     assert page.text.count(">Archive Room<") == 2  # sidebar and thread heading
+    assert page.text.count("42 NW") >= 2  # prominent in sidebar and thread header
     assert "2 visits" in page.text
     assert "Revisited · Visit 3" in page.text
 

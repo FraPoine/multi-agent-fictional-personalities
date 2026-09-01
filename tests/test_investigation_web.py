@@ -15,7 +15,7 @@ from tests.asgi_client import ASGITestClient
 ROOT = Path(__file__).resolve().parents[1]
 VALID_FORM = {
     "characters": ["sherlock", "poirot"],
-    "introduction": "A sealed archive opens onto an unexplained absence.",
+    "case_id": "archive-absence",
 }
 
 
@@ -63,16 +63,14 @@ def test_router_exposes_only_lead_visit_mutations(web_client) -> None:
 
 def test_invalid_creation_preserves_submitted_values_and_registry(web_client) -> None:
     client, registry, _app = web_client
-    introduction = "Preserve this opening."
-
     response = client.post(
         "/investigations",
-        data={"characters": ["sherlock"], "introduction": introduction},
+        data={"characters": ["sherlock"], "case_id": "archive-absence"},
     )
 
     assert response.status_code == 400
     assert registry.session_ids == ()
-    assert introduction in response.text
+    assert 'value="archive-absence" checked' in response.text
     assert 'value="sherlock" checked' in response.text
     assert "Select all supported investigators" in response.text
 

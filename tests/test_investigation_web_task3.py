@@ -19,7 +19,6 @@ from tests.asgi_client import ASGITestClient
 
 ROOT = Path(__file__).resolve().parents[1]
 CASE_OPENING = load_case_catalog(default_case_catalog_directory(ROOT)).cases[0].opening
-INTRODUCTION = "A coded letter arrives without a sender."
 
 
 @pytest.fixture
@@ -35,7 +34,7 @@ def task3_client(tmp_path: Path):
             "/investigations",
             data={
                 "characters": ["sherlock", "poirot"],
-                "introduction": INTRODUCTION,
+                "case_id": "archive-absence",
             },
         )
         yield client, registry

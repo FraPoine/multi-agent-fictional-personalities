@@ -29,7 +29,6 @@ from multi_agent_personalities.case_catalog import (
 from multi_agent_personalities.models import InvestigationStatus, validate_run_id
 from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.web.investigation_presentation import (
-    DEMO_CASE_TITLE,
     catalogue_participants,
     present_session,
 )
@@ -43,7 +42,6 @@ from multi_agent_personalities.web.investigation_store import (
 )
 
 
-MAX_CASE_INTRODUCTION_LENGTH = 4000
 MAX_LEAD_REFERENCE_LENGTH = 80
 MAX_INFORMATION_LENGTH = 4000
 logger = logging.getLogger(__name__)
@@ -86,17 +84,14 @@ def _supported_configs(
 def _validate_investigation_creation_form(
     *,
     characters: list[str] | None,
-    introduction: str | None,
     known_slugs: Sequence[str],
     supported_slugs: Sequence[str],
-) -> tuple[list[str], str, str, dict[str, str]]:
+) -> tuple[list[str], dict[str, str]]:
     """Validate user-controlled fields before runtime/session construction."""
     submitted = list(characters or [])
     known = set(known_slugs)
     supported = set(supported_slugs)
     selected = [slug for slug in submitted if slug in supported]
-    raw_introduction = introduction or ""
-    normalized_introduction = raw_introduction.strip()
     errors: dict[str, str] = {}
 
     if len(submitted) != len(set(submitted)):
@@ -114,14 +109,7 @@ def _validate_investigation_creation_form(
             "Select the complete investigator set required by the mock scenario."
         )
 
-    if not normalized_introduction:
-        errors["introduction"] = "Enter a case introduction."
-    elif len(raw_introduction) > MAX_CASE_INTRODUCTION_LENGTH:
-        errors["introduction"] = (
-            "Case introduction must be at most "
-            f"{MAX_CASE_INTRODUCTION_LENGTH} characters."
-        )
-    return selected, normalized_introduction, raw_introduction, errors
+    return selected, errors
 
 
 def _index_context(
@@ -130,8 +118,9 @@ def _index_context(
     catalogue: Mapping[str, CharacterConfig],
     supported_configs: Sequence[CharacterConfig],
     capabilities: InvestigationMockCapabilities,
+    case_catalog: CaseCatalog,
     selected_slugs: Sequence[str] | None = None,
-    introduction_value: str = "",
+    selected_case_id: str | None = None,
     field_errors: Mapping[str, str] | None = None,
     error_message: str | None = None,
 ) -> dict[str, object]:
@@ -155,15 +144,21 @@ def _index_context(
             supported_character_ids=capabilities.participant_ids,
             selected_slugs=selected,
         ),
-        "case_title": DEMO_CASE_TITLE,
+        "cases": case_catalog.cases,
+        "selected_case_id": (
+            case_catalog.cases[0].case_id
+            if selected_case_id is None
+            else selected_case_id
+        ),
+        "case_titles": {
+            case.case_id: case.title for case in case_catalog.cases
+        },
         "capabilities": capabilities,
-        "introduction_value": introduction_value,
         "field_errors": dict(field_errors or {}),
         "error_message": error_message,
         "existing_records": tuple(
             registry.get(session_id) for session_id in registry.session_ids
         ),
-        "max_introduction_length": MAX_CASE_INTRODUCTION_LENGTH,
     }
 
 
@@ -181,7 +176,6 @@ def create_investigation_router(
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
     supported_slugs = tuple(config.slug for config in supported_configs)
-    default_case = case_catalog.cases[0]
 
     def render_error(
         request: Request,
@@ -242,6 +236,7 @@ def create_investigation_router(
                 catalogue=catalogue,
                 supported_configs=supported_configs,
                 capabilities=capabilities,
+                case_catalog=case_catalog,
                 **context,
             ),
             status_code=status_code,
@@ -358,30 +353,49 @@ def create_investigation_router(
     async def create_investigation(
         request: Request,
         characters: Annotated[list[str] | None, Form()] = None,
-        introduction: Annotated[str | None, Form()] = None,
+        case_id: Annotated[str | None, Form()] = None,
     ) -> Response:
-        selected, normalized, raw, field_errors = (
-            _validate_investigation_creation_form(
-                characters=characters,
-                introduction=introduction,
-                known_slugs=known_slugs,
-                supported_slugs=supported_slugs,
-            )
+        if case_id is not None:
+            try:
+                selected_case = case_catalog.get(case_id)
+            except KeyError:
+                return render_error(
+                    request,
+                    status_code=404,
+                    page_title="Case not found",
+                    heading="Case not found",
+                    message="The selected local case is not available.",
+                )
+        else:
+            selected_case = None
+        selected, field_errors = _validate_investigation_creation_form(
+            characters=characters,
+            known_slugs=known_slugs,
+            supported_slugs=supported_slugs,
         )
+        if selected_case is None:
+            field_errors["case_id"] = "Select one available case."
         if field_errors:
             return render_index(
                 request,
                 status_code=400,
                 selected_slugs=selected,
-                introduction_value=raw,
+                selected_case_id=case_id,
                 field_errors=field_errors,
                 error_message="Correct the highlighted fields and try again.",
             )
+        if selected_case is None:
+            raise RuntimeError("validated case selection is unexpectedly missing")
         try:
+            creation_case = (
+                {"case_id": selected_case.case_id}
+                if registry.case_catalog is case_catalog
+                else {"case_definition": selected_case}
+            )
             record = registry.create(
                 character_slugs=selected,
-                case_definition=default_case,
                 project_root=project_root,
+                **creation_case,
             )
         except InvestigationSessionCollisionError:
             logger.exception("Investigation session identifier collision")
@@ -389,7 +403,7 @@ def create_investigation_router(
                 request,
                 status_code=409,
                 selected_slugs=selected,
-                introduction_value=raw,
+                selected_case_id=selected_case.case_id,
                 error_message=(
                     "The investigation identifier is already in use. Try again."
                 ),
@@ -400,7 +414,7 @@ def create_investigation_router(
                 request,
                 status_code=500,
                 selected_slugs=selected,
-                introduction_value=raw,
+                selected_case_id=selected_case.case_id,
                 error_message=(
                     "The local mock investigation could not be created. "
                     "Check the project fixtures and try again."
