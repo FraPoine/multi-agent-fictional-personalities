@@ -1,5 +1,10 @@
 # Sprint 7 Lead/Visit UX redesign completion
 
+> Historical checkpoint: this record predates the six-task case-catalogue
+> integration. Its 874-test result is preserved as originally observed; see
+> [the later catalogue completion record](sprint_7_case_catalogue_completion.md)
+> for current architecture and verification evidence.
+
 ## Outcome
 
 Sprint 7 is complete for the offline Lead/Visit web scope. The main
@@ -67,4 +72,3 @@ database, browser-storage, or investigation-artifact dependency. Live
 providers, durable investigation persistence, real case content, enabled map
 and reference resources, human participation, scoring, and investigation-output
 recognizability evaluation remain future work.
-

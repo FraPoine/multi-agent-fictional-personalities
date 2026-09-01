@@ -536,6 +536,10 @@ conversations remain future work.
 
 ## Lead/Visit investigation architecture (redesign complete)
 
+The six-task local case-catalogue integration is complete; its current
+verification boundary is recorded in
+[`sprint_7_case_catalogue_completion.md`](sprint_7_case_catalogue_completion.md).
+
 ### Local case catalogue foundation
 
 Static case configuration and runtime investigation state are separate:

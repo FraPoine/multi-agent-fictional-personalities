@@ -2,6 +2,10 @@
 
 ## Sprint 7 Lead/Visit web redesign
 
+The catalogue-driven Lead/Visit browser flow described here is complete for
+synthetic local fixtures. See the
+[case-catalogue completion record](sprint_7_case_catalogue_completion.md).
+
 The main FastAPI application now presents `GET /investigations` as a local
 game-start lobby. It renders one selectable card per synthetic local
 `CaseDefinition`, investigator identities from the character catalogue, and

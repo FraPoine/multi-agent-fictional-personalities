@@ -105,7 +105,8 @@ real investigation game.
   flow; Task 5 aligns the server-rendered lobby, lead rail, editorial message
   stream, resource toolbar/drawer, and responsive controls with the Figma Make.
 - Task 6 closes the synthetic offline integration with cross-case, atomicity,
-  startup, and full-suite verification plus documentation.
+  startup, and full-suite verification plus documentation. See the
+  [case-catalogue completion record](sprint_7_case_catalogue_completion.md).
 - The structure is ready for later user-provided owned case material. No real
   or commercial case content is integrated, and this repository ships no
   copyrighted Sherlock case text, maps, newspapers, or handouts.

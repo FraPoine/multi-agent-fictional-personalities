@@ -106,7 +106,9 @@ repeatable bounded discussions, a resource workspace, explicit finalization,
 and a completed read-only archive. Investigation state is not persisted and
 vanishes when the application process restarts. See the historical
 [original verification record](docs/sprint_7_completion.md) and the final
-[redesign completion record](docs/sprint_7_redesign_completion.md).
+[redesign completion record](docs/sprint_7_redesign_completion.md). The later
+[case-catalogue integration completion record](docs/sprint_7_case_catalogue_completion.md)
+documents the six-task catalogue, reference, resource, and UX closure.
 
 The case-catalogue foundation loads immutable synthetic case definitions from
 `configs/investigation/cases/`. A catalogue-backed session stores the selected
@@ -318,7 +320,13 @@ python -m pytest tests/test_investigation_web.py -q
 python -m pytest tests/test_investigation_web_e2e.py -q
 ```
 
-The complete investigation workflow check is:
+The current catalogue-driven Lead/Visit HTTP E2E is:
+
+```bash
+python -m pytest tests/test_investigation_web_e2e.py
+```
+
+The older framework-independent round-workflow compatibility check is:
 
 ```bash
 python -m pytest tests/test_investigation_workflow_e2e.py

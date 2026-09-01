@@ -33,7 +33,8 @@ later, and run experiments and investigation sessions afterward.
 
 ## Current offline implementation
 
-Sprint 5 is complete. The repository provides both the existing conversation
+Sprints 5–7 and the six-task case-catalogue integration are complete. The
+repository provides both the existing conversation
 CLI and a local FastAPI/Jinja web interface for deterministic mock
 conversations between Sherlock Holmes and Hercule Poirot. Both delivery layers
 reuse framework-independent application and runtime logic; the web path also
@@ -52,9 +53,12 @@ does not provide scientifically interpretable results. The redesigned Sprint 6
 application uses persistent leads, chronological visits, explicit globally
 retained information, repeatable bounded conversations, optional reasoning,
 and explicit finalization. Its deterministic mock path is fixture-backed and
-offline. The main web application now delivers the redesigned Lead/Visit UX
-with process-local state. There is no investigation persistence,
-investigation CLI, live provider, real game content, or final human/LLM study.
+offline. The main web application selects a local synthetic `CaseDefinition`,
+resolves the trusted opening from `case_id`, accepts physical lead references,
+preserves persistent Lead/Visit chronology, presents case-aware resources with
+multiple-map support, and retains completed sessions as read-only process-local
+archives. There is no investigation persistence, investigation CLI, live
+provider, commercial game content, or final human/LLM study.
 
 ## Sprint 5 foundation
 
@@ -100,9 +104,11 @@ The system has six main stages:
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
 6. **Investigation (offline application workflow implemented)**
-   - Let the project user provide the opening, choose or revisit semantic
-     leads, and disclose information explicitly.
-   - Use `create_session`, `visit_lead`, `reveal_information`,
+   - Let the project user select a local synthetic case and investigators,
+     enter case-defined physical references, revisit semantic leads, and
+     disclose information explicitly.
+   - Resolve `CaseDefinition` by server-owned `case_id`, snapshot its opening,
+     and use `create_session`, `visit_case_lead`, `visit_lead`, `reveal_information`,
      `continue_lead_discussion`, optional reasoning-record operations, and
      `finalize_lead_investigation` as the authoritative stateless API.
    - Store chronological visits and bounded immutable `ConversationRun`
