@@ -62,6 +62,7 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
     task2_client,
 ) -> None:
     client, registry = task2_client
+    before = registry.snapshot("session_001")
 
     invalid_lead = client.post(
         "/investigations/session_001/leads",
@@ -85,7 +86,7 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
     assert malformed_reference.status_code == 400
     assert unknown_reference.status_code == 404
     assert other_scheme_reference.status_code == 404
-    assert registry.snapshot("session_001").visits == ()
+    assert registry.snapshot("session_001") == before
 
     unknown_lead = client.post(
         "/investigations/session_001/leads/session_001_lead_9999/visit"
@@ -100,7 +101,7 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
     assert unknown_lead.status_code == 404
     assert unknown_information.status_code == 404
     assert unknown_discussion.status_code == 404
-    assert registry.snapshot("session_001").visits == ()
+    assert registry.snapshot("session_001") == before
 
 
 def test_reference_entry_never_revisits_implicitly(task2_client) -> None:

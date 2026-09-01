@@ -181,8 +181,10 @@ def test_finalization_provider_failure_and_early_request_are_atomic(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     client, registry = task3_client
+    initial = registry.snapshot("session_001")
     early = client.post("/investigations/session_001/finalize")
     assert early.status_code == 409
+    assert registry.snapshot("session_001") == initial
     prepare_finalizable(client, registry)
     before = registry.snapshot("session_001")
 
