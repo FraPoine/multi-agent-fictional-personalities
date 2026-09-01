@@ -941,7 +941,7 @@ body {
     content: "";
     position: absolute;
     right: 0;
-    bottom: 0;
+    bottom: 9px;
     left: 0;
     height: 2px;
     border-radius: 2px 2px 0 0;
@@ -1088,6 +1088,10 @@ body {
 
     .app-nav a {
         padding: 7px 0 9px;
+    }
+
+    .app-nav a[aria-current="page"]::after {
+        bottom: 0;
     }
 }
 
