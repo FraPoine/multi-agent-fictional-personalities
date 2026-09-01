@@ -24,6 +24,7 @@ class InvestigationParticipantPresentation:
     slug: str
     display_name: str
     description: str
+    lobby_description: str
     initials: str
     presentation_class: str
     selected: bool
@@ -139,6 +140,10 @@ def catalogue_participants(
             slug=config.slug,
             display_name=config.display_name,
             description=config.description,
+            lobby_description={
+                "sherlock": "Analytical, observational, and deductive.",
+                "poirot": "Methodical, psychological, and orderly.",
+            }.get(config.slug, config.description),
             initials=_initials(config.display_name),
             presentation_class=f"participant-tone-{index % 4 + 1}",
             selected=config.slug in selected,
@@ -175,6 +180,7 @@ def present_session(
             slug=config.slug,
             display_name=config.display_name,
             description=config.description,
+            lobby_description=config.description,
             initials=_initials(config.display_name),
             presentation_class=f"participant-tone-{index % 4 + 1}",
             selected=True,

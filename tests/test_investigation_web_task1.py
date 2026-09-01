@@ -54,6 +54,10 @@ def test_lobby_is_catalogue_backed_game_start(task1_client) -> None:
     assert 'aria-describedby="investigator-requirement' in response.text
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
+    assert "Analytical, observational, and deductive." in response.text
+    assert "Methodical, psychological, and orderly." in response.text
+    assert '<legend class="visually-hidden">Investigators</legend>' in response.text
+    assert '<h2 id="investigator-selection-title">Investigators</h2>' in response.text
     assert 'name="characters" value="sherlock"' in response.text
     assert 'name="characters" value="poirot"' in response.text
     assert "investigator-avatar participant-tone-1" in response.text
