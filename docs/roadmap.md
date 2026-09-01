@@ -68,37 +68,23 @@ real investigation game.
   repeatable bounded conversation segments.
 - Made analyses, hypotheses, and decisions optional and non-gating.
 - Added explicit Lead/Visit finalization and deterministic semantic mock tasks.
-- Isolated remaining round imports to the original Sprint 7 compatibility
-  screen. See the [redesign completion record](sprint_6_redesign_completion.md).
+- Isolated remaining round implementation as private historical compatibility
+  code. See the [redesign completion record](sprint_6_redesign_completion.md).
 
 ## Sprint 7 — Investigation web UI
 
-- Implementation and automated verification are complete. The existing main
-  FastAPI application now provides a catalogue-backed deterministic mock
-  investigation UI with process-local state, explicit Game Master transitions,
-  a two-round browser-runtime capability, and explicit finalization.
-- Full HTTP workflow and interleaved-session isolation tests pass offline. The
-  investigation path writes no session artifacts and state disappears on
-  restart. Final interactive browser smoke confirmation remains pending, so
-  Sprint 7 closure is not yet declared complete. See the
-  [Sprint 7 verification record](sprint_7_completion.md).
-- After the Lead/Visit redesign, registry, locking, allocation, isolation, app
-  startup, and error infrastructure remain useful. The round screen is now an
-  explicit compatibility interface; its Lead/Visit UX is future work.
-- Lead/Visit UX redesign Task 1 now establishes the catalogue-driven game
-  lobby, authoritative Lead/Visit creation, shared game shell, Case Opening,
-  and resource entry points. Lead navigation and persistent conversation
-  projection remain later redesign tasks; this does not close the redesign.
-- Lead/Visit UX redesign Task 2 adds semantic lead navigation, explicit new
-  visits and revisits, current-visit information disclosure, historical
-  read-only protection, and repeatable bounded discussions projected as
-  persistent lead threads. Resource completion, finalization, and legacy-route
-  cleanup remain later tasks.
-- Lead/Visit UX redesign Task 3 adds the responsive resource workspace, honest
-  future-resource and human-participation states, explicit Lead/Visit Final
-  Theory generation, and the completed read-only archive. Final removal of the
-  original round routes/tests and repository-wide Sprint 7 closure remain Task
-  4 work.
+- The catalogue-backed deterministic mock UI now uses the authoritative
+  Lead/Visit model end to end: lobby, Case Opening, semantic leads, new visits
+  and revisits, information disclosure, repeatable discussions, resources,
+  explicit finalization, and a completed read-only archive.
+- Task 4 removed the original round routes, presentation helpers, dead styles,
+  and obsolete HTTP tests. Private round application/model compatibility code
+  remains deliberately outside the web contract.
+- Full HTTP workflow, interleaved-session isolation, investigation, and
+  repository regressions pass offline. The investigation path writes no
+  artifacts and process restart discards state. See the historical
+  [original verification record](sprint_7_completion.md) and final
+  [redesign completion record](sprint_7_redesign_completion.md).
 
 ## Sprint 8 — Generic recognizability evaluation
 

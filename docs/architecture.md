@@ -1,8 +1,8 @@
 # Architecture
 
-## Lead/Visit web presentation checkpoint
+## Lead/Visit web presentation
 
-Sprint 7 redesign Task 1 adds a server-side presentation boundary in
+Sprint 7 adds a server-side presentation boundary in
 `web/investigation_presentation.py`. It projects catalogue identities and an
 immutable `InvestigationSessionRecord` into lobby, participant, resource, and
 session view data; Jinja does not traverse legacy round state to decide the
@@ -10,10 +10,9 @@ new shell. Creation still runs through the existing registry, deterministic
 runtime assembly, and application-level `create_session()` operation.
 
 The detail shell reserves separate regions for chronological leads, central
-case content, and resources. At this checkpoint only the no-visits Case Opening
-state is authoritative. Legacy round mutation routes and helpers remain
-physically present pending the later cleanup task, but the new templates do not
-link to or render their workflow controls.
+case content, and resources. It presents Case Opening, active and historical
+lead threads, final theory, and the completed archive. Legacy round mutation
+routes and presentation helpers have been removed from the web layer.
 
 Task 2 extends that presentation boundary with one sidebar item per semantic
 `InvestigationLead`, visit counts/current state, and a selected-lead detail
@@ -615,15 +614,13 @@ The committed coverage includes Visit 1 segments 1 and 2 plus segment 1 for
 Visits 2 and 3; `available_discussion_segments` counts these four supported
 visit/segment combinations rather than imposing a session-wide run limit.
 
-The Sprint 7 web workflow has not yet migrated. Its
-`Clue`, `InvestigationRound`, and `InvestigationRoundStatus` types remain as
-isolated transitional fields on the aggregate so existing offline behavior
-continues to work. `EvidenceReference.clue_id` is accepted only for that legacy
-graph, with exactly one of `information_id` or `clue_id` required. The new
-Lead/Visit graph does not depend on the round state machine. Round symbols and
-services are excluded from authoritative public exports and remain directly
-importable only by the original Sprint 7 compatibility screen. The future
-visual Lead/Visit UX rewrite will remove that final private compatibility code.
+The Sprint 7 web workflow uses only the Lead/Visit graph. `Clue`,
+`InvestigationRound`, and `InvestigationRoundStatus` remain isolated private
+compatibility fields so historical offline behavior and tests remain readable.
+`EvidenceReference.clue_id` is accepted only for that legacy graph, with
+exactly one of `information_id` or `clue_id` required. Round symbols and
+services are excluded from authoritative public exports and are not imported
+by the web layer.
 
 ## Sprint 5 investigation domain (historical foundation)
 
@@ -747,9 +744,9 @@ Simulation or persistence failure
 Sprint 7 mounts an investigation router in the same main FastAPI application
 as the conversation UI. The blind-rater application remains separate. The
 router provides the list/create page, one canonical state-driven detail page,
-and explicit POST routes for clue revelation, analyses, discussion, decision,
-and finalization. Successful mutations use `303` POST/Redirect/GET; GET routes
-only render the latest snapshot.
+and explicit POST routes for lead visits, information disclosure, bounded
+discussion, and finalization. Successful mutations use `303`
+POST/Redirect/GET; GET routes only render the latest snapshot.
 
 `InMemoryInvestigationRegistry` is injected by the application factory and
 owns monotonic session allocation plus one record per process-local session.
@@ -761,12 +758,10 @@ atomically replaces the record only after a complete validated result. Locks
 for distinct sessions are independent.
 
 Runtime assembly resolves participants and presentation from the character
-catalogue, constructs participant-specific fixture providers, scopes
-structured mock references to the owning `session_NNN` namespace, and exposes
-the fixed mock capability of two rounds and two discussion turns. The browser
-stops offering clues when that fixture-backed capability is exhausted and then
-offers explicit finalization. This is not a domain minimum or maximum-round
-rule, and the web layer does not reinterpret application invariants.
+catalogue, constructs participant-specific fixture providers, and scopes mock
+references to the owning `session_NNN` namespace. Semantic task names select
+the committed visit/segment fixtures; fixture exhaustion is reported as a
+local failure and is not interpreted as a domain visit or discussion limit.
 
 The registry writes no investigation JSON, JSONL, Markdown, database, or
 browser storage. Navigation works only while one application process remains

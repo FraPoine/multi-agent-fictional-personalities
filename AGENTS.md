@@ -52,8 +52,9 @@ does not provide scientifically interpretable results. The redesigned Sprint 6
 application uses persistent leads, chronological visits, explicit globally
 retained information, repeatable bounded conversations, optional reasoning,
 and explicit finalization. Its deterministic mock path is fixture-backed and
-offline. There is no investigation persistence, investigation CLI, redesigned
-Lead/Visit web UX, live provider, real game content, or final human/LLM study.
+offline. The main web application now delivers the redesigned Lead/Visit UX
+with process-local state. There is no investigation persistence,
+investigation CLI, live provider, real game content, or final human/LLM study.
 
 ## Sprint 5 foundation
 

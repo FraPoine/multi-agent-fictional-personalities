@@ -496,11 +496,11 @@ and visit, globally revealed information, visit chronology, and this same-lead
 projection. The participant runtime supplies persona context and the simulation
 engine supplies current-segment message history.
 
-### Transitional round records
+### Private legacy round records
 
 ### Definition
 
-The existing Sprint 6/Sprint 7 workflow continues temporarily to use:
+The historical Sprint 6 round workflow retains:
 
 ```text
 Clue
@@ -521,8 +521,9 @@ are unique within a validated collection.
 Legacy evidence points to a clue through its stable ID rather than copying the
 clue text. Exactly one target is required: new records use `information_id`;
 existing round records use `clue_id`. `Clue`, `InvestigationRound`, and
-`InvestigationRoundStatus` remain for application/web compatibility only and
-do not constrain the authoritative Lead/Visit graph. Deductions, explanations,
+`InvestigationRoundStatus` remain for private application compatibility only;
+the web layer does not import them and they do not constrain the authoritative
+Lead/Visit graph. Deductions, explanations,
 and agent interpretations belong to the reasoning records below.
 
 ## 8. Investigation reasoning and decisions
@@ -533,8 +534,8 @@ On the authoritative Lead/Visit path, reasoning is optional and non-gating.
 origin visit and lead without completing that visit. Their evidence targets
 revealed information. Zero analyses, hypotheses, and decisions is valid.
 
-The old `round_id` fields remain mutually exclusive compatibility alternatives
-for the original Sprint 7 compatibility screen. They are excluded from the
+The old `round_id` fields remain mutually exclusive private compatibility
+alternatives. They are excluded from the
 authoritative model export contract. Legacy validators apply only to round-owned records; Lead/Visit
 records validate visit ownership, lead agreement, session references, and
 revealed-information evidence.
@@ -628,7 +629,7 @@ InvestigationSession
 
 `InvestigationSession` is the immutable aggregate root. Its new authoritative
 collections are `leads`, `visits`, and `revealed_information`; the remaining
-round collections are transitional until later redesign tasks. It validates entity
+round collections are private legacy compatibility data. It validates entity
 IDs, round and participant ownership, exact per-analysis temporal visibility,
 clue and record references, contiguous clue and round order, round-analysis
 consistency, and backward-only hypothesis revision links without executing
@@ -654,8 +655,8 @@ without clues, analyses, hypotheses, decisions, or a final theory. Only a
 create an active session and explicitly reveal one caller-supplied clue while
 opening its round; they require an immutable deterministic ID factory and do
 not perform a `setup`-to-`active` transition. No autonomous controller, game
-loop, persistence, or automatic clue disclosure exists. The implemented web
-delivery invokes these operations one explicit action at a time.
+loop, persistence, or automatic clue disclosure exists. These legacy
+operations are not invoked by the implemented web delivery.
 
 ### Web registry records are outside the aggregate
 
@@ -677,12 +678,12 @@ also infrastructure state, not Pydantic domain fields. A successful mutation
 replaces the record with a new immutable session snapshot while retaining its
 runtime; failed mutations retain the prior record.
 
-The current runtime advertises two supported clue rounds and two discussion
-turns because that is the committed fixture inventory. The aggregate and its
-public operations do not encode a two-round limit. Final-theory semantics are
-unchanged: only an explicit successful finalization creates both the theory
-and `completed` status. Registry records are neither serialized nor restored,
-and application restart discards them.
+The current Lead/Visit runtime advertises committed semantic discussion
+segments and a finalization fixture. The aggregate does not encode that fixture
+inventory as a visit or discussion limit. Final-theory semantics are unchanged:
+only an explicit successful finalization creates both the theory and
+`completed` status. Registry records are neither serialized nor restored, and
+application restart discards them.
 
 ### Investigation provider payloads
 

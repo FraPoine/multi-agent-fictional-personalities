@@ -83,15 +83,12 @@ participant-owned provider. The provider boundary now returns validated
 consumes `result.text`; agent runtime now stores both `result.text` and the
 complete metadata in each new `Message`. Legacy messages without nested metadata
 remain readable, and no metadata is shown in transcripts, CLI output, or web UI.
-Sprint 6 adds a framework-independent deterministic investigation application
-workflow over those immutable models. Its public operations create active
-sessions, reveal caller-supplied clues, generate independent analyses, reuse
-round-robin conversation simulation for discussion, record structured group
-decisions, pause after every round, and finalize only on an explicit caller
-request. Local fixture-backed two-round execution is covered end to end. It
-does not provide investigation persistence, CLI or web delivery, live-provider
-execution, automatic clues/actions/finalization, scoring, or recognizability
-evaluation of investigation output. See the
+Sprint 6 added the framework-independent deterministic investigation
+foundation. The original round workflow remains covered as private historical
+compatibility code; it is no longer part of the browser contract. It does not
+provide investigation persistence, CLI delivery, live-provider execution,
+automatic actions, scoring, or recognizability evaluation of investigation
+output. See the
 [Sprint 6 completion record](docs/sprint_6_completion.md).
 
 The redesigned Sprint 6 application path now uses persistent leads,
@@ -99,18 +96,17 @@ chronological visits, explicit globally retained information, and repeatable
 bounded conversation segments. Optional analyses, hypotheses, and decisions
 are visit-aware and do not gate navigation or discussion. Explicit Lead/Visit
 finalization uses retained history and requires no analysis or decision per
-visit. The original round workflow is isolated from public exports and remains
-temporarily importable only for the preserved Sprint 7 compatibility screen;
-its Lead/Visit UX rewrite is a separate future effort.
+visit. The original round workflow is isolated from public exports and from
+all active web routes, presentation helpers, templates, and browser scripts.
 
-Sprint 7 exposes that workflow in the existing main FastAPI/Jinja application.
-The browser delivery uses catalogue-backed mock participants, a process-local
-in-memory registry, one canonical state-driven detail page, and an explicit
-Game Master POST for each transition. The current mock browser scenario
-supports two rounds and then offers explicit finalization; this is a runtime
-capability, not a two-round domain invariant. Investigation state is not
-persisted and vanishes when the application process restarts. See the
-[Sprint 7 verification record](docs/sprint_7_completion.md).
+Sprint 7 exposes the Lead/Visit workflow in the existing main FastAPI/Jinja
+application. The browser delivery uses catalogue-backed mock participants, a
+process-local registry, semantic lead navigation, chronological visits,
+repeatable bounded discussions, a resource workspace, explicit finalization,
+and a completed read-only archive. Investigation state is not persisted and
+vanishes when the application process restarts. See the historical
+[original verification record](docs/sprint_7_completion.md) and the final
+[redesign completion record](docs/sprint_7_redesign_completion.md).
 
 ### Implemented workflows
 
@@ -118,9 +114,9 @@ persisted and vanishes when the application process restarts. See the
 - deterministic multi-agent conversations through application, CLI, and web;
 - atomic persistence for conversation runs;
 - technical evaluation-pilot preparation, rating, and analysis tooling; and
-- deterministic two-round mock investigation orchestration with explicit clue
-  revelation, analysis, discussion, decisions, pauses, and finalization,
-  available through the main local web application.
+- deterministic Lead/Visit investigation orchestration with explicit
+  information disclosure, revisits, repeatable discussions, resources, and
+  finalization through the main local web application.
 
 ## Technical blind-evaluation pilot
 
@@ -323,9 +319,8 @@ critical-path tests reject attempted network access.
 
 ## Future work
 
-Sprint 6's offline mock investigation workflow and Sprint 7's local browser
-delivery are implemented. Sprint 7 automated and terminal HTTP verification is
-recorded, while final interactive browser smoke confirmation remains pending.
+Sprint 6's offline mock investigation workflow and Sprint 7's final Lead/Visit
+browser redesign are implemented and covered by offline HTTP verification.
 Sprint 8 generalizes the recognizability evaluation, and Sprint 9 completes
 the offline system. Live-
 provider integration, real observability, characters three and four,

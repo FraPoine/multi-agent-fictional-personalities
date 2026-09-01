@@ -1,6 +1,6 @@
 # Functional Specification
 
-## Sprint 7 Lead/Visit web redesign — Task 1 checkpoint
+## Sprint 7 Lead/Visit web redesign
 
 The main FastAPI application now presents `GET /investigations` as a local
 game-start lobby. It offers one honest demonstration/Game Master case setup,
@@ -14,10 +14,9 @@ identities, an empty future Leads area, and Rules/Case Notes resource entry
 points. Rules are a small local dialog; Case Notes and the Begin Investigation
 control are visible scaffolds for later tasks. No GET mutates the session.
 
-This checkpoint intentionally does not implement lead navigation, conversation
-projection, information revelation, revisit behavior, or finalization. The
-original round POST routes remain temporarily installed for compatibility, but
-their phase controls and round/provider terminology are no longer player-facing.
+The final route contract implements lead navigation, conversation projection,
+information revelation, revisit behavior, resources, and finalization. The
+original round POST routes and their presentation helpers are not installed.
 
 Task 2 adds the core server-rendered Lead/Visit interaction. Selecting a
 semantic lead uses `GET /investigations/{session_id}?lead={lead_id}` and never
@@ -99,9 +98,8 @@ turn task names. Lead/Visit finalization has a separate versioned prompt and
 fixture. Fixture coverage is not a maximum enforced by the domain.
 
 The older clue/analysis/discussion/decision/finalization operations are absent
-from authoritative public exports. They remain directly importable only for
-the original Sprint 7 compatibility screen. A separate future UX effort will
-replace that screen and remove the final private compatibility implementation.
+from authoritative public exports and the active web layer. Their private
+implementation remains only for historical application compatibility tests.
 
 ## Purpose
 
@@ -472,12 +470,11 @@ and must be documented and applied consistently when selected.
 
 ### Description
 
-The implemented Sprint 6 application workflow is framework-independent,
-stateless, deterministic, mock-only, and caller moderated. The caller provides
-the case introduction and reveals each clue explicitly; no operation invents a
-clue, executes a decision, advances automatically, or finalizes implicitly.
+The historical Sprint 6 round workflow is framework-independent, stateless,
+deterministic, mock-only, and caller moderated. It remains a private
+compatibility path and is not the active browser workflow.
 
-### Public workflow
+### Historical compatibility workflow
 
 | Operation | Accepted state | Result | Provider calls and boundary |
 |---|---|---|---|
@@ -517,26 +514,25 @@ The local deterministic browser delivery described below is implemented.
 
 ### Description
 
-The existing main FastAPI/Jinja application exposes the Sprint 6 workflow to a
-Game Master without changing its domain rules. `GET /investigations` lists
-process-local sessions and provides catalogue-backed creation. Each session is
-rendered at one canonical `/investigations/{session_id}` detail page whose
-controls reflect the latest immutable snapshot.
+The existing main FastAPI/Jinja application exposes the authoritative
+Lead/Visit workflow to a Game Master. `GET /investigations` lists process-local
+sessions and provides catalogue-backed creation. Each session is rendered at
+one canonical `/investigations/{session_id}` detail page whose controls reflect
+the latest immutable snapshot.
 
 ### Explicit browser flow
 
 ```text
-create → reveal clue → analyses → discussion → decision → Game Master pause
-→ reveal next clue → analyses → discussion → decision → mock exhaustion
-→ explicit finalization → completed session and final theory
+create → visit lead A → reveal information and discuss → visit lead B
+→ revisit lead A → continue its persistent thread → explicit finalization
+→ completed read-only archive and final theory
 ```
 
 Every mutation requires its own POST and successful mutations redirect with
-`303` to the canonical detail page. GET and refresh are side-effect free. A
-decision completes only its round and never creates another round or finalizes
-the session. The current fixture-backed runtime supports two clue rounds and
-two discussion turns; after exhaustion the page removes the clue action and
-offers finalization. This capability is not a general domain round limit.
+`303` to the canonical detail page. GET and refresh are side-effect free.
+Historical visits are read-only; an explicit revisit creates a new visit for
+the same semantic lead. Discussion segments are repeatable while matching mock
+fixtures exist, and fixture inventory is not a domain limit.
 
 ### State and error behaviour
 
@@ -556,9 +552,9 @@ offers finalization. This capability is not a general domain round limit.
 
 - Sherlock Holmes and Hercule Poirot are selected through the validated
   catalogue and displayed in configured participant order.
-- Clues, analyses, hypotheses, ordered discussion messages, decisions, pauses,
+- Leads, visits, disclosed information, ordered discussion messages, resources,
   and the final theory remain visible as history accumulates.
-- No phase executes automatically, and completed sessions expose no mutation
+- No action executes automatically, and completed sessions expose no mutation
   controls.
 - Two sessions can be advanced independently without record or identifier
   leakage.
