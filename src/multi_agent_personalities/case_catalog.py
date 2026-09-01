@@ -3,6 +3,7 @@
 from pathlib import Path
 import re
 from datetime import date as Date
+from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated
 
@@ -38,8 +39,11 @@ def normalize_london_address_reference(raw_reference: str) -> str:
     """Normalize supported London address aliases to ``number AREA``."""
     if not isinstance(raw_reference, str) or not raw_reference.strip():
         raise ValueError("lead reference must not be empty")
-    compact = re.sub(r"[\s-]+", "", raw_reference).upper()
-    match = re.fullmatch(r"(?:(\d+)(NW|WC|SW|EC|SE)|(NW|WC|SW|EC|SE)(\d+))", compact)
+    candidate = raw_reference.strip().upper()
+    match = re.fullmatch(
+        r"(?:(\d+)(?: ?)(NW|WC|SW|EC|SE)|(NW|WC|SW|EC|SE)-?(\d+))",
+        candidate,
+    )
     if match is None:
         raise ValueError("invalid London address reference")
     number = match.group(1) or match.group(4)
@@ -51,8 +55,8 @@ def normalize_carlton_interior_reference(raw_reference: str) -> str:
     """Normalize supported interior aliases to ``FLOOR-number``."""
     if not isinstance(raw_reference, str) or not raw_reference.strip():
         raise ValueError("lead reference must not be empty")
-    compact = re.sub(r"[\s-]+", "", raw_reference).upper()
-    match = re.fullmatch(r"(GF|FF|BF)(\d+)", compact)
+    candidate = raw_reference.strip().upper()
+    match = re.fullmatch(r"(GF|FF|BF)-?(\d+)", candidate)
     if match is None:
         raise ValueError("invalid Carlton interior reference")
     return f"{match.group(1)}-{match.group(2)}"
@@ -65,6 +69,30 @@ def normalize_case_lead_reference(reference_scheme: str, raw_reference: str) -> 
     if reference_scheme == CARLTON_INTERIOR_SCHEME:
         return normalize_carlton_interior_reference(raw_reference)
     raise ValueError(f"unsupported lead reference_scheme: {reference_scheme!r}")
+
+
+@dataclass(frozen=True)
+class ParsedCaseLeadReference:
+    """One globally supported structural scheme and canonical reference."""
+
+    reference_scheme: str
+    canonical_reference: str
+
+
+def parse_supported_case_lead_reference(
+    raw_reference: str,
+) -> ParsedCaseLeadReference:
+    """Parse against every globally supported lead-reference scheme."""
+    normalizers = (
+        (LONDON_ADDRESS_SCHEME, normalize_london_address_reference),
+        (CARLTON_INTERIOR_SCHEME, normalize_carlton_interior_reference),
+    )
+    for scheme, normalizer in normalizers:
+        try:
+            return ParsedCaseLeadReference(scheme, normalizer(raw_reference))
+        except ValueError:
+            continue
+    raise ValueError("malformed case lead reference")
 
 
 def _duplicates(values: list[str]) -> tuple[str, ...]:

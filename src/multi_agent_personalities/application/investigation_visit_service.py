@@ -7,7 +7,7 @@ from datetime import datetime
 from multi_agent_personalities.case_catalog import (
     CaseDefinition,
     CaseLeadDefinition,
-    normalize_case_lead_reference,
+    parse_supported_case_lead_reference,
 )
 
 from multi_agent_personalities.application.investigation_prompts import (
@@ -140,18 +140,15 @@ def resolve_case_lead(
     """Resolve player input against the selected case's declared schemes."""
     if not isinstance(case_definition, CaseDefinition):
         raise ValueError("case_definition must be a validated CaseDefinition")
-    canonical_by_scheme: dict[str, str] = {}
-    for scheme in dict.fromkeys(lead.reference_scheme for lead in case_definition.leads):
-        try:
-            canonical_by_scheme[scheme] = normalize_case_lead_reference(
-                scheme, raw_reference
-            )
-        except ValueError:
-            continue
-    if not canonical_by_scheme:
-        raise InvalidCaseLeadReferenceError("malformed case lead reference")
+    try:
+        parsed = parse_supported_case_lead_reference(raw_reference)
+    except ValueError as error:
+        raise InvalidCaseLeadReferenceError(str(error)) from error
     for lead in case_definition.leads:
-        if canonical_by_scheme.get(lead.reference_scheme) == lead.reference:
+        if (
+            lead.reference_scheme == parsed.reference_scheme
+            and lead.reference == parsed.canonical_reference
+        ):
             return lead
     raise UnknownCaseLeadReferenceError(
         f"unknown lead reference for case {case_definition.case_id!r}"

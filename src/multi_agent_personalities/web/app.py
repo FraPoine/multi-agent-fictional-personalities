@@ -10,6 +10,11 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
 
+from multi_agent_personalities.case_catalog import (
+    CaseCatalog,
+    default_case_catalog_directory,
+    load_case_catalog,
+)
 from multi_agent_personalities.application import (
     ConversationResult,
     run_mock_conversation,
@@ -260,6 +265,7 @@ def create_app(
     project_root: Path | None = None,
     output_root: Path | None = None,
     investigation_registry: InMemoryInvestigationRegistry | None = None,
+    case_catalog: CaseCatalog | None = None,
 ) -> FastAPI:
     """Create the local web application without starting a server."""
     resolved_project_root = (
@@ -269,8 +275,13 @@ def create_app(
         OUTPUT_ROOT if output_root is None else Path(output_root)
     )
     registry = character_registry(resolved_project_root)
+    resolved_case_catalog = (
+        load_case_catalog(default_case_catalog_directory(resolved_project_root))
+        if case_catalog is None
+        else case_catalog
+    )
     resolved_investigation_registry = (
-        InMemoryInvestigationRegistry()
+        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog)
         if investigation_registry is None
         else investigation_registry
     )
@@ -284,6 +295,7 @@ def create_app(
         version="0.1.0",
     )
     application.state.investigation_registry = resolved_investigation_registry
+    application.state.case_catalog = resolved_case_catalog
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the fixed local assets without a worker-thread hop."""
@@ -426,6 +438,7 @@ def create_app(
             registry=resolved_investigation_registry,
             project_root=resolved_project_root,
             catalogue=registry,
+            case_catalog=resolved_case_catalog,
             templates=templates,
         )
     )

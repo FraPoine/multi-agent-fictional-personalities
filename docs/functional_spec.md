@@ -75,6 +75,12 @@ label and kind. London aliases such as `42nw`, `NW42`, and `NW-42` resolve to
 input is a `400`, a valid but unknown case reference is a `404`, and an
 already-current lead is a `409`.
 
+Syntax is classified against all supported schemes before case lookup. For
+example, `GF-26` is valid syntax even for a London-only case and therefore
+returns `404` when unavailable, not `400`. Normalization accepts only the
+documented compact, single-space, and single-hyphen aliases; misplaced or
+repeated separators remain malformed.
+
 Entering a historical lead reference is a side-effect-free selection of the
 existing semantic lead. It never creates a visit. The user must invoke the
 existing internal-`lead_id` revisit route explicitly, which appends a new

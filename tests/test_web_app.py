@@ -14,11 +14,18 @@ from fastapi import APIRouter
 from tests.asgi_client import ASGITestClient
 
 from multi_agent_personalities.models import Persona
+from multi_agent_personalities.case_catalog import (
+    default_case_catalog_directory,
+    load_case_catalog,
+)
 
 
 web_module = importlib.import_module("multi_agent_personalities.web.app")
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+REPOSITORY_CASE_CATALOG = load_case_catalog(
+    default_case_catalog_directory(REPOSITORY_ROOT)
+)
 TOPIC = "A valuable document disappeared from a locked room."
 EXPECTED_ARTIFACTS = (
     "run.json",
@@ -137,6 +144,7 @@ def synthetic_web_client(
     application = web_module.create_app(
         project_root=project_root,
         output_root=output_root,
+        case_catalog=REPOSITORY_CASE_CATALOG,
     )
     with ASGITestClient(application) as client:
         yield client, output_root
@@ -145,6 +153,34 @@ def synthetic_web_client(
 def assert_html_response(response: Any, status_code: int) -> None:
     assert response.status_code == status_code
     assert response.headers["content-type"].startswith("text/html")
+
+
+def test_create_app_shares_one_loaded_case_catalog_with_registry_and_router(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    load_calls: list[Path] = []
+    captured: dict[str, object] = {}
+
+    def load_once(path: Path):
+        load_calls.append(path)
+        return REPOSITORY_CASE_CATALOG
+
+    def capture_router(**kwargs: object) -> APIRouter:
+        captured.update(kwargs)
+        return APIRouter()
+
+    monkeypatch.setattr(web_module, "load_case_catalog", load_once)
+    monkeypatch.setattr(web_module, "create_investigation_router", capture_router)
+
+    application = web_module.create_app(project_root=REPOSITORY_ROOT)
+
+    assert len(load_calls) == 1
+    assert application.state.case_catalog is REPOSITORY_CASE_CATALOG
+    assert (
+        application.state.investigation_registry.case_catalog
+        is REPOSITORY_CASE_CATALOG
+    )
+    assert captured["case_catalog"] is REPOSITORY_CASE_CATALOG
 
 
 def assert_no_completed_run(output_root: Path) -> None:

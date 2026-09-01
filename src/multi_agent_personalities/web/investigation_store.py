@@ -73,6 +73,11 @@ class InMemoryInvestigationRegistry:
         with self._registry_lock:
             return tuple(self._records)
 
+    @property
+    def case_catalog(self) -> CaseCatalog | None:
+        """Expose the immutable catalogue configured for session creation."""
+        return self._case_catalog
+
     def create(
         self,
         *,

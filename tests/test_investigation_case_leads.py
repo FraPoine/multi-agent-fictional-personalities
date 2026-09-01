@@ -19,6 +19,7 @@ from multi_agent_personalities.case_catalog import (
     load_case_catalog,
     normalize_carlton_interior_reference,
     normalize_london_address_reference,
+    parse_supported_case_lead_reference,
 )
 from multi_agent_personalities.models import FinalTheory, InvestigationStatus
 
@@ -40,7 +41,7 @@ def test_london_reference_has_no_two_digit_maximum() -> None:
     assert normalize_london_address_reference("100sw") == "100 SW"
 
 
-@pytest.mark.parametrize("raw", ("gf26", "GF26", "gf-26"))
+@pytest.mark.parametrize("raw", ("gf26", "GF26", "gf-26", "GF-26"))
 def test_carlton_aliases_normalize(raw: str) -> None:
     assert normalize_carlton_interior_reference(raw) == "GF-26"
 
@@ -51,6 +52,10 @@ def test_carlton_aliases_normalize(raw: str) -> None:
         (normalize_london_address_reference, "42 NE"),
         (normalize_carlton_interior_reference, "LG-5"),
         (normalize_london_address_reference, "not a lead"),
+        (normalize_london_address_reference, "4-2 NW"),
+        (normalize_carlton_interior_reference, "G-F26"),
+        (normalize_carlton_interior_reference, "GF--26"),
+        (normalize_london_address_reference, "NW--42"),
     ),
 )
 def test_invalid_reference_structure_is_rejected(normalizer, raw: str) -> None:
@@ -73,10 +78,28 @@ def new_case_session():
 
 def test_resolver_distinguishes_malformed_and_unknown_references() -> None:
     assert resolve_case_lead(LONDON_CASE, "nw42").reference == "42 NW"
-    with pytest.raises(InvalidCaseLeadReferenceError):
+    with pytest.raises(UnknownCaseLeadReferenceError):
         resolve_case_lead(LONDON_CASE, "GF-26")
     with pytest.raises(UnknownCaseLeadReferenceError):
         resolve_case_lead(LONDON_CASE, "100 SW")
+    with pytest.raises(UnknownCaseLeadReferenceError):
+        resolve_case_lead(INTERIOR_CASE, "42 NW")
+    with pytest.raises(InvalidCaseLeadReferenceError):
+        resolve_case_lead(LONDON_CASE, "not a lead")
+
+
+def test_global_parser_recognizes_supported_syntax_before_case_lookup() -> None:
+    parsed_london = parse_supported_case_lead_reference("100 SW")
+    parsed_interior = parse_supported_case_lead_reference("gf-26")
+
+    assert (parsed_london.reference_scheme, parsed_london.canonical_reference) == (
+        "london-address",
+        "100 SW",
+    )
+    assert (parsed_interior.reference_scheme, parsed_interior.canonical_reference) == (
+        "carlton-interior",
+        "GF-26",
+    )
 
 
 def test_unvisited_historical_and_explicit_revisit_preserve_identity() -> None:

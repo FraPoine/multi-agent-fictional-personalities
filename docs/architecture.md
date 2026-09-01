@@ -569,8 +569,13 @@ identifier used in URLs and aggregate references. A created runtime lead copies
 only `case_lead_key`, canonical `reference`, `label`, and `kind` from its case
 definition.
 
-`resolve_case_lead()` parses aliases separately for London addresses and
-Carlton-style interiors. `visit_case_lead()` creates a semantic lead and its
+`parse_supported_case_lead_reference()` first checks input against every
+globally supported scheme using explicit conservative alternatives; validity
+does not depend on which schemes the selected case happens to use. It never
+deletes arbitrary separators. `resolve_case_lead()` then searches the selected
+case for the parsed scheme and canonical reference. Thus malformed syntax is a
+`400`, while structurally valid syntax absent from the case is a `404`.
+`visit_case_lead()` creates a semantic lead and its
 first visit only when that definition has not been visited. Resolving a
 historical lead returns its existing identity without mutation; resolving the
 current lead is a conflict. A revisit remains an explicit `visit_lead(lead_id=)`
@@ -596,6 +601,12 @@ One map renders directly; multiple maps preserve case order and use a small
 drawer selector. Missing optional assets produce an honest local placeholder.
 Case Opening and Rules remain application-level resources. No network access,
 asset ingestion, or automatic unlock engine is involved.
+
+The FastAPI application loads one immutable `CaseCatalog` during
+`create_app()`. That same object configures the default process-local registry
+and is passed to the investigation router for creation, lead resolution, and
+resource presentation. Injected registries remain supported, but the router
+does not independently reload catalogue configuration.
 
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:

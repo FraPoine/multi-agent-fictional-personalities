@@ -78,8 +78,14 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
         "/investigations/session_001/leads",
         data={"reference": "100 SW"},
     )
+    other_scheme_reference = client.post(
+        "/investigations/session_001/leads",
+        data={"reference": "GF-26"},
+    )
     assert malformed_reference.status_code == 400
     assert unknown_reference.status_code == 404
+    assert other_scheme_reference.status_code == 404
+    assert registry.snapshot("session_001").visits == ()
 
     unknown_lead = client.post(
         "/investigations/session_001/leads/session_001_lead_9999/visit"

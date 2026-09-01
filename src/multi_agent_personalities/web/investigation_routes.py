@@ -23,8 +23,8 @@ from multi_agent_personalities.application import (
     visit_lead,
 )
 from multi_agent_personalities.case_catalog import (
+    CaseCatalog,
     default_case_catalog_directory,
-    load_case_catalog,
 )
 from multi_agent_personalities.models import InvestigationStatus, validate_run_id
 from multi_agent_personalities.pipeline import CharacterConfig
@@ -172,11 +172,11 @@ def create_investigation_router(
     registry: InMemoryInvestigationRegistry,
     project_root: Path,
     catalogue: Mapping[str, CharacterConfig],
+    case_catalog: CaseCatalog,
     templates: Jinja2Templates,
 ) -> APIRouter:
     """Create the authoritative Lead/Visit browser router."""
     router = APIRouter()
-    case_catalog = load_case_catalog(default_case_catalog_directory(project_root))
     capabilities = investigation_mock_capabilities()
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
