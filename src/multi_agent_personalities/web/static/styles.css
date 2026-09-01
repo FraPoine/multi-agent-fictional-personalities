@@ -1259,6 +1259,7 @@ body {
 .tool-button:disabled, .resource-rail button:disabled { cursor: not-allowed; opacity: .58; }
 .resource-rail button { position: relative; width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 5px; background: transparent; color: var(--color-ink); cursor: pointer; font: 700 .9rem/1 var(--font-mono); }
 .resource-rail button:hover, .resource-rail button:focus-visible { background: var(--surface-success); color: var(--color-accent); }
+.resource-toolbar-icon, .resource-toolbar-icon svg { display: block; width: 18px; height: 18px; }
 .resource-rail button em { display: inline-block; margin-top: var(--spacing-sm); padding: 2px 6px; border-radius: 999px; background: var(--surface-secondary); color: var(--color-secondary); font-size: .6rem; font-style: normal; font-weight: 700; text-transform: uppercase; }
 .rules-dialog { width: min(92vw, 480px); padding: 0; border: 1px solid var(--border-strong); border-radius: var(--radius-panel); background: var(--surface-panel); color: var(--color-text); box-shadow: 0 20px 70px rgb(23 42 58 / 25%); }
 .rules-dialog::backdrop { background: rgb(23 42 58 / 55%); }

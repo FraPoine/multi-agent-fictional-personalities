@@ -1,5 +1,6 @@
 """Sprint 7 Lead/Visit UX redesign Task 3 web checks."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -92,6 +93,71 @@ def test_resource_drawer_is_honest_and_human_composer_is_disabled(
     assert 'id="human-message"' in page.text
     assert "Human participation coming later" in page.text
     assert 'id="human-message" rows="2" disabled' in page.text
+
+
+def test_resource_toolbar_uses_local_icons_and_preserves_targets(
+    task3_client,
+) -> None:
+    client, _registry = task3_client
+
+    page = client.get("/investigations/session_001")
+    toolbar = page.text.split(
+        '<aside class="resource-rail" aria-label="Investigation resources">',
+        1,
+    )[1].split("</aside>", 1)[0]
+    buttons = re.findall(
+        r"<button[^>]+data-resource-open=.+?</button>",
+        toolbar,
+        flags=re.DOTALL,
+    )
+
+    assert buttons
+    assert all('aria-label="' in button for button in buttons)
+    assert all('title="' in button for button in buttons)
+    assert all("resource-toolbar-icon" in button for button in buttons)
+    assert all('aria-hidden="true"' in button for button in buttons)
+    assert all("<svg" in button for button in buttons)
+    assert all('width="24"' in button for button in buttons)
+    assert all('height="24"' in button for button in buttons)
+    assert 'data-resource-open="case-opening"' in toolbar
+    assert "lucide-file-text" in toolbar
+    assert 'data-resource-open="resources-map"' in toolbar
+    assert "lucide-map" in toolbar
+    assert 'data-resource-open="resources-newspaper"' in toolbar
+    assert "lucide-newspaper" in toolbar
+    assert 'data-resource-open="resources-directory"' in toolbar
+    assert "lucide-book-open" in toolbar
+    assert 'data-resource-open="resources-informants"' in toolbar
+    assert "lucide-users" in toolbar
+    assert 'data-resource-open="rules"' in toolbar
+    assert "lucide-circle-help" in toolbar
+    assert 'src="http://' not in toolbar
+    assert 'src="https://' not in toolbar
+    assert 'href="http://' not in toolbar
+    assert 'href="https://' not in toolbar
+
+    asset_directory = (
+        ROOT
+        / "src"
+        / "multi_agent_personalities"
+        / "web"
+        / "templates"
+        / "icons"
+        / "lucide"
+    )
+    for asset in (
+        "file-text.svg",
+        "map.svg",
+        "newspaper.svg",
+        "book-open.svg",
+        "users.svg",
+        "file.svg",
+        "paperclip.svg",
+        "circle-help.svg",
+    ):
+        contents = (asset_directory / asset).read_text(encoding="utf-8")
+        assert "<!-- @license lucide-static v1.39.0 - ISC -->" in contents
+        assert "<svg" in contents
 
 
 def test_lead_visit_finalization_has_no_round_or_reasoning_precondition(
