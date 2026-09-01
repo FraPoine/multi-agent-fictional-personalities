@@ -94,6 +94,11 @@ real investigation game.
   read-only protection, and repeatable bounded discussions projected as
   persistent lead threads. Resource completion, finalization, and legacy-route
   cleanup remain later tasks.
+- Lead/Visit UX redesign Task 3 adds the responsive resource workspace, honest
+  future-resource and human-participation states, explicit Lead/Visit Final
+  Theory generation, and the completed read-only archive. Final removal of the
+  original round routes/tests and repository-wide Sprint 7 closure remain Task
+  4 work.
 
 ## Sprint 8 — Generic recognizability evaluation
 

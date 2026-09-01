@@ -7,7 +7,7 @@ from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.application.investigation_visit_service import (
     project_lead_conversation,
 )
-from multi_agent_personalities.models import Message
+from multi_agent_personalities.models import InvestigationStatus, Message
 from multi_agent_personalities.web.investigation_store import InvestigationSessionRecord
 
 DEMO_CASE_TITLE = "The Local Demonstration Case"
@@ -32,9 +32,11 @@ class InvestigationParticipantPresentation:
 
 @dataclass(frozen=True)
 class InvestigationResourcePresentation:
+    key: str
     label: str
     description: str
     available: bool
+    badge: str | None = None
 
 
 @dataclass(frozen=True)
@@ -50,6 +52,9 @@ class InvestigationSessionPresentation:
     resources: tuple[InvestigationResourcePresentation, ...]
     leads: tuple["InvestigationLeadPresentation", ...]
     selected_lead: "InvestigationLeadDetailPresentation | None"
+    completed: bool
+    can_finalize: bool
+    final_theory: "InvestigationFinalTheoryPresentation | None"
 
 
 @dataclass(frozen=True)
@@ -94,6 +99,19 @@ class InvestigationLeadDetailPresentation:
     writable_visit_id: str | None
     visits: tuple[InvestigationVisitPresentation, ...]
     message_count: int
+
+
+@dataclass(frozen=True)
+class InvestigationFinalEvidencePresentation:
+    relation: str
+    text: str
+
+
+@dataclass(frozen=True)
+class InvestigationFinalTheoryPresentation:
+    summary: str
+    evidence: tuple[InvestigationFinalEvidencePresentation, ...]
+    hypotheses: tuple[str, ...]
 
 
 def catalogue_participants(
@@ -150,6 +168,7 @@ def present_session(
         for config in record.runtime.character_configs
     )
     session = record.session
+    completed = session.status is InvestigationStatus.COMPLETED
     lead_by_id = {lead.lead_id: lead for lead in session.leads}
     current_visit = session.visits[-1] if session.visits else None
     resolved_lead_id = (
@@ -225,7 +244,7 @@ def present_session(
                     ),
                 )
             )
-        is_current = (
+        is_current = not completed and (
             current_visit is not None
             and current_visit.lead_id == resolved_lead_id
         )
@@ -238,6 +257,31 @@ def present_session(
             visits=tuple(selected_visits),
             message_count=len(projected_messages),
         )
+    information_by_id = {
+        item.information_id: item for item in session.revealed_information
+    }
+    hypothesis_by_id = {
+        item.hypothesis_id: item for item in session.hypotheses
+    }
+    final_theory = (
+        InvestigationFinalTheoryPresentation(
+            summary=session.final_theory.summary,
+            evidence=tuple(
+                InvestigationFinalEvidencePresentation(
+                    relation=reference.relation.value.title(),
+                    text=information_by_id[reference.information_id].text,
+                )
+                for reference in session.final_theory.evidence
+                if reference.information_id is not None
+            ),
+            hypotheses=tuple(
+                hypothesis_by_id[item].statement
+                for item in session.final_theory.hypothesis_ids
+            ),
+        )
+        if session.final_theory is not None
+        else None
+    )
     return InvestigationSessionPresentation(
         session_id=session.session_id,
         case_title=DEMO_CASE_TITLE,
@@ -248,9 +292,52 @@ def present_session(
         visit_count=len(session.visits),
         is_case_opening=not session.visits,
         resources=(
-            InvestigationResourcePresentation("Case notes", "Review retained case information.", False),
-            InvestigationResourcePresentation("Rules", "Read the local investigation guide.", True),
+            InvestigationResourcePresentation(
+                "case-opening",
+                "Case Opening",
+                "Case notes: review the original case briefing.",
+                True,
+            ),
+            InvestigationResourcePresentation(
+                "map",
+                "London Map",
+                "Not available in this deterministic demo.",
+                False,
+                "Future",
+            ),
+            InvestigationResourcePresentation(
+                "newspapers",
+                "Newspapers",
+                "Not available in this deterministic demo.",
+                False,
+                "Future",
+            ),
+            InvestigationResourcePresentation(
+                "directory",
+                "Directory / Almanac",
+                "Not available in this deterministic demo.",
+                False,
+                "Future",
+            ),
+            InvestigationResourcePresentation(
+                "allies",
+                "Allies / Informants",
+                "Not available in this deterministic demo.",
+                False,
+                "Future",
+            ),
+            InvestigationResourcePresentation(
+                "rules", "Rules", "Read the local investigation guide.", True
+            ),
         ),
         leads=leads,
         selected_lead=selected_detail,
+        completed=completed,
+        can_finalize=(
+            session.status is InvestigationStatus.ACTIVE
+            and bool(session.visits)
+            and bool(session.revealed_information)
+            and session.final_theory is None
+        ),
+        final_theory=final_theory,
     )

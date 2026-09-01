@@ -1126,3 +1126,14 @@ simulation, models, providers, artifacts, and CLI concerns beneath
 framework-independent conversation orchestration separate from FastAPI/Jinja
 delivery. The web layer reuses the implemented simulation, runtime, provider,
 and artifact boundaries.
+
+Task 3 adds presentation-only resource definitions and a minimal JavaScript
+drawer; no resource state enters the investigation aggregate. Only Case Opening
+and Rules have content. Unsupported resources remain disabled metadata.
+
+The existing `/finalize` route now uses the authoritative Lead/Visit
+`finalize_lead_investigation()` service inside `registry.mutate()`. The service
+generates and validates the immutable `FinalTheory` before replacement, so
+provider or structured-output failures leave the prior snapshot registered.
+Completed snapshots remain on the same detail route. Presentation suppresses
+all mutation forms while routes independently reject stale direct POSTs.

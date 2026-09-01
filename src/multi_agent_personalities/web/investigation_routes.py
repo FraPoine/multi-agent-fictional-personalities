@@ -16,7 +16,6 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
-    FinalizationResult,
     GroupDecisionResult,
     GroupDiscussionResult,
     IndependentAnalysesResult,
@@ -24,7 +23,7 @@ from multi_agent_personalities.application import (
     MAX_DISCUSSION_TURNS,
     continue_lead_discussion,
     create_group_decision,
-    finalize_investigation,
+    finalize_lead_investigation,
     investigation_mock_capabilities,
     reveal_clue,
     reveal_information,
@@ -720,6 +719,10 @@ def create_investigation_router(
         def mutate_new_lead(
             record: InvestigationSessionRecord,
         ) -> InvestigationSessionMutation[str]:
+            if record.session.status is not InvestigationStatus.ACTIVE:
+                raise InvestigationWorkflowConflictError(
+                    "Completed investigations are read-only."
+                )
             updated = visit_lead(
                 record.session,
                 id_factory=record.runtime.id_factory,
@@ -740,6 +743,14 @@ def create_investigation_router(
                 page_title="Investigation not found",
                 heading="Investigation not found",
                 message="The requested investigation is not available.",
+            )
+        except InvestigationWorkflowConflictError as error:
+            return render_error(
+                request,
+                status_code=409,
+                page_title="Investigation conflict",
+                heading="Lead could not be visited",
+                message=str(error),
             )
         except Exception:
             logger.exception("Creating a new investigation lead failed")
@@ -766,6 +777,10 @@ def create_investigation_router(
         def mutate_revisit(
             record: InvestigationSessionRecord,
         ) -> InvestigationSessionMutation[None]:
+            if record.session.status is not InvestigationStatus.ACTIVE:
+                raise InvestigationWorkflowConflictError(
+                    "Completed investigations are read-only."
+                )
             if not any(item.lead_id == lead_id for item in record.session.leads):
                 raise InvestigationResourceNotFoundError(lead_id)
             if record.session.visits[-1].lead_id == lead_id:
@@ -794,6 +809,10 @@ def create_investigation_router(
     def _current_visit_or_error(
         record: InvestigationSessionRecord, visit_id: str
     ) -> None:
+        if record.session.status is not InvestigationStatus.ACTIVE:
+            raise InvestigationWorkflowConflictError(
+                "Completed investigations are read-only."
+            )
         if not any(item.visit_id == visit_id for item in record.session.visits):
             raise InvestigationResourceNotFoundError(visit_id)
         if (
@@ -1330,7 +1349,7 @@ def create_investigation_router(
         request: Request,
         session_id: str,
     ) -> Response:
-        """Explicitly generate and commit the exhausted mock final theory."""
+        """Explicitly generate and commit the Lead/Visit final theory."""
         try:
             validate_run_id(session_id)
         except ValueError:
@@ -1347,23 +1366,29 @@ def create_investigation_router(
 
         def mutate_finalization(
             record: InvestigationSessionRecord,
-        ) -> InvestigationSessionMutation[FinalizationResult]:
-            if not _can_finalize_investigation(record):
+        ) -> InvestigationSessionMutation[None]:
+            session = record.session
+            if session.status is not InvestigationStatus.ACTIVE:
                 raise InvestigationWorkflowConflictError(
-                    "finalization is unavailable in the latest browser state"
+                    "Completed investigations cannot be finalized again."
                 )
-            result = finalize_investigation(
-                record.session,
+            if not session.visits or not session.revealed_information:
+                raise InvestigationWorkflowConflictError(
+                    "Presenting a final theory requires a visited lead and "
+                    "revealed information."
+                )
+            result = finalize_lead_investigation(
+                session,
                 final_theory_provider=record.runtime.final_theory_provider,
                 id_factory=record.runtime.id_factory,
             )
             return InvestigationSessionMutation(
                 session=result.session,
-                result=result,
+                result=None,
             )
 
         try:
-            _updated_record, _finalization_result = registry.mutate(
+            registry.mutate(
                 session_id,
                 mutate_finalization,
             )
@@ -1378,17 +1403,13 @@ def create_investigation_router(
                     "local process."
                 ),
             )
-        except InvestigationWorkflowConflictError:
+        except InvestigationWorkflowConflictError as error:
             return render_error(
                 request,
                 status_code=409,
                 page_title="Investigation conflict",
                 heading="Investigation could not be finalized",
-                message=(
-                    "This investigation cannot be finalized in the current "
-                    "mock workflow state. Refresh the session page and try "
-                    "again."
-                ),
+                message=str(error),
             )
         except Exception:
             logger.exception("Local investigation finalization failed")

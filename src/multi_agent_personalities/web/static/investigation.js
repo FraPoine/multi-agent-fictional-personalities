@@ -54,3 +54,41 @@ if (rulesDialog instanceof HTMLDialogElement) {
         if (event.target === rulesDialog) rulesDialog.close();
     });
 }
+
+const resourceDrawer = document.querySelector("[data-resource-drawer]");
+const resourceBackdrop = document.querySelector(".resource-backdrop");
+
+function closeResourceDrawer() {
+    if (!(resourceDrawer instanceof HTMLElement)) return;
+    resourceDrawer.classList.remove("is-open");
+    resourceDrawer.setAttribute("aria-hidden", "true");
+    if (resourceBackdrop instanceof HTMLElement) resourceBackdrop.hidden = true;
+}
+
+if (resourceDrawer instanceof HTMLElement) {
+    for (const trigger of document.querySelectorAll("[data-resource-open]")) {
+        trigger.addEventListener("click", () => {
+            const resource = trigger.dataset.resourceOpen;
+            for (const panel of resourceDrawer.querySelectorAll("[data-resource-panel]")) {
+                panel.hidden = panel.dataset.resourcePanel !== resource;
+            }
+            const title = resourceDrawer.querySelector("#resource-drawer-title");
+            if (title) title.textContent = trigger.textContent.trim().split("Not available")[0].trim();
+            resourceDrawer.classList.add("is-open");
+            resourceDrawer.setAttribute("aria-hidden", "false");
+            if (resourceBackdrop instanceof HTMLElement) resourceBackdrop.hidden = false;
+        });
+    }
+    for (const trigger of document.querySelectorAll("[data-resource-close]")) {
+        trigger.addEventListener("click", closeResourceDrawer);
+    }
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeResourceDrawer();
+    });
+}
+
+for (const trigger of document.querySelectorAll("[data-leads-toggle]")) {
+    trigger.addEventListener("click", () => {
+        document.body.classList.toggle("show-mobile-leads");
+    });
+}

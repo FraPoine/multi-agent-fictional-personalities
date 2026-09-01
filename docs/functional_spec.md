@@ -36,6 +36,29 @@ separators. Fixture exhaustion is a local `500` failure, not a domain limit.
 
 Finalization and the complete resource workspace remain outside Task 2.
 
+Task 3 completes the remaining player-facing states. The investigation shell
+provides a small resource toolbar and responsive drawer. Case Opening and
+generic local Rules are functional and read-only. London Map, Newspapers,
+Directory / Almanac, and Allies / Informants are visibly disabled with a
+`Future` badge and explicitly state that they are unavailable in the current
+deterministic demo. No synthetic case material or external resource backend is
+created. A disabled composer presents human participation honestly as future
+work and has no POST route.
+
+`POST /investigations/{session_id}/finalize` now delegates to
+`finalize_lead_investigation()`. Availability reflects the Lead/Visit minimum:
+an active session, at least one visit, retained revealed information, and no
+existing final theory. It has no round, analysis, hypothesis, or decision
+prerequisite. Success commits the completed snapshot atomically and redirects
+to the canonical page.
+
+A completed investigation is a process-local read-only archive. Its Final
+Theory and supporting revealed information are presented as game content;
+Case Opening, resources, semantic leads, visits, and all stored messages remain
+readable. Every Lead/Visit mutation and repeated finalization request returns
+`409`, and all mutation controls are absent. Durable persistence remains future
+work.
+
 ## Lead/Visit application pathway (redesign complete)
 
 The application creates an active investigation with `create_session()` and
