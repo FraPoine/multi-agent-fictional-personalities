@@ -4,6 +4,12 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime
 
+from multi_agent_personalities.case_catalog import (
+    CaseDefinition,
+    CaseLeadDefinition,
+    normalize_case_lead_reference,
+)
+
 from multi_agent_personalities.application.investigation_prompts import (
     InvestigationPromptName,
     load_investigation_prompt,
@@ -107,6 +113,86 @@ class LeadFinalizationResult:
     generation: StructuredGenerationResult[GeneratedFinalTheoryPayload]
 
 
+class InvalidCaseLeadReferenceError(ValueError):
+    """Raised when input matches none of the case's structural schemes."""
+
+
+class UnknownCaseLeadReferenceError(LookupError):
+    """Raised when valid structural input is absent from the selected case."""
+
+
+class CurrentCaseLeadConflictError(ValueError):
+    """Raised when the resolved semantic lead is already current."""
+
+
+@dataclass(frozen=True)
+class CaseLeadVisitResult:
+    """Case-aware resolution with an optional newly created visit."""
+
+    session: InvestigationSession
+    lead: InvestigationLead
+    created: bool
+
+
+def resolve_case_lead(
+    case_definition: CaseDefinition, raw_reference: str
+) -> CaseLeadDefinition:
+    """Resolve player input against the selected case's declared schemes."""
+    if not isinstance(case_definition, CaseDefinition):
+        raise ValueError("case_definition must be a validated CaseDefinition")
+    canonical_by_scheme: dict[str, str] = {}
+    for scheme in dict.fromkeys(lead.reference_scheme for lead in case_definition.leads):
+        try:
+            canonical_by_scheme[scheme] = normalize_case_lead_reference(
+                scheme, raw_reference
+            )
+        except ValueError:
+            continue
+    if not canonical_by_scheme:
+        raise InvalidCaseLeadReferenceError("malformed case lead reference")
+    for lead in case_definition.leads:
+        if canonical_by_scheme.get(lead.reference_scheme) == lead.reference:
+            return lead
+    raise UnknownCaseLeadReferenceError(
+        f"unknown lead reference for case {case_definition.case_id!r}"
+    )
+
+
+def visit_case_lead(
+    session: InvestigationSession,
+    *,
+    case_definition: CaseDefinition,
+    raw_reference: str,
+    id_factory: DeterministicInvestigationIdFactory,
+) -> CaseLeadVisitResult:
+    """Resolve and first-visit a case lead without implicit revisits."""
+    snapshot = _validated_snapshot(session, id_factory)
+    if snapshot.case_id != case_definition.case_id:
+        raise ValueError("case_definition must match the session case_id")
+    definition = resolve_case_lead(case_definition, raw_reference)
+    existing = next(
+        (
+            lead
+            for lead in snapshot.leads
+            if lead.case_lead_key == definition.lead_key
+        ),
+        None,
+    )
+    if existing is not None:
+        if snapshot.visits and snapshot.visits[-1].lead_id == existing.lead_id:
+            raise CurrentCaseLeadConflictError("case lead is already current")
+        return CaseLeadVisitResult(snapshot, existing, False)
+    updated = visit_lead(
+        snapshot,
+        id_factory=id_factory,
+        label=definition.label,
+        kind=definition.kind,
+        case_lead_key=definition.lead_key,
+        reference=definition.reference,
+    )
+    return CaseLeadVisitResult(updated, updated.leads[-1], True)
+
+
 @dataclass(frozen=True)
 class _LeadDiscussionReplyGenerator:
     visit_index: int
@@ -200,6 +286,8 @@ def visit_lead(
     lead_id: str | None = None,
     label: str | None = None,
     kind: str | None = None,
+    case_lead_key: str | None = None,
+    reference: str | None = None,
 ) -> InvestigationSession:
     """Visit a new semantic lead or revisit an existing lead."""
     snapshot = _validated_snapshot(session, id_factory)
@@ -211,13 +299,15 @@ def visit_lead(
         resolved_lead = InvestigationLead(
             lead_id=id_factory.lead_id(len(snapshot.leads) + 1),
             session_id=snapshot.session_id,
+            case_lead_key=case_lead_key,
+            reference=reference,
             label=label,
             kind=kind,
         )
         updated_leads = (*snapshot.leads, resolved_lead)
     else:
-        if label is not None or kind is not None:
-            raise ValueError("label and kind must be omitted when revisiting a lead")
+        if any(item is not None for item in (label, kind, case_lead_key, reference)):
+            raise ValueError("lead definition fields must be omitted when revisiting")
         resolved_lead = _lead_by_id(snapshot, lead_id)
         updated_leads = snapshot.leads
 

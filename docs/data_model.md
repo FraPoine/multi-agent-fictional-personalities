@@ -462,6 +462,19 @@ not embed `CaseDefinition`, so reloading an edited catalogue cannot alter an
 existing immutable session. The default legacy case ID exists only to keep
 pre-catalogue callers readable during the staged integration.
 
+Case lead references support two explicit structural schemes:
+
+- `london-address`: numeric address plus `NW`, `WC`, `SW`, `EC`, or `SE`,
+  canonically displayed as `42 NW`; the number has no two-digit maximum.
+- `carlton-interior`: `GF`, `FF`, or `BF` plus a number, canonically displayed
+  as `GF-26`.
+
+`InvestigationLead.lead_id` is still the internal session-scoped identity.
+Case-aware leads additionally snapshot `case_lead_key` and canonical
+`reference`; URLs and evidence never substitute the visible reference for
+`lead_id`. Legacy free-form leads may omit both provenance fields only for
+compatibility with stored/test snapshots from before this integration.
+
 ### Authoritative Lead/Visit foundation
 
 ```text

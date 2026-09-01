@@ -62,6 +62,7 @@ class InvestigationLeadPresentation:
     lead_id: str
     label: str
     kind: str
+    reference: str | None
     visit_count: int
     selected: bool
     current: bool
@@ -187,6 +188,7 @@ def present_session(
             lead_id=lead.lead_id,
             label=lead.label,
             kind=lead.kind,
+            reference=lead.reference,
             visit_count=visit_counts[lead.lead_id],
             selected=lead.lead_id == resolved_lead_id,
             current=(

@@ -59,9 +59,17 @@ def visit_lead(
     session_id: str,
     label: str,
 ) -> tuple[str, str]:
+    references = {
+        "Scotland Yard": "42 NW",
+        "Baker Street": "95 NW",
+        "Observatory": "42 NW",
+        "Recital Room": "42 NW",
+        "Dome Entrance": "95 NW",
+        "Service Door": "95 NW",
+    }
     response = client.post(
         f"/investigations/{session_id}/leads",
-        data={"label": label, "kind": "place"},
+        data={"reference": references[label]},
     )
     assert response.status_code == 303
     session = registry.snapshot(session_id)

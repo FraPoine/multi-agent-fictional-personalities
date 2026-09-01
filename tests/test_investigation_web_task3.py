@@ -5,6 +5,10 @@ from pathlib import Path
 import pytest
 
 import multi_agent_personalities.web.investigation_routes as routes
+from multi_agent_personalities.case_catalog import (
+    default_case_catalog_directory,
+    load_case_catalog,
+)
 from multi_agent_personalities.models import InvestigationStatus
 from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_store import (
@@ -14,6 +18,7 @@ from tests.asgi_client import ASGITestClient
 
 
 ROOT = Path(__file__).resolve().parents[1]
+CASE_OPENING = load_case_catalog(default_case_catalog_directory(ROOT)).cases[0].opening
 INTRODUCTION = "A coded letter arrives without a sender."
 
 
@@ -42,7 +47,7 @@ def prepare_finalizable(
 ):
     client.post(
         "/investigations/session_001/leads",
-        data={"label": "Scotland Yard", "kind": "place"},
+        data={"reference": "42 NW"},
     )
     visit = registry.snapshot("session_001").visits[-1]
     for text in ("The window was open.", "The corridor was used."):
@@ -66,7 +71,7 @@ def test_resource_drawer_is_honest_and_human_composer_is_disabled(
     assert 'data-resource-drawer' in page.text
     assert 'data-resource-open="case-opening"' in page.text
     assert 'data-resource-open="rules"' in page.text
-    assert INTRODUCTION in page.text
+    assert CASE_OPENING in page.text
     for resource in (
         "London Map",
         "Newspapers",
@@ -118,7 +123,7 @@ def test_completed_archive_keeps_history_and_rejects_all_mutations(
     )
     client.post(
         "/investigations/session_001/leads",
-        data={"label": "Baker Street", "kind": "place"},
+        data={"reference": "95 NW"},
     )
     session = registry.snapshot("session_001")
     lead_b = session.leads[1]
@@ -130,7 +135,7 @@ def test_completed_archive_keeps_history_and_rejects_all_mutations(
         page = client.get(f"/investigations/session_001?lead={lead.lead_id}")
         assert page.status_code == 200
         assert lead.label in page.text
-        assert INTRODUCTION in page.text
+        assert CASE_OPENING in page.text
         assert "Final Theory" in page.text
         assert "Read-only archive" in page.text
         assert "Visit new lead" not in page.text
@@ -145,7 +150,7 @@ def test_completed_archive_keeps_history_and_rejects_all_mutations(
         client.post("/investigations/session_001/finalize"),
         client.post(
             "/investigations/session_001/leads",
-            data={"label": "Late lead", "kind": "topic"},
+            data={"reference": "100 SW"},
         ),
         client.post(
             f"/investigations/session_001/leads/{lead_a.lead_id}/visit"

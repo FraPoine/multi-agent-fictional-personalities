@@ -6,15 +6,14 @@ opening: >-
   disturbance, and the catalogue ledger is open at an unrecorded entry.
 leads:
   - lead_key: archive-room
-    reference: AR-01
-    reference_scheme: synthetic-demo
+    reference: 42 NW
+    reference_scheme: london-address
     label: Archive Room
     kind: place
   - lead_key: duty-attendant
-    reference: AR-02
-    reference_scheme: synthetic-demo
+    reference: 95 NW
+    reference_scheme: london-address
     label: Duty Attendant
     kind: person
 resource_refs:
   - archive-opening
-

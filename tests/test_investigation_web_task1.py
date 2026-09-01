@@ -7,10 +7,15 @@ import pytest
 from multi_agent_personalities.models import InvestigationStatus
 from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_store import InMemoryInvestigationRegistry
+from multi_agent_personalities.case_catalog import (
+    default_case_catalog_directory,
+    load_case_catalog,
+)
 from tests.asgi_client import ASGITestClient
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DEMO_CASE = load_case_catalog(default_case_catalog_directory(ROOT)).cases[0]
 VALID_FORM = {
     "characters": ["sherlock", "poirot"],
     "introduction": "A sealed study waits beyond the rain-darkened street.",
@@ -74,7 +79,8 @@ def test_creation_registers_authoritative_empty_lead_visit_session(task1_client)
     assert registry.session_ids == ("session_001",)
     session = registry.snapshot("session_001")
     assert session.status is InvestigationStatus.ACTIVE
-    assert session.case_introduction == VALID_FORM["introduction"]
+    assert session.case_id == DEMO_CASE.case_id
+    assert session.case_introduction == DEMO_CASE.opening
     assert session.leads == ()
     assert session.visits == ()
 
@@ -90,7 +96,7 @@ def test_case_opening_shell_is_side_effect_free(task1_client) -> None:
     assert registry.snapshot("session_001") == before
     assert "Case opening" in response.text
     assert "The investigation begins" in response.text
-    assert VALID_FORM["introduction"] in response.text
+    assert DEMO_CASE.opening in response.text
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
     assert "Resources" in response.text

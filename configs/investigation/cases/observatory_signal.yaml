@@ -6,15 +6,14 @@ opening: >-
   maintenance ledger and the only key assigned to the tower were missing.
 leads:
   - lead_key: observatory
-    reference: OS-01
-    reference_scheme: synthetic-demo
+    reference: GF-26
+    reference_scheme: carlton-interior
     label: Observatory Tower
     kind: place
   - lead_key: maintenance-ledger
-    reference: OS-02
-    reference_scheme: synthetic-demo
+    reference: FF-1
+    reference_scheme: carlton-interior
     label: Maintenance Ledger
     kind: document
 resource_refs:
   - observatory-opening
-

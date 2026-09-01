@@ -11,12 +11,20 @@ from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
+    CurrentCaseLeadConflictError,
+    InvalidCaseLeadReferenceError,
     InvestigationMockCapabilities,
+    UnknownCaseLeadReferenceError,
     continue_lead_discussion,
     finalize_lead_investigation,
     investigation_mock_capabilities,
     reveal_information,
+    visit_case_lead,
     visit_lead,
+)
+from multi_agent_personalities.case_catalog import (
+    default_case_catalog_directory,
+    load_case_catalog,
 )
 from multi_agent_personalities.models import InvestigationStatus, validate_run_id
 from multi_agent_personalities.pipeline import CharacterConfig
@@ -36,8 +44,7 @@ from multi_agent_personalities.web.investigation_store import (
 
 
 MAX_CASE_INTRODUCTION_LENGTH = 4000
-MAX_LEAD_LABEL_LENGTH = 160
-MAX_LEAD_KIND_LENGTH = 80
+MAX_LEAD_REFERENCE_LENGTH = 80
 MAX_INFORMATION_LENGTH = 4000
 logger = logging.getLogger(__name__)
 
@@ -169,10 +176,12 @@ def create_investigation_router(
 ) -> APIRouter:
     """Create the authoritative Lead/Visit browser router."""
     router = APIRouter()
+    case_catalog = load_case_catalog(default_case_catalog_directory(project_root))
     capabilities = investigation_mock_capabilities()
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
     supported_slugs = tuple(config.slug for config in supported_configs)
+    default_case = case_catalog.cases[0]
 
     def render_error(
         request: Request,
@@ -297,6 +306,28 @@ def create_investigation_router(
                 heading=failure_heading,
                 message=str(error),
             )
+        except InvalidCaseLeadReferenceError as error:
+            return render_error(
+                request,
+                status_code=400,
+                page_title="Invalid lead reference",
+                heading=failure_heading,
+                message=str(error),
+            )
+        except UnknownCaseLeadReferenceError as error:
+            return resource_error(
+                request,
+                status_code=404,
+                heading=failure_heading,
+                message=str(error),
+            )
+        except CurrentCaseLeadConflictError as error:
+            return resource_error(
+                request,
+                status_code=409,
+                heading=failure_heading,
+                message=str(error),
+            )
         except Exception:
             logger.exception("Lead/Visit investigation mutation failed")
             return render_error(
@@ -345,7 +376,7 @@ def create_investigation_router(
         try:
             record = registry.create(
                 character_slugs=selected,
-                introduction=normalized,
+                case_definition=default_case,
                 project_root=project_root,
             )
         except InvestigationSessionCollisionError:
@@ -419,25 +450,16 @@ def create_investigation_router(
     async def visit_new_investigation_lead(
         request: Request,
         session_id: str,
-        label: Annotated[str | None, Form()] = None,
-        kind: Annotated[str | None, Form()] = None,
+        reference: Annotated[str | None, Form()] = None,
     ) -> Response:
-        raw_label = label or ""
-        raw_kind = kind or ""
-        normalized_label = raw_label.strip()
-        normalized_kind = raw_kind.strip()
-        if (
-            not normalized_label
-            or not normalized_kind
-            or len(raw_label) > MAX_LEAD_LABEL_LENGTH
-            or len(raw_kind) > MAX_LEAD_KIND_LENGTH
-        ):
+        raw_reference = reference or ""
+        if not raw_reference.strip() or len(raw_reference) > MAX_LEAD_REFERENCE_LENGTH:
             return render_error(
                 request,
                 status_code=400,
                 page_title="Invalid lead",
                 heading="Lead could not be visited",
-                message="Enter a lead name and type within the displayed limits.",
+                message="Enter a case lead reference within the displayed limit.",
             )
 
         def mutate(
@@ -447,15 +469,21 @@ def create_investigation_router(
                 raise InvestigationWorkflowConflictError(
                     "Completed investigations are read-only."
                 )
-            updated = visit_lead(
+            try:
+                case_definition = case_catalog.get(record.session.case_id)
+            except KeyError as error:
+                raise InvestigationResourceNotFoundError(
+                    record.session.case_id
+                ) from error
+            result = visit_case_lead(
                 record.session,
+                case_definition=case_definition,
                 id_factory=record.runtime.id_factory,
-                label=normalized_label,
-                kind=normalized_kind,
+                raw_reference=raw_reference,
             )
             return InvestigationSessionMutation(
-                session=updated,
-                result=updated.leads[-1].lead_id,
+                session=result.session,
+                result=result.lead.lead_id,
             )
 
         result = execute_mutation(

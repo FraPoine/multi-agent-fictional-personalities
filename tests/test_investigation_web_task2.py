@@ -32,9 +32,10 @@ def task2_client(tmp_path: Path):
 
 
 def visit_new(client: ASGITestClient, label: str, kind: str = "place"):
+    references = {"Scotland Yard": "42 NW", "Baker Street": "95 NW"}
     return client.post(
         "/investigations/session_001/leads",
-        data={"label": label, "kind": kind},
+        data={"reference": references[label]},
     )
 
 
@@ -50,7 +51,7 @@ def test_get_selection_is_read_only_and_unknown_lead_is_404(task2_client) -> Non
 
     assert selected.status_code == 200
     assert registry.snapshot("session_001").model_dump_json() == frozen
-    assert "Scotland Yard" in selected.text
+    assert "Archive Room" in selected.text
     assert "Historical lead" in selected.text
     assert "Revisit lead" in selected.text
     assert "Continue discussion" not in selected.text
@@ -64,10 +65,21 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
 
     invalid_lead = client.post(
         "/investigations/session_001/leads",
-        data={"label": " ", "kind": "place"},
+        data={"reference": " "},
     )
     assert invalid_lead.status_code == 400
     assert registry.snapshot("session_001").visits == ()
+
+    malformed_reference = client.post(
+        "/investigations/session_001/leads",
+        data={"reference": "not a physical reference"},
+    )
+    unknown_reference = client.post(
+        "/investigations/session_001/leads",
+        data={"reference": "100 SW"},
+    )
+    assert malformed_reference.status_code == 400
+    assert unknown_reference.status_code == 404
 
     unknown_lead = client.post(
         "/investigations/session_001/leads/session_001_lead_9999/visit"
@@ -83,6 +95,25 @@ def test_invalid_forms_and_unknown_scoped_resources_use_400_or_404(
     assert unknown_information.status_code == 404
     assert unknown_discussion.status_code == 404
     assert registry.snapshot("session_001").visits == ()
+
+
+def test_reference_entry_never_revisits_implicitly(task2_client) -> None:
+    client, registry = task2_client
+    assert visit_new(client, "Scotland Yard").status_code == 303
+    lead_a = registry.snapshot("session_001").leads[0]
+
+    current = visit_new(client, "Scotland Yard")
+    assert current.status_code == 409
+    assert len(registry.snapshot("session_001").visits) == 1
+
+    assert visit_new(client, "Baker Street").status_code == 303
+    before = registry.snapshot("session_001")
+    historical = visit_new(client, "Scotland Yard")
+
+    assert historical.status_code == 303
+    assert historical.headers["location"].endswith(f"?lead={lead_a.lead_id}")
+    assert registry.snapshot("session_001") == before
+    assert len(before.visits) == 2
 
 
 def test_new_lead_and_explicit_revisit_preserve_semantic_identity(task2_client) -> None:
@@ -108,7 +139,7 @@ def test_new_lead_and_explicit_revisit_preserve_semantic_identity(task2_client) 
     assert len(session.visits) == 3
     assert session.visits[0].lead_id == session.visits[2].lead_id == lead_a.lead_id
     page = client.get(response.headers["location"])
-    assert page.text.count(">Scotland Yard<") == 2  # sidebar and thread heading
+    assert page.text.count(">Archive Room<") == 2  # sidebar and thread heading
     assert "2 visits" in page.text
     assert "Revisited · Visit 3" in page.text
 

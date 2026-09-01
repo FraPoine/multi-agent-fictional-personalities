@@ -107,7 +107,7 @@ def test_discussion_failure_is_500_and_atomic(
     client.post("/investigations", data=VALID_FORM)
     client.post(
         "/investigations/session_001/leads",
-        data={"label": "The Archive", "kind": "place"},
+        data={"reference": "42 NW"},
     )
     visit = registry.snapshot("session_001").visits[-1]
     before = registry.snapshot("session_001")
@@ -133,7 +133,7 @@ def test_finalization_failure_is_500_active_and_atomic(
     client.post("/investigations", data=VALID_FORM)
     client.post(
         "/investigations/session_001/leads",
-        data={"label": "The Archive", "kind": "place"},
+        data={"reference": "42 NW"},
     )
     visit = registry.snapshot("session_001").visits[-1]
     client.post(

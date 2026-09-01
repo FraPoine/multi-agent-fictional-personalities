@@ -117,8 +117,18 @@ class InvestigationLead(BaseModel):
 
     lead_id: NonEmptyStr
     session_id: NonEmptyStr
+    case_lead_key: NonEmptyStr | None = None
+    reference: NonEmptyStr | None = None
     label: NonEmptyStr
     kind: NonEmptyStr
+
+    @model_validator(mode="after")
+    def validate_case_reference_pair(self) -> "InvestigationLead":
+        if (self.case_lead_key is None) != (self.reference is None):
+            raise ValueError(
+                "case_lead_key and reference must be supplied together"
+            )
+        return self
 
 
 class LeadVisit(BaseModel):

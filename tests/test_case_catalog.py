@@ -31,7 +31,7 @@ def write_case(directory: Path, filename: str, *, case_id: str, reference: str) 
                 "leads:",
                 "  - lead_key: first-lead",
                 f"    reference: {reference}",
-                "    reference_scheme: synthetic-test",
+                "    reference_scheme: london-address",
                 "    label: First Lead",
                 "    kind: place",
                 "resource_refs: []",
@@ -53,8 +53,8 @@ def test_repository_catalogue_loads_multiple_synthetic_cases_in_file_order() -> 
 
 
 def test_duplicate_case_id_is_rejected(tmp_path: Path) -> None:
-    write_case(tmp_path, "a.yaml", case_id="same-case", reference="A-1")
-    write_case(tmp_path, "b.yaml", case_id="same-case", reference="B-1")
+    write_case(tmp_path, "a.yaml", case_id="same-case", reference="42 NW")
+    write_case(tmp_path, "b.yaml", case_id="same-case", reference="95 NW")
 
     with pytest.raises(ValueError, match="duplicate case_id"):
         load_case_catalog(tmp_path)
@@ -68,7 +68,7 @@ def test_duplicate_lead_identity_within_one_case_is_rejected(
     tmp_path: Path, duplicate_field: str, expected: str
 ) -> None:
     first_key, second_key = "lead-a", "lead-b"
-    first_reference, second_reference = "REF-A", "REF-B"
+    first_reference, second_reference = "42 NW", "95 NW"
     if duplicate_field == "lead_key":
         second_key = first_key
     else:
@@ -81,12 +81,12 @@ opening: A synthetic opening.
 leads:
   - lead_key: {first_key}
     reference: {first_reference}
-    reference_scheme: synthetic-test
+    reference_scheme: london-address
     label: First
     kind: place
   - lead_key: {second_key}
     reference: {second_reference}
-    reference_scheme: synthetic-test
+    reference_scheme: london-address
     label: Second
     kind: person
 resource_refs: []
@@ -99,14 +99,14 @@ resource_refs: []
 
 
 def test_same_lead_reference_is_allowed_across_cases(tmp_path: Path) -> None:
-    write_case(tmp_path, "a.yaml", case_id="case-a", reference="SHARED-1")
-    write_case(tmp_path, "b.yaml", case_id="case-b", reference="SHARED-1")
+    write_case(tmp_path, "a.yaml", case_id="case-a", reference="42 NW")
+    write_case(tmp_path, "b.yaml", case_id="case-b", reference="42 NW")
 
     catalogue = load_case_catalog(tmp_path)
 
     assert len(catalogue.cases) == 2
-    assert catalogue.cases[0].leads[0].reference == "SHARED-1"
-    assert catalogue.cases[1].leads[0].reference == "SHARED-1"
+    assert catalogue.cases[0].leads[0].reference == "42 NW"
+    assert catalogue.cases[1].leads[0].reference == "42 NW"
 
 
 @pytest.mark.parametrize(
@@ -166,7 +166,7 @@ def test_registry_copies_case_provenance_and_isolates_same_case_sessions() -> No
 def test_reloading_changed_definition_does_not_mutate_existing_session(
     tmp_path: Path,
 ) -> None:
-    write_case(tmp_path, "case.yaml", case_id="stable-case", reference="REF-1")
+    write_case(tmp_path, "case.yaml", case_id="stable-case", reference="42 NW")
     registry = InMemoryInvestigationRegistry(
         case_catalog=load_case_catalog(tmp_path)
     )
@@ -188,4 +188,3 @@ def test_reloading_changed_definition_does_not_mutate_existing_session(
     assert reloaded.get("stable-case").opening == "A changed opening."
     assert existing.session.case_introduction == "A synthetic opening."
     assert registry.snapshot(existing.session_id) is existing.session
-

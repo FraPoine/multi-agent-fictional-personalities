@@ -6,7 +6,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Generic, TypeVar
 
-from multi_agent_personalities.case_catalog import CaseCatalog
+from multi_agent_personalities.case_catalog import CaseCatalog, CaseDefinition
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
@@ -79,11 +79,17 @@ class InMemoryInvestigationRegistry:
         character_slugs: Sequence[str],
         introduction: str | None = None,
         case_id: str | None = None,
+        case_definition: CaseDefinition | None = None,
         project_root: Path | None = None,
     ) -> InvestigationSessionRecord:
         """Build and atomically register one complete investigation record."""
         with self._creation_lock:
-            if case_id is not None:
+            if case_definition is not None:
+                if case_id is not None and case_id != case_definition.case_id:
+                    raise ValueError("case_id must match case_definition")
+                resolved_case_id = case_definition.case_id
+                resolved_introduction = case_definition.opening
+            elif case_id is not None:
                 if self._case_catalog is None:
                     raise ValueError(
                         "case_id requires a configured local case catalogue"

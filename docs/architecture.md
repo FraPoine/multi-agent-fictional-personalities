@@ -560,6 +560,22 @@ the same case, and later configuration changes cannot rewrite either session's
 opening. The existing lobby remains on its temporary introduction-based
 compatibility path until the later catalogue UX task.
 
+### Case lead reference resolution
+
+Player-facing case references are configuration identities, not runtime IDs.
+`CaseLeadDefinition.reference` is canonicalized according to its explicit
+scheme, while `InvestigationLead.lead_id` remains the immutable session-scoped
+identifier used in URLs and aggregate references. A created runtime lead copies
+only `case_lead_key`, canonical `reference`, `label`, and `kind` from its case
+definition.
+
+`resolve_case_lead()` parses aliases separately for London addresses and
+Carlton-style interiors. `visit_case_lead()` creates a semantic lead and its
+first visit only when that definition has not been visited. Resolving a
+historical lead returns its existing identity without mutation; resolving the
+current lead is a conflict. A revisit remains an explicit `visit_lead(lead_id=)`
+operation, preserving A → B → A chronology without duplicating Lead A.
+
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:
 

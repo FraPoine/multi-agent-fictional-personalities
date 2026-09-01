@@ -1,6 +1,7 @@
 """Validated local catalogue of synthetic investigation case definitions."""
 
 from pathlib import Path
+import re
 from typing import Annotated
 
 import yaml
@@ -27,6 +28,41 @@ CaseKey = Annotated[
         strict=True,
     ),
 ]
+LONDON_ADDRESS_SCHEME = "london-address"
+CARLTON_INTERIOR_SCHEME = "carlton-interior"
+
+
+def normalize_london_address_reference(raw_reference: str) -> str:
+    """Normalize supported London address aliases to ``number AREA``."""
+    if not isinstance(raw_reference, str) or not raw_reference.strip():
+        raise ValueError("lead reference must not be empty")
+    compact = re.sub(r"[\s-]+", "", raw_reference).upper()
+    match = re.fullmatch(r"(?:(\d+)(NW|WC|SW|EC|SE)|(NW|WC|SW|EC|SE)(\d+))", compact)
+    if match is None:
+        raise ValueError("invalid London address reference")
+    number = match.group(1) or match.group(4)
+    area = match.group(2) or match.group(3)
+    return f"{number} {area}"
+
+
+def normalize_carlton_interior_reference(raw_reference: str) -> str:
+    """Normalize supported interior aliases to ``FLOOR-number``."""
+    if not isinstance(raw_reference, str) or not raw_reference.strip():
+        raise ValueError("lead reference must not be empty")
+    compact = re.sub(r"[\s-]+", "", raw_reference).upper()
+    match = re.fullmatch(r"(GF|FF|BF)(\d+)", compact)
+    if match is None:
+        raise ValueError("invalid Carlton interior reference")
+    return f"{match.group(1)}-{match.group(2)}"
+
+
+def normalize_case_lead_reference(reference_scheme: str, raw_reference: str) -> str:
+    """Normalize a reference with its explicitly declared structural scheme."""
+    if reference_scheme == LONDON_ADDRESS_SCHEME:
+        return normalize_london_address_reference(raw_reference)
+    if reference_scheme == CARLTON_INTERIOR_SCHEME:
+        return normalize_carlton_interior_reference(raw_reference)
+    raise ValueError(f"unsupported lead reference_scheme: {reference_scheme!r}")
 
 
 def _duplicates(values: list[str]) -> tuple[str, ...]:
@@ -49,6 +85,15 @@ class CaseLeadDefinition(BaseModel):
     reference_scheme: NonEmptyStr
     label: NonEmptyStr
     kind: NonEmptyStr
+
+    @model_validator(mode="after")
+    def validate_canonical_reference(self) -> "CaseLeadDefinition":
+        canonical = normalize_case_lead_reference(
+            self.reference_scheme, self.reference
+        )
+        if self.reference != canonical:
+            raise ValueError(f"reference must use canonical form {canonical!r}")
+        return self
 
 
 class CaseDefinition(BaseModel):
@@ -149,4 +194,3 @@ def load_case_catalog(catalog_directory: Path) -> CaseCatalog:
         return CaseCatalog(cases=tuple(cases))
     except ValidationError as error:
         raise ValueError(f"invalid case catalogue {directory}: {error}") from error
-

@@ -68,6 +68,18 @@ sessions may use the same case independently. Case selection UI, lead-code
 input, resource implementation, and real case content are not part of this
 foundation task.
 
+Lead entry accepts a physical case reference rather than a player-authored
+label and kind. London aliases such as `42nw`, `NW42`, and `NW-42` resolve to
+`42 NW`; interior aliases such as `gf26` resolve to `GF-26`. The selected
+`CaseDefinition` supplies the semantic lead key, label, and kind. Malformed
+input is a `400`, a valid but unknown case reference is a `404`, and an
+already-current lead is a `409`.
+
+Entering a historical lead reference is a side-effect-free selection of the
+existing semantic lead. It never creates a visit. The user must invoke the
+existing internal-`lead_id` revisit route explicitly, which appends a new
+`LeadVisit` while retaining the same lead identity and visible reference.
+
 The application creates an active investigation with `create_session()` and
 supports these provider-neutral operations:
 
