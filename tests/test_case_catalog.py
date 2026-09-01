@@ -10,6 +10,7 @@ from multi_agent_personalities.case_catalog import (
     default_case_catalog_directory,
     load_case_catalog,
 )
+from multi_agent_personalities.application import resolve_case_lead
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
 )
@@ -19,7 +20,14 @@ ROOT = Path(__file__).resolve().parents[1]
 CHARACTERS = ("sherlock", "poirot")
 
 
-def write_case(directory: Path, filename: str, *, case_id: str, reference: str) -> None:
+def write_case(
+    directory: Path,
+    filename: str,
+    *,
+    case_id: str,
+    reference: str,
+    label: str = "First Lead",
+) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     (directory / filename).write_text(
         "\n".join(
@@ -32,7 +40,7 @@ def write_case(directory: Path, filename: str, *, case_id: str, reference: str) 
                 "  - lead_key: first-lead",
                 f"    reference: {reference}",
                 "    reference_scheme: london-address",
-                "    label: First Lead",
+                f"    label: {label}",
                 "    kind: place",
                 "resource_refs: []",
             )
@@ -99,14 +107,32 @@ resource_refs: []
 
 
 def test_same_lead_reference_is_allowed_across_cases(tmp_path: Path) -> None:
-    write_case(tmp_path, "a.yaml", case_id="case-a", reference="42 NW")
-    write_case(tmp_path, "b.yaml", case_id="case-b", reference="42 NW")
+    write_case(
+        tmp_path,
+        "a.yaml",
+        case_id="case-a",
+        reference="42 NW",
+        label="Case A Archive",
+    )
+    write_case(
+        tmp_path,
+        "b.yaml",
+        case_id="case-b",
+        reference="42 NW",
+        label="Case B Station",
+    )
 
     catalogue = load_case_catalog(tmp_path)
 
     assert len(catalogue.cases) == 2
     assert catalogue.cases[0].leads[0].reference == "42 NW"
     assert catalogue.cases[1].leads[0].reference == "42 NW"
+    assert resolve_case_lead(catalogue.get("case-a"), "nw42").label == (
+        "Case A Archive"
+    )
+    assert resolve_case_lead(catalogue.get("case-b"), "42 NW").label == (
+        "Case B Station"
+    )
 
 
 @pytest.mark.parametrize(

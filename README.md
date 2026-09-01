@@ -111,7 +111,23 @@ vanishes when the application process restarts. See the historical
 The case-catalogue foundation loads immutable synthetic case definitions from
 `configs/investigation/cases/`. A catalogue-backed session stores the selected
 `case_id` and an immutable copy of its opening, never the full definition.
-Lobby case selection and case-defined lead behavior remain later tasks.
+The normal lobby selects one of those local cases and the investigators; the
+server—not the browser—resolves its title and opening. Lead entry accepts the
+case's physical reference, creates one persistent semantic lead with an
+internal `lead_id`, and requires an explicit revisit to append another
+chronological `LeadVisit`. Case-specific resource references support ordered
+multiple maps, newspapers, a shared directory and informants, documents, and
+initially hidden handouts.
+
+The repository ships no copyrighted *Sherlock Holmes: Consulting Detective*
+case text, maps, newspapers, scans, or handouts. Its two investigation cases
+and all resource descriptions are synthetic local fixtures. Later user-owned
+material should be added only by creating a new validated case YAML under
+`configs/investigation/cases/`, declaring reusable local resources in
+`configs/investigation/resources.yaml`, placing owned assets beneath the local
+catalogue asset root with safe relative paths, and running the catalogue,
+resource, Lead/Visit, HTTP E2E, and full regression suites. Supplying owned
+content does not require changing the Lead/Visit domain model.
 
 ### Implemented workflows
 
@@ -180,6 +196,18 @@ committed deterministic mock fixtures, requires no OpenAI API key, and writes
 no investigation session artifacts. Its process-local sessions are lost on
 server restart; conversation runs continue to use the persistence described
 below.
+
+The investigation browser flow is:
+
+```text
+select local synthetic case + investigators
+→ opening loaded from CaseDefinition
+→ enter a London-address or Carlton-interior lead reference
+→ reveal information and run bounded mock discussion
+→ select historical leads or revisit explicitly
+→ inspect case-aware local resources
+→ present Final Theory and retain a read-only process-local archive
+```
 
 ## Local web interface
 

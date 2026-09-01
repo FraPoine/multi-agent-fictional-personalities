@@ -684,7 +684,8 @@ local web delivery are implemented; investigation persistence is not.
 
 ```text
 InvestigationSession
-├── case introduction
+├── case_id (catalogue provenance)
+├── case_introduction (immutable opening snapshot)
 ├── participant IDs
 ├── status
 ├── persistent leads
@@ -728,6 +729,20 @@ opening its round; they require an immutable deterministic ID factory and do
 not perform a `setup`-to-`active` transition. No autonomous controller, game
 loop, persistence, or automatic clue disclosure exists. These legacy
 operations are not invoked by the implemented web delivery.
+
+`case_id` identifies the local `CaseDefinition` selected at creation;
+`case_introduction` is the trusted opening copied from that definition. A
+runtime `InvestigationLead.lead_id` is a service-owned, session-scoped identity
+used by URLs and references. Its player-facing `reference` is separate case
+notation—currently canonical London addresses such as `42 NW` or Carlton-style
+interiors such as `GF-26`. The same visible reference may resolve to different
+lead definitions in different cases without colliding.
+
+Case resources are configuration rather than aggregate children.
+`CaseDefinition.resource_refs` is ordered and may resolve zero or more map
+resources, including multiple-map presentation. Only resources with
+`initially_available=true` enter the current presentation; the model does not
+yet store unlock events.
 
 ### Web registry records are outside the aggregate
 

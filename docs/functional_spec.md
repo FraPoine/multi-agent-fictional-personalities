@@ -3,16 +3,17 @@
 ## Sprint 7 Lead/Visit web redesign
 
 The main FastAPI application now presents `GET /investigations` as a local
-game-start lobby. It offers one honest demonstration/Game Master case setup,
-renders investigator identities from the character catalogue, explains the
-fixed mock fixture limitation, and creates sessions through the authoritative
-Lead/Visit `create_session()` path owned by `InMemoryInvestigationRegistry`.
+game-start lobby. It renders one selectable card per synthetic local
+`CaseDefinition`, investigator identities from the character catalogue, and
+the fixed mock-fixture limitation. `POST /investigations` accepts `case_id` and
+investigator selection only; the server resolves the trusted definition and
+creates the session through `InMemoryInvestigationRegistry`.
 
 The canonical detail page now uses a shared three-region investigation shell.
-An empty session renders Case Opening, catalogue-derived investigator
-identities, an empty future Leads area, and Rules/Case Notes resource entry
-points. Rules are a small local dialog; Case Notes and the Begin Investigation
-control are visible scaffolds for later tasks. No GET mutates the session.
+An empty session renders the selected Case Opening, catalogue-derived
+investigator identities, an empty Leads rail, and the compact resource toolbar.
+Rules are local guidance and case resources resolve from the session's
+`case_id`. No GET mutates the session.
 
 The final route contract implements lead navigation, conversation projection,
 information revelation, revisit behavior, resources, and finalization. The
@@ -32,8 +33,6 @@ attaches one bounded immutable `ConversationRun`. The UI projects all runs for
 the selected semantic lead through `project_lead_conversation()`, so an A → B
 → A chronology renders both A visits as one persistent thread with subtle visit
 separators. Fixture exhaustion is a local `500` failure, not a domain limit.
-
-Finalization and the complete resource workspace remain outside Task 2.
 
 Task 3 completes the remaining player-facing states. The investigation shell
 provides a small resource toolbar and responsive drawer. Case Opening and
@@ -64,9 +63,15 @@ Task 1 of the case-catalogue integration adds immutable local
 `CaseDefinition` records loaded from synthetic YAML. Catalogue-backed registry
 creation accepts a stable `case_id`, copies that definition's opening into the
 new session, and stores no complete case definition in runtime state. Multiple
-sessions may use the same case independently. Case selection UI, lead-code
-input, resource implementation, and real case content are not part of this
-foundation task.
+sessions may use the same case independently. Tasks 2–5 complete lead-code
+input, case resources, catalogue selection, and the Figma-aligned presentation.
+Only synthetic case content is included.
+
+The repository ships no copyrighted Sherlock case text, maps, newspapers, or
+handouts. Later user-owned material is configuration work: add a validated
+case file, declare explicit resources and safe local asset paths, preserve
+availability flags, then rerun the offline catalogue/Lead/Visit/resource/E2E
+regressions. It is not integrated until the user supplies that material.
 
 Lead entry accepts a physical case reference rather than a player-authored
 label and kind. London aliases such as `42nw`, `NW42`, and `NW-42` resolve to

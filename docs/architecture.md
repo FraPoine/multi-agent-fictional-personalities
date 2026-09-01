@@ -610,6 +610,15 @@ drawer selector. Missing optional assets produce an honest local placeholder.
 Case Opening and Rules remain application-level resources. No network access,
 asset ingestion, or automatic unlock engine is involved.
 
+The shipped catalogue is deliberately content-neutral: it contains only
+synthetic openings, lead labels, and placeholder resource metadata. The
+repository includes no copyrighted Sherlock case text, maps, newspapers, or
+handouts. User-provided owned material can be integrated later by adding a
+validated case YAML, declaring explicit shared resource IDs, and placing any
+owned files under the catalogue's local asset root. Safe relative-path
+validation and `initially_available` remain the boundaries; content ingestion,
+OCR, and unlock automation are separate future work.
+
 The FastAPI application loads one immutable `CaseCatalog` during
 `create_app()`. That same object configures the default process-local registry
 and is passed to the investigation router for creation, lead resolution, and

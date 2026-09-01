@@ -101,8 +101,14 @@ real investigation game.
 - Task 3 adds a shared validated local resource catalogue, explicit ordered
   case resource references, multiple-map presentation, missing-asset
   placeholders, and initially hidden handouts.
-- Later tasks will integrate the final catalogue UX. No real or commercial
-  case content is present, and the broader integration is not yet complete.
+- Task 4 makes catalogue selection and physical lead references the normal web
+  flow; Task 5 aligns the server-rendered lobby, lead rail, editorial message
+  stream, resource toolbar/drawer, and responsive controls with the Figma Make.
+- Task 6 closes the synthetic offline integration with cross-case, atomicity,
+  startup, and full-suite verification plus documentation.
+- The structure is ready for later user-provided owned case material. No real
+  or commercial case content is integrated, and this repository ships no
+  copyrighted Sherlock case text, maps, newspapers, or handouts.
 
 ## Sprint 9 — Complete offline system
 
