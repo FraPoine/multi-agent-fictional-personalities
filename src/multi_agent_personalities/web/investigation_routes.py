@@ -44,6 +44,7 @@ from multi_agent_personalities.web.investigation_store import (
 
 MAX_LEAD_REFERENCE_LENGTH = 80
 MAX_INFORMATION_LENGTH = 4000
+MIN_INVESTIGATORS = 2
 logger = logging.getLogger(__name__)
 
 
@@ -102,7 +103,7 @@ def _validate_investigation_creation_form(
         errors["characters"] = (
             "Select only investigators supported by the current mock scenario."
         )
-    elif len(submitted) < 2:
+    elif len(submitted) < MIN_INVESTIGATORS:
         errors["characters"] = "Select all supported investigators."
     elif set(submitted) != supported:
         errors["characters"] = (
@@ -129,6 +130,12 @@ def _index_context(
         if selected_slugs is None
         else set(selected_slugs)
     )
+    resolved_case_id = (
+        case_catalog.cases[0].case_id
+        if selected_case_id is None
+        else selected_case_id
+    )
+    required_investigators = {item.slug for item in supported_configs}
     return {
         "page_title": "Multi-Agent Fictional Personalities",
         "provider_name": "mock",
@@ -145,15 +152,18 @@ def _index_context(
             selected_slugs=selected,
         ),
         "cases": case_catalog.cases,
-        "selected_case_id": (
-            case_catalog.cases[0].case_id
-            if selected_case_id is None
-            else selected_case_id
-        ),
+        "selected_case_id": resolved_case_id,
         "case_titles": {
             case.case_id: case.title for case in case_catalog.cases
         },
         "capabilities": capabilities,
+        "minimum_investigators": MIN_INVESTIGATORS,
+        "required_investigator_count": len(required_investigators),
+        "creation_ready": (
+            resolved_case_id in {case.case_id for case in case_catalog.cases}
+            and selected == required_investigators
+            and len(selected) >= MIN_INVESTIGATORS
+        ),
         "field_errors": dict(field_errors or {}),
         "error_message": error_message,
         "existing_records": tuple(

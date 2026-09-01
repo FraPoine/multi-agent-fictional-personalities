@@ -6,30 +6,30 @@
     <title>Investigation · {{ page_title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
-<body>
+<body class="investigation-lobby-page">
     <header class="app-header"><div class="header-inner"><div class="brand-block"><p class="brand-name">{{ page_title }}</p><p class="brand-description">Fictional investigators, structured experiments</p></div><div class="header-actions"><nav class="app-nav" aria-label="Primary navigation"><a href="{{ url_for('home') }}">Conversations</a><a href="{{ url_for('investigations_index') }}" aria-current="page">Investigations</a></nav><span class="provider-badge">local {{ provider_name }}</span></div></div></header>
 
     <main class="investigation-lobby">
-        <header class="lobby-heading"><p class="eyebrow">Investigation workspace</p><h1>Open a new case</h1><p>Select a local synthetic case, assemble the investigators, and begin.</p></header>
-        <form class="lobby-setup investigation-mutation-form" method="post" action="{{ url_for('create_investigation') }}" data-loading-label="Opening case…">
+        <header class="lobby-heading"><p class="eyebrow">Investigations</p><h1>New Investigation</h1><p>Configure your case and investigator team before beginning.</p></header>
+        <form class="lobby-setup investigation-mutation-form" method="post" action="{{ url_for('create_investigation') }}" data-loading-label="Opening case…" data-investigation-lobby-form data-min-investigators="{{ minimum_investigators }}" data-required-investigator-count="{{ required_investigator_count }}">
             {% if error_message %}<div class="form-error-summary" role="alert"><h2>Unable to start investigation</h2><p>{{ error_message }}</p></div>{% endif %}
             <section class="lobby-step" aria-labelledby="case-selection-title">
-                <div class="step-content"><p class="eyebrow">Select case</p><h2 id="case-selection-title">Choose a case file</h2>
-                    <div class="case-catalogue">{% for case in cases %}<div class="case-card"><input id="case-{{ case.case_id }}" type="radio" name="case_id" value="{{ case.case_id }}"{% if case.case_id == selected_case_id %} checked{% endif %}><label for="case-{{ case.case_id }}"><span><strong>{{ case.title }}</strong><small>{{ case.short_description }}</small></span><span class="status-label">Selected</span></label></div>{% endfor %}</div>
+                <div class="step-content"><header class="lobby-panel-heading"><h2 id="case-selection-title">Case</h2></header>
+                    <div class="case-catalogue">{% for case in cases %}<div class="case-card"><input id="case-{{ case.case_id }}" type="radio" name="case_id" value="{{ case.case_id }}"{% if case.case_id == selected_case_id %} checked{% endif %}><label for="case-{{ case.case_id }}"><span class="case-file-indicator" aria-hidden="true">▤</span><span class="case-card-copy"><strong>{{ case.title }}</strong><small title="{{ case.short_description }}">{{ case.short_description }}</small></span><span class="selection-mark" aria-hidden="true">✓</span></label></div>{% endfor %}</div>
                     <p class="field-note">Only synthetic local cases are included. The opening is loaded from the selected case file.</p>
                     {% if field_errors.get('case_id') %}<p class="field-error" id="case-error">{{ field_errors.get('case_id') }}</p>{% endif %}
                 </div>
             </section>
-            <fieldset class="lobby-step"{% if field_errors.get('characters') %} aria-invalid="true"{% endif %}>
-                <div class="step-content"><legend><span class="eyebrow">Select investigators</span><span class="legend-title">Your consulting team</span></legend>
+            <fieldset class="lobby-step investigator-step" aria-describedby="investigator-requirement{% if field_errors.get('characters') %} investigation-characters-error{% endif %}"{% if field_errors.get('characters') %} aria-invalid="true"{% endif %}>
+                <legend class="lobby-panel-title">Investigators</legend>
+                <div class="step-content"><p class="investigator-requirement" id="investigator-requirement" data-investigator-requirement>Select at least two investigators to begin. The current mock scenario uses the complete available team.</p>
                     <div class="investigator-grid">
-                        {% for character in investigator_options %}<div class="investigator-choice{% if not character.supported %} is-unavailable{% endif %}"><input id="investigator-{{ character.slug }}" type="checkbox" name="characters" value="{{ character.slug }}"{% if character.selected %} checked{% endif %}{% if not character.supported %} disabled{% endif %}><label for="investigator-{{ character.slug }}"><span class="investigator-avatar">{{ character.initials }}</span><span><strong>{{ character.display_name }}</strong><small>{{ character.description }}</small>{% if not character.supported %}<em>Not available in this local fixture</em>{% endif %}</span><span class="selection-mark" aria-hidden="true">✓</span></label></div>{% endfor %}
+                        {% for character in investigator_options %}<div class="investigator-choice{% if not character.supported %} is-unavailable{% endif %}"><input id="investigator-{{ character.slug }}" type="checkbox" name="characters" value="{{ character.slug }}"{% if character.selected %} checked{% endif %}{% if not character.supported %} disabled{% endif %}><label for="investigator-{{ character.slug }}"><span class="investigator-avatar {{ character.presentation_class }}">{{ character.initials }}</span><span class="investigator-copy"><strong>{{ character.display_name }}</strong><small title="{{ character.description }}">{{ character.description }}</small>{% if not character.supported %}<em>Not available in this local fixture</em>{% endif %}</span><span class="selection-mark" aria-hidden="true">✓</span></label></div>{% endfor %}
                     </div>
-                    <p class="field-note">The current deterministic scenario requires every supported investigator. This is fixture coverage, not a game rule.</p>
                     {% if field_errors.get('characters') %}<p class="field-error" id="investigation-characters-error">{{ field_errors.get('characters') }}</p>{% endif %}
                 </div>
             </fieldset>
-            <div class="lobby-actions"><button class="secondary-button rules-trigger" type="button" data-rules-open>Read rules</button><button class="primary-action" type="submit">Start investigation</button></div>
+            <div class="lobby-actions"><button class="secondary-button rules-trigger" type="button" data-rules-open>Read Rules</button><button class="primary-action" type="submit" data-investigation-start{% if not creation_ready %} disabled aria-disabled="true"{% endif %}>Start Investigation</button></div>
         </form>
         {% if existing_records %}<section class="recent-cases" aria-labelledby="recent-cases-title"><h2 id="recent-cases-title">Open in this process</h2><ul>{% for record in existing_records %}<li><a href="{{ url_for('investigation_detail', session_id=record.session_id) }}"><strong>{{ case_titles[record.session.case_id] }}</strong><span>{{ record.session_id }} · {{ record.session.status.value|title }}</span></a></li>{% endfor %}</ul></section>{% endif %}
     </main>

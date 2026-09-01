@@ -1,6 +1,32 @@
 "use strict";
 
 const mutationForms = document.querySelectorAll(".investigation-mutation-form");
+const lobbyForm = document.querySelector("[data-investigation-lobby-form]");
+
+function lobbySelectionIsValid() {
+    if (!(lobbyForm instanceof HTMLFormElement)) return true;
+    const minimum = Number(lobbyForm.dataset.minInvestigators);
+    const required = Number(lobbyForm.dataset.requiredInvestigatorCount);
+    const selected = lobbyForm.querySelectorAll(
+        'input[name="characters"]:checked:not(:disabled)'
+    ).length;
+    const hasCase = lobbyForm.querySelector('input[name="case_id"]:checked') !== null;
+    return hasCase && selected >= minimum && selected === required;
+}
+
+function updateLobbyStartButton() {
+    if (!(lobbyForm instanceof HTMLFormElement)) return;
+    const button = lobbyForm.querySelector("[data-investigation-start]");
+    const requirement = lobbyForm.querySelector("[data-investigator-requirement]");
+    const valid = lobbySelectionIsValid();
+    if (button instanceof HTMLButtonElement) {
+        button.disabled = !valid;
+        button.setAttribute("aria-disabled", String(!valid));
+    }
+    if (requirement instanceof HTMLElement) {
+        requirement.dataset.selectionValid = String(valid);
+    }
+}
 
 function resetMutationForm(form) {
     form.removeAttribute("aria-busy");
@@ -18,6 +44,11 @@ for (const form of mutationForms) {
     }
 
     form.addEventListener("submit", (event) => {
+        if (form === lobbyForm && !lobbySelectionIsValid()) {
+            event.preventDefault();
+            updateLobbyStartButton();
+            return;
+        }
         if (!form.checkValidity()) {
             return;
         }
@@ -40,7 +71,17 @@ window.addEventListener("pageshow", () => {
     for (const form of mutationForms) {
         resetMutationForm(form);
     }
+    updateLobbyStartButton();
 });
+
+if (lobbyForm instanceof HTMLFormElement) {
+    for (const input of lobbyForm.querySelectorAll(
+        'input[name="characters"], input[name="case_id"]'
+    )) {
+        input.addEventListener("change", updateLobbyStartButton);
+    }
+    updateLobbyStartButton();
+}
 
 const rulesDialog = document.querySelector("[data-rules-dialog]");
 if (rulesDialog instanceof HTMLDialogElement) {

@@ -25,6 +25,7 @@ class InvestigationParticipantPresentation:
     display_name: str
     description: str
     initials: str
+    presentation_class: str
     selected: bool
     supported: bool
 
@@ -139,10 +140,11 @@ def catalogue_participants(
             display_name=config.display_name,
             description=config.description,
             initials=_initials(config.display_name),
+            presentation_class=f"participant-tone-{index % 4 + 1}",
             selected=config.slug in selected,
             supported=config.character_id in supported,
         )
-        for config in catalogue.values()
+        for index, config in enumerate(catalogue.values())
     )
 
 
@@ -174,10 +176,11 @@ def present_session(
             display_name=config.display_name,
             description=config.description,
             initials=_initials(config.display_name),
+            presentation_class=f"participant-tone-{index % 4 + 1}",
             selected=True,
             supported=True,
         )
-        for config in record.runtime.character_configs
+        for index, config in enumerate(record.runtime.character_configs)
     )
     session = record.session
     case_definition = case_catalog.get(session.case_id)
