@@ -100,6 +100,8 @@ body {
 }
 
 .brand-block {
+    flex: 0 0 clamp(260px, 20vw, 280px);
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 1px;
@@ -1058,17 +1060,19 @@ body {
     }
 }
 
-@media (max-width: 560px) {
-    .app-header {
-        padding: 0 16px;
-    }
-
+@media (max-width: 680px) {
     .header-inner {
         min-height: 72px;
         align-items: flex-start;
         flex-direction: column;
         justify-content: center;
         gap: 7px;
+        padding: 10px 0;
+    }
+
+    .brand-block {
+        flex: 0 1 auto;
+        width: auto;
     }
 
     .header-actions {
@@ -1084,6 +1088,12 @@ body {
 
     .app-nav a {
         padding: 7px 0 9px;
+    }
+}
+
+@media (max-width: 560px) {
+    .app-header {
+        padding: 0 16px;
     }
 
     .brand-description {
