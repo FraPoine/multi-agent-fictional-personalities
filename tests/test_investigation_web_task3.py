@@ -68,8 +68,12 @@ def test_resource_drawer_is_honest_and_human_composer_is_disabled(
 
     assert page.status_code == 200
     assert 'data-resource-drawer' in page.text
+    assert 'role="dialog"' in page.text
+    assert 'aria-modal="true"' in page.text
     assert 'data-resource-open="case-opening"' in page.text
     assert 'data-resource-open="rules"' in page.text
+    assert 'aria-label="Case Opening"' in page.text
+    assert 'aria-label="Rules"' in page.text
     assert CASE_OPENING in page.text
     for resource in (
         "Maps",

@@ -57,12 +57,14 @@ if (rulesDialog instanceof HTMLDialogElement) {
 
 const resourceDrawer = document.querySelector("[data-resource-drawer]");
 const resourceBackdrop = document.querySelector(".resource-backdrop");
+let resourceReturnFocus = null;
 
 function closeResourceDrawer() {
     if (!(resourceDrawer instanceof HTMLElement)) return;
     resourceDrawer.classList.remove("is-open");
     resourceDrawer.setAttribute("aria-hidden", "true");
     if (resourceBackdrop instanceof HTMLElement) resourceBackdrop.hidden = true;
+    if (resourceReturnFocus instanceof HTMLElement) resourceReturnFocus.focus();
 }
 
 if (resourceDrawer instanceof HTMLElement) {
@@ -80,14 +82,16 @@ if (resourceDrawer instanceof HTMLElement) {
     for (const trigger of document.querySelectorAll("[data-resource-open]")) {
         trigger.addEventListener("click", () => {
             const resource = trigger.dataset.resourceOpen;
+            resourceReturnFocus = trigger;
             for (const panel of resourceDrawer.querySelectorAll("[data-resource-panel]")) {
                 panel.hidden = panel.dataset.resourcePanel !== resource;
             }
             const title = resourceDrawer.querySelector("#resource-drawer-title");
-            if (title) title.textContent = trigger.textContent.trim().split("Not available")[0].trim();
+            if (title) title.textContent = trigger.getAttribute("aria-label") || trigger.textContent.trim();
             resourceDrawer.classList.add("is-open");
             resourceDrawer.setAttribute("aria-hidden", "false");
             if (resourceBackdrop instanceof HTMLElement) resourceBackdrop.hidden = false;
+            resourceDrawer.focus();
         });
     }
     for (const trigger of document.querySelectorAll("[data-resource-close]")) {
@@ -98,8 +102,26 @@ if (resourceDrawer instanceof HTMLElement) {
     });
 }
 
+const leadBackdrop = document.querySelector(".lead-backdrop");
+
+function setLeadPanelOpen(open) {
+    document.body.classList.toggle("show-mobile-leads", open);
+    for (const trigger of document.querySelectorAll("[data-leads-toggle]")) {
+        trigger.setAttribute("aria-expanded", String(open));
+    }
+    if (leadBackdrop instanceof HTMLElement) leadBackdrop.hidden = !open;
+}
+
 for (const trigger of document.querySelectorAll("[data-leads-toggle]")) {
     trigger.addEventListener("click", () => {
-        document.body.classList.toggle("show-mobile-leads");
+        setLeadPanelOpen(!document.body.classList.contains("show-mobile-leads"));
     });
 }
+
+for (const trigger of document.querySelectorAll("[data-leads-close]")) {
+    trigger.addEventListener("click", () => setLeadPanelOpen(false));
+}
+
+document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setLeadPanelOpen(false);
+});

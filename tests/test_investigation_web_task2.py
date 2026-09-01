@@ -147,6 +147,8 @@ def test_new_lead_and_explicit_revisit_preserve_semantic_identity(task2_client) 
     page = client.get(response.headers["location"])
     assert page.text.count(">Archive Room<") == 2  # sidebar and thread heading
     assert page.text.count("42 NW") >= 2  # prominent in sidebar and thread header
+    assert 'data-leads-toggle aria-controls="lead-panel" aria-expanded="false"' in page.text
+    assert 'data-leads-close aria-label="Close leads"' in page.text
     assert "2 visits" in page.text
     assert "Revisited · Visit 3" in page.text
 
@@ -231,6 +233,7 @@ def test_a_b_a_discussion_projects_one_persistent_lead_thread(task2_client) -> N
     assert a_page.text.count("The globally disclosed facts") == 3
     assert a_page.text.count("The chronology is useful") == 3
     assert "6 discussion messages across 2 visits" in a_page.text
+    assert a_page.text.count('class="message-identity"') == 6
     assert b_page.text.count("The globally disclosed facts") == 1
     assert "Historical lead" in b_page.text
 
