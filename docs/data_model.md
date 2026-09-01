@@ -475,6 +475,31 @@ Case-aware leads additionally snapshot `case_lead_key` and canonical
 `lead_id`. Legacy free-form leads may omit both provenance fields only for
 compatibility with stored/test snapshots from before this integration.
 
+### Case resource definitions
+
+```text
+CaseResourceDefinition
+├── resource_id
+├── type: map | newspaper | directory | informants | document | handout
+├── title
+├── optional safe relative asset_path
+├── optional date and description
+└── initially_available
+
+CaseDefinition.resource_refs[] → shared CaseResourceDefinition.resource_id
+```
+
+Resource IDs are unique in the shared catalogue. Each case's ordered reference
+tuple is explicit and must resolve completely, allowing different cases to
+expose different newspapers and map sets while safely sharing directory and
+informant definitions. Relative asset paths reject absolute paths and parent
+traversal. Asset existence is optional because synthetic placeholders are a
+valid offline state.
+
+`initially_available=false` prevents a resource from entering presentation at
+all. It is a spoiler-safety boundary only; Task 3 adds no events or unlock
+state to `InvestigationSession`.
+
 ### Authoritative Lead/Visit foundation
 
 ```text

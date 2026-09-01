@@ -16,4 +16,7 @@ leads:
     label: Maintenance Ledger
     kind: document
 resource_refs:
-  - observatory-opening
+  - observatory-plan
+  - observatory-journal
+  - london-directory
+  - recurring-informants

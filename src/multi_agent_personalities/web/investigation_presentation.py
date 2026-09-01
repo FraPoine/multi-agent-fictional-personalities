@@ -2,7 +2,9 @@
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 
+from multi_agent_personalities.case_catalog import CaseCatalog, CaseResourceType
 from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.application.investigation_visit_service import (
     project_lead_conversation,
@@ -32,11 +34,20 @@ class InvestigationParticipantPresentation:
 
 @dataclass(frozen=True)
 class InvestigationResourcePresentation:
+    resource_id: str
+    type: str
+    title: str
+    description: str
+    date: str | None
+    asset_available: bool
+
+
+@dataclass(frozen=True)
+class InvestigationResourceGroupPresentation:
     key: str
     label: str
-    description: str
-    available: bool
-    badge: str | None = None
+    resources: tuple[InvestigationResourcePresentation, ...]
+    map_selector: bool
 
 
 @dataclass(frozen=True)
@@ -49,7 +60,7 @@ class InvestigationSessionPresentation:
     lead_count: int
     visit_count: int
     is_case_opening: bool
-    resources: tuple[InvestigationResourcePresentation, ...]
+    resource_groups: tuple[InvestigationResourceGroupPresentation, ...]
     leads: tuple["InvestigationLeadPresentation", ...]
     selected_lead: "InvestigationLeadDetailPresentation | None"
     completed: bool
@@ -154,6 +165,8 @@ def _message_presentation(
 def present_session(
     record: InvestigationSessionRecord,
     *,
+    case_catalog: CaseCatalog,
+    resource_base_directory: Path,
     selected_lead_id: str | None = None,
 ) -> InvestigationSessionPresentation:
     """Project an immutable Lead/Visit snapshot for the web shell."""
@@ -169,6 +182,7 @@ def present_session(
         for config in record.runtime.character_configs
     )
     session = record.session
+    case_definition = case_catalog.get(session.case_id)
     completed = session.status is InvestigationStatus.COMPLETED
     lead_by_id = {lead.lead_id: lead for lead in session.leads}
     current_visit = session.visits[-1] if session.visits else None
@@ -297,51 +311,17 @@ def present_session(
     )
     return InvestigationSessionPresentation(
         session_id=session.session_id,
-        case_title=DEMO_CASE_TITLE,
+        case_title=case_definition.title,
         introduction=session.case_introduction,
         status=session.status.value.replace("_", " ").title(),
         participants=participants,
         lead_count=len(session.leads),
         visit_count=len(session.visits),
         is_case_opening=not session.visits,
-        resources=(
-            InvestigationResourcePresentation(
-                "case-opening",
-                "Case Opening",
-                "Case notes: review the original case briefing.",
-                True,
-            ),
-            InvestigationResourcePresentation(
-                "map",
-                "London Map",
-                "Not available in this deterministic demo.",
-                False,
-                "Future",
-            ),
-            InvestigationResourcePresentation(
-                "newspapers",
-                "Newspapers",
-                "Not available in this deterministic demo.",
-                False,
-                "Future",
-            ),
-            InvestigationResourcePresentation(
-                "directory",
-                "Directory / Almanac",
-                "Not available in this deterministic demo.",
-                False,
-                "Future",
-            ),
-            InvestigationResourcePresentation(
-                "allies",
-                "Allies / Informants",
-                "Not available in this deterministic demo.",
-                False,
-                "Future",
-            ),
-            InvestigationResourcePresentation(
-                "rules", "Rules", "Read the local investigation guide.", True
-            ),
+        resource_groups=_resource_groups(
+            case_catalog,
+            case_id=session.case_id,
+            resource_base_directory=resource_base_directory,
         ),
         leads=leads,
         selected_lead=selected_detail,
@@ -354,3 +334,59 @@ def present_session(
         ),
         final_theory=final_theory,
     )
+
+
+def _resource_groups(
+    case_catalog: CaseCatalog,
+    *,
+    case_id: str,
+    resource_base_directory: Path,
+) -> tuple[InvestigationResourceGroupPresentation, ...]:
+    labels = {
+        CaseResourceType.MAP: "Maps",
+        CaseResourceType.NEWSPAPER: "Newspapers",
+        CaseResourceType.DIRECTORY: "Directory",
+        CaseResourceType.INFORMANTS: "Informants",
+        CaseResourceType.DOCUMENT: "Documents",
+        CaseResourceType.HANDOUT: "Handouts",
+    }
+    visible = tuple(
+        resource
+        for resource in case_catalog.resources_for_case(case_id)
+        if resource.initially_available
+    )
+    ordered_types = tuple(dict.fromkeys(resource.type for resource in visible))
+    groups = []
+    for resource_type in ordered_types:
+        resources = tuple(
+            InvestigationResourcePresentation(
+                resource_id=resource.resource_id,
+                type=resource.type.value,
+                title=resource.title,
+                description=(
+                    resource.description
+                    or "No local description is configured."
+                ),
+                date=(resource.date.isoformat() if resource.date else None),
+                asset_available=(
+                    resource.asset_path is not None
+                    and (
+                        Path(resource_base_directory) / resource.asset_path
+                    ).is_file()
+                ),
+            )
+            for resource in visible
+            if resource.type is resource_type
+        )
+        groups.append(
+            InvestigationResourceGroupPresentation(
+                key=f"resources-{resource_type.value}",
+                label=labels[resource_type],
+                resources=resources,
+                map_selector=(
+                    resource_type is CaseResourceType.MAP
+                    and len(resources) > 1
+                ),
+            )
+        )
+    return tuple(groups)

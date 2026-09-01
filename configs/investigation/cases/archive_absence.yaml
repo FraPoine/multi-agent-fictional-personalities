@@ -16,4 +16,10 @@ leads:
     label: Duty Attendant
     kind: person
 resource_refs:
-  - archive-opening
+  - london-overview
+  - archive-district
+  - archive-gazette
+  - london-directory
+  - recurring-informants
+  - archive-memo
+  - sealed-handout

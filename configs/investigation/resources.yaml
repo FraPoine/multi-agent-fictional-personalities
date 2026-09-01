@@ -1,0 +1,49 @@
+resources:
+  - resource_id: london-overview
+    type: map
+    title: Synthetic London Overview
+    initially_available: true
+    description: A placeholder for a locally owned London overview map.
+  - resource_id: archive-district
+    type: map
+    title: Archive District Detail
+    asset_path: assets/archive-district-placeholder.svg
+    initially_available: true
+    description: A supplementary-map placeholder; no copyrighted map is included.
+  - resource_id: observatory-plan
+    type: map
+    title: Observatory Floor Plan
+    initially_available: true
+    description: A placeholder for a synthetic supplementary plan.
+  - resource_id: archive-gazette
+    type: newspaper
+    title: Archive Gazette
+    date: 1889-03-14
+    initially_available: true
+    description: A synthetic newspaper reference without article content.
+  - resource_id: observatory-journal
+    type: newspaper
+    title: Observatory Journal
+    date: 1889-04-02
+    initially_available: true
+    description: A different synthetic newspaper reference for the second case.
+  - resource_id: london-directory
+    type: directory
+    title: London Directory
+    initially_available: true
+    description: A shared placeholder for a future locally owned directory.
+  - resource_id: recurring-informants
+    type: informants
+    title: Recurring Informants
+    initially_available: true
+    description: Shared synthetic informant names will be supplied in a later task.
+  - resource_id: archive-memo
+    type: document
+    title: Archive Intake Memo
+    initially_available: true
+    description: A case-specific document placeholder with no asset yet.
+  - resource_id: sealed-handout
+    type: handout
+    title: Sealed Synthetic Handout
+    initially_available: false
+    description: Hidden until a future explicit unlock mechanism exists.

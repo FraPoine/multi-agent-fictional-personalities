@@ -2,6 +2,8 @@
 
 from pathlib import Path
 import re
+from datetime import date as Date
+from enum import Enum
 from typing import Annotated
 
 import yaml
@@ -96,6 +98,40 @@ class CaseLeadDefinition(BaseModel):
         return self
 
 
+class CaseResourceType(str, Enum):
+    """Supported structural categories for local case resources."""
+
+    MAP = "map"
+    NEWSPAPER = "newspaper"
+    DIRECTORY = "directory"
+    INFORMANTS = "informants"
+    DOCUMENT = "document"
+    HANDOUT = "handout"
+
+
+class CaseResourceDefinition(BaseModel):
+    """One reusable local resource definition without embedded content."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    resource_id: CaseKey
+    type: CaseResourceType
+    title: NonEmptyStr
+    asset_path: Path | None = None
+    date: Date | None = None
+    initially_available: bool = True
+    description: NonEmptyStr | None = None
+
+    @model_validator(mode="after")
+    def validate_local_asset_path(self) -> "CaseResourceDefinition":
+        if self.asset_path is None:
+            return self
+        path = self.asset_path
+        if path.is_absolute() or ".." in path.parts:
+            raise ValueError("asset_path must be a safe local relative path")
+        return self
+
+
 class CaseDefinition(BaseModel):
     """Static case configuration copied only by provenance into a session."""
 
@@ -138,6 +174,7 @@ class CaseCatalog(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     cases: tuple[CaseDefinition, ...] = Field(min_length=1)
+    resources: tuple[CaseResourceDefinition, ...] = ()
 
     @model_validator(mode="after")
     def validate_unique_case_ids(self) -> "CaseCatalog":
@@ -146,6 +183,26 @@ class CaseCatalog(BaseModel):
             raise ValueError(
                 "duplicate case_id value(s): " + ", ".join(duplicates)
             )
+        duplicate_resources = _duplicates(
+            [resource.resource_id for resource in self.resources]
+        )
+        if duplicate_resources:
+            raise ValueError(
+                "duplicate resource_id value(s): "
+                + ", ".join(duplicate_resources)
+            )
+        known_resources = {resource.resource_id for resource in self.resources}
+        for case in self.cases:
+            unknown = [
+                reference
+                for reference in case.resource_refs
+                if reference not in known_resources
+            ]
+            if unknown:
+                raise ValueError(
+                    f"case {case.case_id!r} references unknown resource_id: "
+                    f"{unknown[0]!r}"
+                )
         return self
 
     def get(self, case_id: str) -> CaseDefinition:
@@ -154,6 +211,14 @@ class CaseCatalog(BaseModel):
             if case.case_id == case_id:
                 return case
         raise KeyError(f"unknown case_id: {case_id!r}")
+
+    def resources_for_case(
+        self, case_id: str
+    ) -> tuple[CaseResourceDefinition, ...]:
+        """Resolve one case's explicit resource references in declared order."""
+        case = self.get(case_id)
+        by_id = {resource.resource_id: resource for resource in self.resources}
+        return tuple(by_id[reference] for reference in case.resource_refs)
 
 
 def default_case_catalog_directory(project_root: Path) -> Path:
@@ -190,7 +255,35 @@ def load_case_catalog(catalog_directory: Path) -> CaseCatalog:
         except ValidationError as error:
             raise ValueError(f"invalid case definition {path}: {error}") from error
 
+    resources_path = directory.parent / "resources.yaml"
+    resources: tuple[CaseResourceDefinition, ...] = ()
+    if resources_path.is_file():
+        try:
+            raw_resources = yaml.safe_load(
+                resources_path.read_text(encoding="utf-8")
+            )
+        except OSError as error:
+            raise OSError(
+                f"could not read case resource catalogue {resources_path}: {error}"
+            ) from error
+        except yaml.YAMLError as error:
+            raise ValueError(
+                f"invalid YAML in case resource catalogue {resources_path}: {error}"
+            ) from error
+        if not isinstance(raw_resources, dict):
+            raise ValueError(
+                f"case resource catalogue {resources_path} must contain a mapping"
+            )
+        try:
+            resources = tuple(
+                CaseResourceDefinition.model_validate(item)
+                for item in raw_resources.get("resources", ())
+            )
+        except (TypeError, ValidationError) as error:
+            raise ValueError(
+                f"invalid case resource catalogue {resources_path}: {error}"
+            ) from error
     try:
-        return CaseCatalog(cases=tuple(cases))
+        return CaseCatalog(cases=tuple(cases), resources=resources)
     except ValidationError as error:
         raise ValueError(f"invalid case catalogue {directory}: {error}") from error

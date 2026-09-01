@@ -37,12 +37,12 @@ Finalization and the complete resource workspace remain outside Task 2.
 
 Task 3 completes the remaining player-facing states. The investigation shell
 provides a small resource toolbar and responsive drawer. Case Opening and
-generic local Rules are functional and read-only. London Map, Newspapers,
-Directory / Almanac, and Allies / Informants are visibly disabled with a
-`Future` badge and explicitly state that they are unavailable in the current
-deterministic demo. No synthetic case material or external resource backend is
-created. A disabled composer presents human participation honestly as future
-work and has no POST route.
+generic local Rules are functional and read-only. The later case-resource
+foundation replaces its original hardcoded future buttons with validated
+case-specific maps, newspapers, directory, informants, and document
+placeholders. No copyrighted asset or external resource backend is included.
+A disabled composer presents human participation honestly as future work and
+has no POST route.
 
 `POST /investigations/{session_id}/finalize` now delegates to
 `finalize_lead_investigation()`. Availability reflects the Lead/Visit minimum:
@@ -79,6 +79,14 @@ Entering a historical lead reference is a side-effect-free selection of the
 existing semantic lead. It never creates a visit. The user must invoke the
 existing internal-`lead_id` revisit route explicitly, which appends a new
 `LeadVisit` while retaining the same lead identity and visible reference.
+
+Case-aware resources are resolved from the session's selected case and the
+shared local resource catalogue. Resource groups cover maps, newspapers,
+directory, informants, documents, and handouts. A case exposes only its
+explicit ordered references. Multiple maps receive a simple selector; one map
+is presented directly. Missing optional assets display a placeholder, while
+resources marked unavailable are not disclosed. Completed sessions retain the
+same readable resource set.
 
 The application creates an active investigation with `create_session()` and
 supports these provider-neutral operations:

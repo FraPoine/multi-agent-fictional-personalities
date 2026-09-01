@@ -150,7 +150,8 @@ def test_complete_a_b_a_workflow_through_real_http(http_workflow) -> None:
     assert "A cipher key was left on the desk." in b_thread.text
     assert "Case Opening" in a_thread.text
     assert "How to investigate" in a_thread.text
-    assert "London Map" in a_thread.text and "Future" in a_thread.text
+    assert "Synthetic London Overview" in a_thread.text
+    assert "No local asset is included for this placeholder." in a_thread.text
 
     finalization = client.post(f"/investigations/{session_id}/finalize")
     assert finalization.status_code == 303

@@ -576,6 +576,27 @@ historical lead returns its existing identity without mutation; resolving the
 current lead is a conflict. A revisit remains an explicit `visit_lead(lead_id=)`
 operation, preserving A → B → A chronology without duplicating Lead A.
 
+### Case-aware resource catalogue
+
+Shared local resource definitions live in
+`configs/investigation/resources.yaml`. A `CaseResourceDefinition` has a stable
+resource ID, structural type, title, optional safe relative asset path, optional
+date, description, and `initially_available` flag. Case definitions reference
+these reusable IDs explicitly and in display order; the catalogue rejects
+unknown references before a session starts.
+
+The supported types are map, newspaper, directory, informants, document, and
+handout. Cases may reference zero, one, or multiple maps, and do not inherit all
+configured newspapers automatically. Shared directory and informant resources
+may be referenced by several cases without copying their definitions.
+
+Presentation resolves resources from `InvestigationSession.case_id`. Hidden
+resources are omitted, so configuring a handout asset does not disclose it.
+One map renders directly; multiple maps preserve case order and use a small
+drawer selector. Missing optional assets produce an honest local placeholder.
+Case Opening and Rules remain application-level resources. No network access,
+asset ingestion, or automatic unlock engine is involved.
+
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:
 

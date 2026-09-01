@@ -100,7 +100,7 @@ def test_case_opening_shell_is_side_effect_free(task1_client) -> None:
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
     assert "Resources" in response.text
-    assert "Case notes" in response.text
+    assert "Review the immutable case briefing." in response.text
     assert "Rules" in response.text
     assert "Begin investigation" in response.text
     assert "No leads visited yet" in response.text

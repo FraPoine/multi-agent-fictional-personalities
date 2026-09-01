@@ -73,14 +73,19 @@ def test_resource_drawer_is_honest_and_human_composer_is_disabled(
     assert 'data-resource-open="rules"' in page.text
     assert CASE_OPENING in page.text
     for resource in (
-        "London Map",
+        "Maps",
+        "Synthetic London Overview",
+        "Archive District Detail",
+        "Archive Gazette",
+        "London Directory",
+        "Recurring Informants",
         "Newspapers",
-        "Directory / Almanac",
-        "Allies / Informants",
     ):
         assert resource in page.text
-    assert page.text.count("Future") >= 4
-    assert "Not available in this deterministic demo" in page.text
+    assert "No local asset is included for this placeholder." in page.text
+    assert "Sealed Synthetic Handout" not in page.text
+    assert 'data-map-select="london-overview"' in page.text
+    assert 'data-map-select="archive-district"' in page.text
     assert 'id="human-message"' in page.text
     assert "Human participation coming later" in page.text
     assert 'id="human-message" rows="2" disabled' in page.text
@@ -136,6 +141,7 @@ def test_completed_archive_keeps_history_and_rejects_all_mutations(
         assert page.status_code == 200
         assert lead.label in page.text
         assert CASE_OPENING in page.text
+        assert "Synthetic London Overview" in page.text
         assert "Final Theory" in page.text
         assert "Read-only archive" in page.text
         assert "Visit new lead" not in page.text

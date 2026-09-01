@@ -4,6 +4,8 @@ from multi_agent_personalities.case_catalog import (
     CaseCatalog,
     CaseDefinition,
     CaseLeadDefinition,
+    CaseResourceDefinition,
+    CaseResourceType,
 )
 from multi_agent_personalities.models.conversation import ConversationRun
 from multi_agent_personalities.models.generation import (
@@ -42,6 +44,7 @@ from multi_agent_personalities.models.persona import Persona
 
 __all__ = [
     "AgentAnalysis", "CaseCatalog", "CaseDefinition", "CaseLeadDefinition",
+    "CaseResourceDefinition", "CaseResourceType",
     "ConversationRun", "EvidenceReference",
     "EvidenceRelation", "FinalTheory", "GenerationMetadata",
     "GenerationResult", "GroupDecision", "GroupDecisionType", "Hypothesis",

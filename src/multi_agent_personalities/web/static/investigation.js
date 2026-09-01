@@ -66,6 +66,17 @@ function closeResourceDrawer() {
 }
 
 if (resourceDrawer instanceof HTMLElement) {
+    for (const trigger of resourceDrawer.querySelectorAll("[data-map-select]")) {
+        trigger.addEventListener("click", () => {
+            const selectedMap = trigger.dataset.mapSelect;
+            for (const button of resourceDrawer.querySelectorAll("[data-map-select]")) {
+                button.setAttribute("aria-pressed", String(button === trigger));
+            }
+            for (const item of resourceDrawer.querySelectorAll("[data-map-item]")) {
+                item.hidden = item.dataset.mapItem !== selectedMap;
+            }
+        });
+    }
     for (const trigger of document.querySelectorAll("[data-resource-open]")) {
         trigger.addEventListener("click", () => {
             const resource = trigger.dataset.resourceOpen;

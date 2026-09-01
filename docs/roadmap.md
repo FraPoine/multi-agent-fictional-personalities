@@ -98,9 +98,11 @@ real investigation game.
 - Task 2 adds London-address and Carlton-interior normalization, case-aware
   semantic lead resolution, runtime lead provenance, and explicit
   no-implicit-revisit web behavior.
-- Later tasks will integrate resources and the final catalogue UX. No real or
-  commercial case content is present, and the broader integration is not yet
-  complete.
+- Task 3 adds a shared validated local resource catalogue, explicit ordered
+  case resource references, multiple-map presentation, missing-asset
+  placeholders, and initially hidden handouts.
+- Later tasks will integrate the final catalogue UX. No real or commercial
+  case content is present, and the broader integration is not yet complete.
 
 ## Sprint 9 — Complete offline system
 

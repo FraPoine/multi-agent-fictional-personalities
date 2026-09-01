@@ -218,6 +218,10 @@ def create_investigation_router(
                 "provider_name": "mock",
                 "investigation": present_session(
                     record,
+                    case_catalog=case_catalog,
+                    resource_base_directory=(
+                        default_case_catalog_directory(project_root).parent
+                    ),
                     selected_lead_id=selected_lead_id,
                 ),
             },
