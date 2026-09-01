@@ -536,11 +536,37 @@ conversations remain future work.
 
 ## Lead/Visit investigation architecture (redesign complete)
 
+### Local case catalogue foundation
+
+Static case configuration and runtime investigation state are separate:
+
+```text
+configs/investigation/cases/*.yaml
+→ CaseDefinition
+→ InMemoryInvestigationRegistry.create(case_id=...)
+→ InvestigationSession(case_id, case_introduction snapshot)
+```
+
+`load_case_catalog()` reads local YAML files in deterministic filename order
+and validates immutable `CaseDefinition` and `CaseLeadDefinition` models. Case
+IDs are unique across the catalogue; lead keys and references are unique only
+within their owning case. Definitions contain synthetic configuration, not
+runtime visits, discussions, or conclusions.
+
+Catalogue-backed creation resolves the selected `case_id` and copies the
+definition's opening into `case_introduction`. The complete definition is not
+stored in the aggregate. Consequently two sessions may independently reference
+the same case, and later configuration changes cannot rewrite either session's
+opening. The existing lobby remains on its temporary introduction-based
+compatibility path until the later catalogue UX task.
+
 The authoritative investigation-domain direction is now a persistent semantic
 lead graph with a chronological visit history:
 
 ```text
 InvestigationSession
+├── case_id
+├── case_introduction (immutable opening snapshot)
 ├── InvestigationLead[]
 ├── LeadVisit[]
 └── RevealedInformation[]

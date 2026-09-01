@@ -108,6 +108,11 @@ vanishes when the application process restarts. See the historical
 [original verification record](docs/sprint_7_completion.md) and the final
 [redesign completion record](docs/sprint_7_redesign_completion.md).
 
+The case-catalogue foundation loads immutable synthetic case definitions from
+`configs/investigation/cases/`. A catalogue-backed session stores the selected
+`case_id` and an immutable copy of its opening, never the full definition.
+Lobby case selection and case-defined lead behavior remain later tasks.
+
 ### Implemented workflows
 
 - validated persona loading and deterministic local single-agent generation;

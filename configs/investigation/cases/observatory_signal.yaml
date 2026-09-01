@@ -1,0 +1,20 @@
+case_id: observatory-signal
+title: The Observatory Signal
+short_description: A synthetic mystery involving an unexplained midnight signal.
+opening: >-
+  An unused observatory lamp flashed three times at midnight. By morning, its
+  maintenance ledger and the only key assigned to the tower were missing.
+leads:
+  - lead_key: observatory
+    reference: OS-01
+    reference_scheme: synthetic-demo
+    label: Observatory Tower
+    kind: place
+  - lead_key: maintenance-ledger
+    reference: OS-02
+    reference_scheme: synthetic-demo
+    label: Maintenance Ledger
+    kind: document
+resource_refs:
+  - observatory-opening
+

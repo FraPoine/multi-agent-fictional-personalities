@@ -409,6 +409,7 @@ class InvestigationSession(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     session_id: NonEmptyStr
+    case_id: NonEmptyStr = "legacy-local-demo"
     case_introduction: StrictStr
     participant_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
     status: InvestigationStatus

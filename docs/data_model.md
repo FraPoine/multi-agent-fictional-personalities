@@ -429,6 +429,39 @@ effective message model becomes the run model.
 
 ## 7. Lead, visit, revealed information, and evidence
 
+### Static case definitions and session provenance
+
+```text
+CaseCatalog
+└── CaseDefinition[]
+    ├── case_id
+    ├── title
+    ├── short_description
+    ├── opening
+    ├── CaseLeadDefinition[]
+    │   ├── lead_key
+    │   ├── reference and reference_scheme
+    │   ├── label
+    │   └── kind
+    └── resource_refs
+
+InvestigationSession
+├── case_id
+└── case_introduction
+```
+
+Case definitions are frozen local configuration loaded from
+`configs/investigation/cases/*.yaml`; they are not aggregate children and are
+never mutated by investigation operations. Catalogue case IDs are globally
+unique. Lead keys and references are unique within one case, while the same
+external-style reference may appear in different cases.
+
+`InvestigationSession.case_id` records stable provenance and
+`case_introduction` is a copied opening snapshot. The session deliberately does
+not embed `CaseDefinition`, so reloading an edited catalogue cannot alter an
+existing immutable session. The default legacy case ID exists only to keep
+pre-catalogue callers readable during the staged integration.
+
 ### Authoritative Lead/Visit foundation
 
 ```text

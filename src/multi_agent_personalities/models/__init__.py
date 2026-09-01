@@ -1,5 +1,10 @@
 """Reusable data models."""
 
+from multi_agent_personalities.case_catalog import (
+    CaseCatalog,
+    CaseDefinition,
+    CaseLeadDefinition,
+)
 from multi_agent_personalities.models.conversation import ConversationRun
 from multi_agent_personalities.models.generation import (
     GenerationMetadata,
@@ -36,7 +41,8 @@ from multi_agent_personalities.models.evaluation import (
 from multi_agent_personalities.models.persona import Persona
 
 __all__ = [
-    "AgentAnalysis", "ConversationRun", "EvidenceReference",
+    "AgentAnalysis", "CaseCatalog", "CaseDefinition", "CaseLeadDefinition",
+    "ConversationRun", "EvidenceReference",
     "EvidenceRelation", "FinalTheory", "GenerationMetadata",
     "GenerationResult", "GroupDecision", "GroupDecisionType", "Hypothesis",
     "HypothesisStatus", "InvestigationLead",

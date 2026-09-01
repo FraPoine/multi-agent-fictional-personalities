@@ -1,0 +1,20 @@
+case_id: archive-absence
+title: The Archive Absence
+short_description: A synthetic disappearance from a sealed university archive.
+opening: >-
+  A researcher is missing from a locked archive room. The attendants heard no
+  disturbance, and the catalogue ledger is open at an unrecorded entry.
+leads:
+  - lead_key: archive-room
+    reference: AR-01
+    reference_scheme: synthetic-demo
+    label: Archive Room
+    kind: place
+  - lead_key: duty-attendant
+    reference: AR-02
+    reference_scheme: synthetic-demo
+    label: Duty Attendant
+    kind: person
+resource_refs:
+  - archive-opening
+

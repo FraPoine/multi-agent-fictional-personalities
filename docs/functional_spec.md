@@ -60,6 +60,14 @@ work.
 
 ## Lead/Visit application pathway (redesign complete)
 
+Task 1 of the case-catalogue integration adds immutable local
+`CaseDefinition` records loaded from synthetic YAML. Catalogue-backed registry
+creation accepts a stable `case_id`, copies that definition's opening into the
+new session, and stores no complete case definition in runtime state. Multiple
+sessions may use the same case independently. Case selection UI, lead-code
+input, resource implementation, and real case content are not part of this
+foundation task.
+
 The application creates an active investigation with `create_session()` and
 supports these provider-neutral operations:
 

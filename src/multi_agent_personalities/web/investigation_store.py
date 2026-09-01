@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Lock
 from typing import Generic, TypeVar
 
+from multi_agent_personalities.case_catalog import CaseCatalog
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
@@ -58,12 +59,13 @@ class InvestigationSessionMutation(Generic[T]):
 class InMemoryInvestigationRegistry:
     """Own process-local investigation records with per-session serialization."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, case_catalog: CaseCatalog | None = None) -> None:
         self._registry_lock = Lock()
         self._creation_lock = Lock()
         self._records: dict[str, InvestigationSessionRecord] = {}
         self._session_locks: dict[str, Lock] = {}
         self._next_session_sequence = 1
+        self._case_catalog = case_catalog
 
     @property
     def session_ids(self) -> tuple[str, ...]:
@@ -75,11 +77,28 @@ class InMemoryInvestigationRegistry:
         self,
         *,
         character_slugs: Sequence[str],
-        introduction: str,
+        introduction: str | None = None,
+        case_id: str | None = None,
         project_root: Path | None = None,
     ) -> InvestigationSessionRecord:
         """Build and atomically register one complete investigation record."""
         with self._creation_lock:
+            if case_id is not None:
+                if self._case_catalog is None:
+                    raise ValueError(
+                        "case_id requires a configured local case catalogue"
+                    )
+                try:
+                    case = self._case_catalog.get(case_id)
+                except KeyError as error:
+                    raise ValueError(str(error)) from error
+                resolved_case_id = case.case_id
+                resolved_introduction = case.opening
+            else:
+                if introduction is None:
+                    raise ValueError("introduction is required without case_id")
+                resolved_case_id = "legacy-local-demo"
+                resolved_introduction = introduction
             with self._registry_lock:
                 session_sequence = self._next_session_sequence
             runtime = build_investigation_mock_runtime(
@@ -89,8 +108,9 @@ class InMemoryInvestigationRegistry:
             )
             session = create_session(
                 id_factory=runtime.id_factory,
-                introduction=introduction,
+                introduction=resolved_introduction,
                 participant_ids=runtime.participant_ids,
+                case_id=resolved_case_id,
             )
             record = InvestigationSessionRecord(
                 session_sequence=session_sequence,

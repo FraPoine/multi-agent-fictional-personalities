@@ -90,6 +90,15 @@ real investigation game.
 
 - Generalize the evaluation design after the runtime character set expands.
 
+## Case catalogue integration
+
+- Task 1 establishes frozen `CaseDefinition` / `CaseLeadDefinition` models, a
+  deterministic local YAML loader with two synthetic cases, and stable
+  `InvestigationSession.case_id` provenance with an immutable opening snapshot.
+- Later tasks will integrate case selection and lead references with the web
+  workflow and resources. No real or commercial case content is present, and
+  the broader integration is not yet complete.
+
 ## Sprint 9 — Complete offline system
 
 - Integrate and regress the complete offline conversation, investigation, and

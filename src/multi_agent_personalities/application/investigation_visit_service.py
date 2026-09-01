@@ -60,6 +60,7 @@ def create_session(
     id_factory: DeterministicInvestigationIdFactory,
     introduction: str,
     participant_ids: Sequence[str],
+    case_id: str = "legacy-local-demo",
 ) -> InvestigationSession:
     """Create one active investigation with an empty Lead/Visit graph."""
     if not isinstance(id_factory, DeterministicInvestigationIdFactory):
@@ -68,6 +69,8 @@ def create_session(
         )
     if not isinstance(introduction, str) or not introduction.strip():
         raise ValueError("introduction must not be empty")
+    if not isinstance(case_id, str) or not case_id.strip():
+        raise ValueError("case_id must not be empty")
     if isinstance(participant_ids, (str, bytes)) or not isinstance(
         participant_ids, Sequence
     ):
@@ -79,6 +82,7 @@ def create_session(
     id_factory.discussion_segment_id(1, 1)
     return InvestigationSession(
         session_id=id_factory.session_id,
+        case_id=case_id,
         case_introduction=introduction,
         participant_ids=tuple(participant_ids),
         status=InvestigationStatus.ACTIVE,
