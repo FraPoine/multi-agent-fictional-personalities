@@ -153,6 +153,19 @@ function setLeadPanelOpen(open) {
     if (leadBackdrop instanceof HTMLElement) leadBackdrop.hidden = !open;
 }
 
+const beginInvestigating = document.querySelector("[data-begin-investigating]");
+if (beginInvestigating instanceof HTMLButtonElement) {
+    beginInvestigating.addEventListener("click", () => {
+        const leadReference = document.querySelector("#lead-reference");
+        if (window.matchMedia("(max-width: 820px)").matches) {
+            setLeadPanelOpen(true);
+        }
+        if (leadReference instanceof HTMLInputElement) {
+            window.requestAnimationFrame(() => leadReference.focus());
+        }
+    });
+}
+
 for (const trigger of document.querySelectorAll("[data-leads-toggle]")) {
     trigger.addEventListener("click", () => {
         setLeadPanelOpen(!document.body.classList.contains("show-mobile-leads"));

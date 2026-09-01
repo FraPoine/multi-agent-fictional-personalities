@@ -155,16 +155,25 @@ def test_case_opening_shell_is_side_effect_free(task1_client) -> None:
 
     assert response.status_code == 200
     assert registry.snapshot("session_001") == before
+    assert response.text.count('class="case-file-card"') == 1
+    assert '<header class="case-file-header">' in response.text
+    assert DEMO_CASE.title in response.text
+    assert DEMO_CASE.short_description in response.text
     assert "Case opening" in response.text
-    assert "The investigation begins" in response.text
+    assert "The investigation begins" not in response.text
     assert DEMO_CASE.opening in response.text
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
+    assert "A fictional consulting detective known for acute observation" not in response.text
+    assert "A fictional Belgian private detective known for psychological insight" not in response.text
+    assert '<button class="primary-action begin-investigating" type="button" data-begin-investigating>Begin Investigating</button>' in response.text
+    assert '<header class="case-bar">' not in response.text
     assert "Resources" in response.text
     assert 'aria-label="Case Opening"' in response.text
     assert "Rules" in response.text
-    assert "Begin investigation" in response.text
     assert "No leads visited yet" in response.text
+    assert 'data-leads-toggle aria-controls="lead-panel" aria-expanded="false"' in response.text
+    assert 'data-resource-drawer role="dialog" aria-modal="true"' in response.text
     assert '>Conversations</a>' in response.text
     assert 'aria-current="page">Investigations</a>' in response.text
     for legacy in (

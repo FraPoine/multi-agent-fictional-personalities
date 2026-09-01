@@ -53,6 +53,7 @@ class InvestigationResourceGroupPresentation:
 class InvestigationSessionPresentation:
     session_id: str
     case_title: str
+    case_short_description: str
     introduction: str
     status: str
     participants: tuple[InvestigationParticipantPresentation, ...]
@@ -320,6 +321,7 @@ def present_session(
     return InvestigationSessionPresentation(
         session_id=session.session_id,
         case_title=case_definition.title,
+        case_short_description=case_definition.short_description,
         introduction=session.case_introduction,
         status=session.status.value.replace("_", " ").title(),
         participants=participants,
