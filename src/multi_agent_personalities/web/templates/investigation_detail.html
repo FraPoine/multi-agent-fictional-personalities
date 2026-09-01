@@ -2,7 +2,7 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ investigation.case_title }} · {{ page_title }}</title><link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}"></head>
 <body class="game-page">
-    <header class="app-header"><div class="header-inner"><div class="brand-block"><p class="brand-name">{{ page_title }}</p><p class="brand-description">Lead / Visit investigation workspace</p></div><div class="header-actions"><nav class="app-nav" aria-label="Primary navigation"><a href="{{ url_for('home') }}">Conversations</a><a href="{{ url_for('investigations_index') }}" aria-current="page">Investigation</a></nav><span class="provider-badge">local {{ provider_name }}</span></div></div></header>
+    <header class="app-header"><div class="header-inner"><div class="brand-block"><p class="brand-name">{{ page_title }}</p><p class="brand-description">Lead / Visit investigation workspace</p></div><div class="header-actions"><nav class="app-nav" aria-label="Primary navigation"><a href="{{ url_for('home') }}">Conversations</a><a href="{{ url_for('investigations_index') }}" aria-current="page">Investigations</a></nav><span class="provider-badge">local {{ provider_name }}</span></div></div></header>
     <main class="game-shell">
         <aside class="lead-rail" id="lead-panel" aria-labelledby="leads-title">
             <div class="lead-rail-heading"><div><p class="eyebrow">Case board</p><h2 id="leads-title">Leads</h2></div><button type="button" class="icon-button lead-panel-close" data-leads-close aria-label="Close leads">×</button></div>

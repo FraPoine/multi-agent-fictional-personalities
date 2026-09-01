@@ -10,7 +10,13 @@
     <header class="app-header">
         <div class="header-inner">
             <div class="brand-block"><p class="brand-name">{{ page_title }}</p></div>
-            <span class="provider-badge">local {{ provider_name }}</span>
+            <div class="header-actions">
+                <nav class="app-nav" aria-label="Primary navigation">
+                    <a href="{{ url_for('home') }}">Conversations</a>
+                    <a href="{{ url_for('investigations_index') }}" aria-current="page">Investigations</a>
+                </nav>
+                <span class="provider-badge">local {{ provider_name }}</span>
+            </div>
         </div>
     </header>
     <main class="investigation-detail-workspace">

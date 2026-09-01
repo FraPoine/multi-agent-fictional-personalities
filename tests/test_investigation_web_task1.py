@@ -52,6 +52,9 @@ def test_lobby_is_catalogue_backed_game_start(task1_client) -> None:
     assert "Start investigation" in response.text
     assert "Read rules" in response.text
     assert "reproduce a commercial rulebook" in response.text
+    assert '>Conversations</a>' in response.text
+    assert 'aria-current="page">Investigations</a>' in response.text
+    assert 'aria-current="page">Conversations</a>' not in response.text
     for legacy in ("Reveal clue", "Independent analyses", "Group decision"):
         assert legacy not in response.text
 
@@ -141,6 +144,8 @@ def test_case_opening_shell_is_side_effect_free(task1_client) -> None:
     assert "Rules" in response.text
     assert "Begin investigation" in response.text
     assert "No leads visited yet" in response.text
+    assert '>Conversations</a>' in response.text
+    assert 'aria-current="page">Investigations</a>' in response.text
     for legacy in (
         "Reveal clue",
         "Run independent analyses",

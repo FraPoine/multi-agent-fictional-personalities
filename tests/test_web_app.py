@@ -224,6 +224,9 @@ def test_main_page_renders_without_creating_output(
     assert "Sherlock Holmes" in response.text
     assert "Hercule Poirot" in response.text
     assert "mock provider" in response.text
+    assert 'aria-current="page">Conversations</a>' in response.text
+    assert '>Investigations</a>' in response.text
+    assert 'aria-current="page">Investigations</a>' not in response.text
     assert 'method="post"' in response.text
     assert 'action="http://testserver/conversations"' in response.text
     for loading_hook in (

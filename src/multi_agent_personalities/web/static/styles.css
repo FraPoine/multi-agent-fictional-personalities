@@ -95,8 +95,8 @@ body {
     margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-lg);
+    justify-content: flex-start;
+    gap: 32px;
 }
 
 .brand-block {
@@ -906,11 +906,25 @@ body {
 .app-nav {
     display: flex;
     align-items: center;
-    gap: var(--spacing-md);
+}
+
+.header-actions {
+    flex: 1;
+    min-width: 0;
+}
+
+.header-actions .provider-badge {
+    margin-left: auto;
+}
+
+.app-nav {
+    gap: 20px;
 }
 
 .app-nav a {
-    color: var(--color-muted);
+    position: relative;
+    padding: 21px 0 19px;
+    color: var(--color-header-muted);
     font-size: 0.8125rem;
     font-weight: 700;
     text-decoration: none;
@@ -918,7 +932,18 @@ body {
 
 .app-nav a:hover,
 .app-nav a[aria-current="page"] {
-    color: var(--color-ink);
+    color: var(--surface-page);
+}
+
+.app-nav a[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    border-radius: 2px 2px 0 0;
+    background: var(--color-accent);
 }
 
 .investigation-workspace {
@@ -1048,7 +1073,17 @@ body {
 
     .header-actions {
         width: 100%;
+        flex-wrap: wrap;
         justify-content: space-between;
+        gap: 7px 12px;
+    }
+
+    .header-actions .provider-badge {
+        margin-left: auto;
+    }
+
+    .app-nav a {
+        padding: 7px 0 9px;
     }
 
     .brand-description {

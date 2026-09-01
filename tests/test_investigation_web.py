@@ -79,7 +79,10 @@ def test_unknown_session_lead_and_visit_are_404_without_mutation(
     web_client,
 ) -> None:
     client, registry, _app = web_client
-    assert client.get("/investigations/session_999").status_code == 404
+    unknown_session = client.get("/investigations/session_999")
+    assert unknown_session.status_code == 404
+    assert '>Conversations</a>' in unknown_session.text
+    assert 'aria-current="page">Investigations</a>' in unknown_session.text
     client.post("/investigations", data=VALID_FORM)
     before = registry.snapshot("session_001")
 
