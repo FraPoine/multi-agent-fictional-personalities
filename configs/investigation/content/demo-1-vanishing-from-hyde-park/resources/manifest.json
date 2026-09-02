@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "resources": [
+    {
+      "resource_id": "demo-1-vanishing-from-hyde-park-directory",
+      "type": "directory",
+      "title": "Directory",
+      "initially_available": true,
+      "asset": "assets/directory.png",
+      "source": {
+        "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+        "page": 1,
+        "region": "embedded Directory panel",
+        "method": "faithful crop from the user-supplied PDF"
+      },
+      "needs_asset_extraction": false
+    },
+    {
+      "resource_id": "demo-1-vanishing-from-hyde-park-map",
+      "type": "map",
+      "title": "Map of London",
+      "initially_available": true,
+      "asset": "assets/map.png",
+      "source": {
+        "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+        "page": 1,
+        "region": "embedded Map panel",
+        "method": "faithful crop from the user-supplied PDF"
+      },
+      "needs_asset_extraction": false
+    },
+    {
+      "resource_id": "demo-1-vanishing-from-hyde-park-newspaper",
+      "type": "newspaper",
+      "title": "The Times — Evening edition",
+      "initially_available": true,
+      "asset": "assets/newspaper.png",
+      "source": {
+        "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+        "page": 1,
+        "region": "embedded newspaper panel",
+        "method": "faithful crop from the user-supplied PDF"
+      },
+      "needs_asset_extraction": false,
+      "date": "1888-03-14"
+    },
+    {
+      "resource_id": "demo-1-vanishing-from-hyde-park-informants",
+      "type": "informants",
+      "title": "Informants",
+      "initially_available": true,
+      "asset": "assets/informants.png",
+      "source": {
+        "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+        "page": 1,
+        "region": "embedded Informants panel",
+        "method": "faithful crop from the user-supplied PDF"
+      },
+      "needs_asset_extraction": false
+    }
+  ]
+}

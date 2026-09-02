@@ -1,0 +1,217 @@
+case_id: demo-2-an-irregular-meeting
+title: An Irregular Meeting
+short_description: Wiggins tests the newly formed Irregulars with a suspicious plan taking shape around Trafalgar Square.
+opening: 'The streets of London are a harsh place for young children. With no parents to
+
+  care for us, we''ve been left to scrape a living in various ways - begging,
+
+  chimney-sweeping, or selling goods on the street. And amongst the hardship, we
+
+  have formed some strong friendships. We met Wiggins a month ago. A confident
+
+  and witty 7-year old (a year older than most of us), we have already begun to
+
+  see him as our natural leader. Early one Saturday morning, he gathers us
+
+  together.
+
+
+  "Last week," he tells us, "I became acquainted with a distinguished gentleman,
+
+  a ''consulting detective'' so he calls his self, who goes by the name of Mr
+
+  Sherlock Holmes. I helped him in a little matter, and he was flush with praise.
+
+  Now, he''s asked me to form a gang of plucky and sharp-witted folk, what will be
+
+  like an unofficial police force, at his disposal."
+
+
+  "So we''d help solve crimes?" asks Tinker, the youngest of us.
+
+
+  "That''s it," replies Wiggins, and we begin to chatter excitedly.
+
+
+  "And," he continues, raising his voice to be heard, "in return, we garner a
+
+  shilling per day, and a guinea for a vital clue! But first, there is a test."
+
+
+  "A test?" exclaims Simpson, a stocky, red-haired boy. "Like at school?"
+
+
+  We burst into raucous laughter.
+
+
+  "No," replies Wiggins, grinning. "Not a jot like school. Mr Holmes needs to
+
+  know we''re up to the work. You''ve heard of Gilly the Ghost?"
+
+
+  We nod. Gilly the Ghost - real name Gilly Niles - is one of the most notorious
+
+  thieves of the West End. An expert in disguise, she can change her appearance
+
+  in seconds, making any pursuers think she''s vanished into the air. Once,
+
+  disguised as a male doorman, she made away with a hotel guest''s entire set of
+
+  luggage. She also worked as an actress, until she was caught stealing from the
+
+  theatre and spent seven months in Millbank Prison. Some of us know her by
+
+  sight: she is in her twenties, has brown hair and seems constantly on the
+
+  alert.
+
+
+  "Gilly''s been seen around Trafalgar Square a lot of late," Wiggins continues,
+
+  "Mr Holmes believes she has some kind of skulduggery in mind. He''s given us two
+
+  tasks. First, we must find out what she''s planning. Second, we must try to stop
+
+  her plan going ahead. So lads, do you want to be detectives?"
+
+
+  Our response is an enthusiastic roar.
+
+
+  "Well then, let''s show Mr Holmes what we''re made of!"'
+leads:
+- lead_key: wc-17
+  reference: 17 WC
+  reference_scheme: london-address
+  label: 17 WC
+  kind: place
+- lead_key: wc-19
+  reference: 19 WC
+  reference_scheme: london-address
+  label: 19 WC
+  kind: place
+- lead_key: wc-20
+  reference: 20 WC
+  reference_scheme: london-address
+  label: 20 WC
+  kind: place
+- lead_key: wc-21
+  reference: 21 WC
+  reference_scheme: london-address
+  label: 21 WC
+  kind: place
+- lead_key: wc-22
+  reference: 22 WC
+  reference_scheme: london-address
+  label: 22 WC
+  kind: place
+- lead_key: wc-23
+  reference: 23 WC
+  reference_scheme: london-address
+  label: 23 WC
+  kind: place
+- lead_key: wc-24
+  reference: 24 WC
+  reference_scheme: london-address
+  label: 24 WC
+  kind: place
+- lead_key: wc-25
+  reference: 25 WC
+  reference_scheme: london-address
+  label: 25 WC
+  kind: place
+- lead_key: wc-26
+  reference: 26 WC
+  reference_scheme: london-address
+  label: 26 WC
+  kind: place
+- lead_key: wc-27
+  reference: 27 WC
+  reference_scheme: london-address
+  label: 27 WC
+  kind: place
+- lead_key: wc-28
+  reference: 28 WC
+  reference_scheme: london-address
+  label: 28 WC
+  kind: place
+- lead_key: wc-29
+  reference: 29 WC
+  reference_scheme: london-address
+  label: 29 WC
+  kind: place
+- lead_key: wc-30
+  reference: 30 WC
+  reference_scheme: london-address
+  label: 30 WC
+  kind: place
+- lead_key: wc-33
+  reference: 33 WC
+  reference_scheme: london-address
+  label: 33 WC
+  kind: place
+- lead_key: wc-68
+  reference: 68 WC
+  reference_scheme: london-address
+  label: 68 WC
+  kind: place
+- lead_key: wc-90
+  reference: 90 WC
+  reference_scheme: london-address
+  label: 90 WC
+  kind: place
+- lead_key: wc-91
+  reference: 91 WC
+  reference_scheme: london-address
+  label: 91 WC
+  kind: place
+- lead_key: wc-92
+  reference: 92 WC
+  reference_scheme: london-address
+  label: 92 WC
+  kind: place
+- lead_key: wc-94
+  reference: 94 WC
+  reference_scheme: london-address
+  label: 94 WC
+  kind: place
+- lead_key: sw-4
+  reference: 4 SW
+  reference_scheme: london-address
+  label: 4 SW
+  kind: place
+- lead_key: sw-10
+  reference: 10 SW
+  reference_scheme: london-address
+  label: 10 SW
+  kind: place
+- lead_key: sw-11
+  reference: 11 SW
+  reference_scheme: london-address
+  label: 11 SW
+  kind: place
+- lead_key: sw-13
+  reference: 13 SW
+  reference_scheme: london-address
+  label: 13 SW
+  kind: place
+- lead_key: sw-52
+  reference: 52 SW
+  reference_scheme: london-address
+  label: 52 SW
+  kind: place
+- lead_key: sw-85
+  reference: 85 SW
+  reference_scheme: london-address
+  label: 85 SW
+  kind: place
+- lead_key: sw-86
+  reference: 86 SW
+  reference_scheme: london-address
+  label: 86 SW
+  kind: place
+resource_refs:
+- demo-2-an-irregular-meeting-directory
+- demo-2-an-irregular-meeting-map
+- demo-2-an-irregular-meeting-newspaper
+- demo-2-an-irregular-meeting-informants

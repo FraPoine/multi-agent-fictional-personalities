@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "ec-69",
+  "reference": "69 EC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "69 EC entry"
+  },
+  "sections": [
+    {
+      "section_id": "ec-69-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "When we ask him if, by chance, he received unusual orders recently, the butcher of Cannon Street answers that a new client specifically requested offal last week and was to pick them up on Tuesday."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

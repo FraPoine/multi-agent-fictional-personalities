@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1340",
+  "reference": "1340",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      2,
+      6
+    ],
+    "region": "time code 1340"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1340",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1340",
+        "page": 2
+      },
+      "sections": [
+        {
+          "section_id": "time-1340-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You are received by Amy Boisnard, the head of the library, an old maid with a very strict dress.\n\n“Albert Copper, yes, absolutely, I see very well who he is. He is a model student from a modest family. In recent months, he seemed quite tired, with large dark circles around his eyes and hands shaking slightly. In September, he was mostly borrowing books on mathematics and physics, as well as some science magazines. His requests have turned to more original works lately: astronomy, then ancestral rites, and finally esotericism. A month or so ago, he made a very insistent request for books kept in a secure part of the library. Unfortunately, Professor Armitage, who runs that department, is currently in Dunwich and could not follow up on that request. That was three weeks ago, and I haven’t seen Albert since.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1340",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1340",
+        "page": 6
+      },
+      "sections": [
+        {
+          "section_id": "time-1340-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Armed with a search warrant, you get your hands on all the books Albert had borrowed and returned to the library. After spending a good hour reading, you realize that he made sure to annotate specific works: angle calculations, theories on the effect of stars on specific places in Arkham. Nothing more than esoteric delusions, which provide no clue to his whereabouts."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

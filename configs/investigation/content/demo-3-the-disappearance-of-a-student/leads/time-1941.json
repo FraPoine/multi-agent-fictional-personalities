@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1941",
+  "reference": "1941",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      7,
+      8
+    ],
+    "region": "time code 1941"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1941",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1941",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1941-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Before you’re able to knock, the door opens to let out two men with short hair and black frock coats. They close the door immediately, preventing you from seeing the room behind them.\n\n“Mr. Copper is not here. He is on a study trip. Have a nice evening.”\n\nDumbfounded, you observe the two bruisers turn on their heels and hurtle down the stairs of the boarding house."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1941",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1941",
+        "page": 7
+      },
+      "sections": [
+        {
+          "section_id": "time-1941-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Albert’s room leaves you relatively perplexed at first. The corners of the room are illogical, as if they were partitions. But after knocking on all the walls, nothing sounds particularly hollow. You find a large number of books borrowed from the Arkham Library (1340). Most of them are about astronomy, ancestral rites, and esotericism. But the strangest thing you notice is the traces of dirt on the floor. And these scratching noises coming from the walls…"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "intervention-1941",
+      "mode": "intervention",
+      "lead_cost": 0,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Intervention / 1941",
+        "page": 8
+      },
+      "sections": [
+        {
+          "section_id": "time-1941-intervention-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Armed with your tools — shovels, pickaxes, and elbow grease — you are determined to find what this curious room is hiding. But, after several hours of digging behind every wall and smashing the few pieces of furniture there, you have to face the facts: Albert’s not here.\n\nYou have failed. And what’s more, the almost imperceptible scratching noises are still all around you."
+          },
+          "effects": [
+            {
+              "type": "end_case",
+              "outcome": "mission_failed"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

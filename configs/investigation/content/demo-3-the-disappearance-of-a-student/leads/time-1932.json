@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1932",
+  "reference": "1932",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      7
+    ],
+    "region": "time code 1932"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1932",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1932",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1932-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "“Do you really think that with all of the work I have on my plate I have time to listen to your crap? Blah-blah-blah, questioning… I don’t know what happened to Albert, but for the past three weeks, I’ve finally been able to get some sleep. Frankly, I couldn’t understand any of his all-night screaming and idiotic chanting. Oh, I stand corrected. The only words I could make out and understand were ‘rat’ and ‘witch’, if that gives you any indication at how delirious the guy was.”\n\nThis is how Daryl greets you as soon as you say the first words. And he continues, still just as excited:\n\n“At first, he was an OK guy, but by the end, he was frantic. And Mrs. Charline, who is deaf as a doorpost, didn’t hear anything. The shells in ‘18. What do I care about her Great War and trenches? Speaking of trenches, I must mention how badly Albert smelled. He reeked of freshly dug dirt and rotting carcass. I’m glad he’s gone!”\n\nYou cut your conversation with this foul-mouthed student short."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1932",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1932",
+        "page": 7
+      },
+      "sections": [
+        {
+          "section_id": "time-1932-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Apart from some curious wax-soaked cotton balls on the nightstand and a recently added interior lock on the door, you notice nothing special in this room that you visit while its tenant is away."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

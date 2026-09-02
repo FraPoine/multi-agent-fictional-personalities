@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "printed_rule_texts": {
+    "en": "Holmes would have solved this case in 5 leads: Lydia Niles (33 WC), Gilly (68 WC), Covent Garden (28 WC), the Haymarket (4 SW) and Colonial Institute (86 SW). He scored 100 points. Your score: 1. Colonial Institute (15 points) and the Haymarket (15 points); 2. Rotten fruit to throw at actors and patrons (20 points), knife to cut ropes (20 points); 3. Revenge (30 points); 4. If you burnt the wig and moustache you gain 20 points, and another 20 if you burnt the footman’s uniform (clue at the cleaners advertised in The Times). Decrease your score by 5 points for every lead after the 5th (do not include re-visiting places). SCORE: 0 or less: At least you tried. 5 – 30: Okay. 35 – 70: Good! 75 – 100: Excellent! 105+: You surpassed the master!"
+  },
+  "holmes_lead_count": 5,
+  "printed_holmes_score": 100,
+  "answer_elements": [
+    {
+      "question_id": "q1",
+      "answer_texts": {
+        "en": "Colonial Institute"
+      },
+      "points": 15
+    },
+    {
+      "question_id": "q1",
+      "answer_texts": {
+        "en": "the Haymarket"
+      },
+      "points": 15
+    },
+    {
+      "question_id": "q2",
+      "answer_texts": {
+        "en": "Rotten fruit to throw at actors and patrons"
+      },
+      "points": 20
+    },
+    {
+      "question_id": "q2",
+      "answer_texts": {
+        "en": "knife to cut ropes"
+      },
+      "points": 20
+    },
+    {
+      "question_id": "q3",
+      "answer_texts": {
+        "en": "Revenge"
+      },
+      "points": 30
+    },
+    {
+      "question_id": "q4",
+      "answer_texts": {
+        "en": "If you burnt the wig and moustache"
+      },
+      "points": 20
+    },
+    {
+      "question_id": "q4",
+      "answer_texts": {
+        "en": "another 20 if you burnt the footman’s uniform (clue at the cleaners advertised in The Times)"
+      },
+      "points": 20
+    }
+  ],
+  "lead_penalty": {
+    "after_lead": 5,
+    "points_per_additional_lead": -5,
+    "revisits_excluded": true
+  },
+  "score_bands": [
+    {
+      "maximum": 0,
+      "texts": {
+        "en": "At least you tried."
+      }
+    },
+    {
+      "minimum": 5,
+      "maximum": 30,
+      "texts": {
+        "en": "Okay."
+      }
+    },
+    {
+      "minimum": 35,
+      "maximum": 70,
+      "texts": {
+        "en": "Good!"
+      }
+    },
+    {
+      "minimum": 75,
+      "maximum": 100,
+      "texts": {
+        "en": "Excellent!"
+      }
+    },
+    {
+      "minimum": 105,
+      "texts": {
+        "en": "You surpassed the master!"
+      }
+    }
+  ],
+  "needs_review": false,
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 1,
+    "region": "upside-down scoring text"
+  }
+}

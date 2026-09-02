@@ -1,0 +1,189 @@
+case_id: demo-1-vanishing-from-hyde-park
+title: Vanishing from Hyde Park
+short_description: Mrs Hudson asks the Irregulars to find a missing German Spitz after an unsettling message is left behind.
+opening: 'We knock at 221B Baker Street, and to our greatest surprise, Holmes himself
+
+  answers the door.
+
+
+  "Ah, you arrive at the best possible moment: you are expected in the kitchen.
+
+  I''ll be fair play, Wiggins, I''ll let you get a head start to solve this case
+
+  which, on the whole, is rather banal..."
+
+
+  We hear Watson''s wrathful voice coming from the kitchen:
+
+
+  "None of this is a game, you can''t leave like this!"
+
+
+  "Watch me!" replies a jolly Holmes, going down the few stairs separating him
+
+  from the street, leaving us alone on the door step.
+
+
+  After a brief hesitation, we go to the kitchen where Watson is trying to
+
+  comfort his landlady, Mrs Hudson.
+
+
+  "Oh! Poor, poor Charly! Feeling so lonely and abandoned. What monster could
+
+  have done that?" moans Mrs Hudson.
+
+
+  "Can you tell your story again, for our friends here? Start from the
+
+  beginning," says Watson, bidding us to take a seat. Mrs Hudson nods.
+
+
+  "A friend of mine, Yvonne Nance, came by today to ask for help. She lives in a
+
+  flat not far from here, in a building located on North Audley Street, ground
+
+  floor, and is very attached to our neighbourhood. She took yesterday one of
+
+  her regular walks in Hyde Park with Charly, skirting Park Lane then Bayswater,
+
+  to reach the Tyburn Tree she loves so much. Charly then disappeared in the
+
+  bushes... He''s only eight, he couldn''t have gone far. On returning home, she
+
+  had this message:
+
+
+  Don''t worry for Charly!
+
+  He will soon be back!
+
+
+  "She alerted her nephew - he is a reporter at the Times and bound to know
+
+  everything that''s going on. She even alerted Scotland Yard who told her not to
+
+  bother them for so little."
+
+
+  "The police didn''t care?" asks Wiggins, raising his eyebrows.
+
+
+  "Ah! At last someone understanding. Of course, with a collar bearing his name
+
+  and address, it shouldn''t take long before he reappears, but this message, odd,
+
+  isn''t it?"
+
+
+  "A collar?" asks Wiggins somewhat disturbed.
+
+
+  "Yes, delightfully matching his German Spitz hair. He is rather communicative
+
+  and never leaves Yvonne especially since her poor husband died: he is a good
+
+  watchdog, and besides her nephew, he is the only family she has."
+
+
+  "We''ll take it from there," says Wiggins, leaving the room. Once out in the
+
+  street, we see Holmes on the other side holding a bunch of violets going
+
+  towards the butcher''s, light-hearted.'
+leads:
+- lead_key: nw-16
+  reference: 16 NW
+  reference_scheme: london-address
+  label: 16 NW
+  kind: place
+- lead_key: nw-32
+  reference: 32 NW
+  reference_scheme: london-address
+  label: 32 NW
+  kind: place
+- lead_key: nw-50
+  reference: 50 NW
+  reference_scheme: london-address
+  label: 50 NW
+  kind: place
+- lead_key: nw-53
+  reference: 53 NW
+  reference_scheme: london-address
+  label: 53 NW
+  kind: place
+- lead_key: nw-56
+  reference: 56 NW
+  reference_scheme: london-address
+  label: 56 NW
+  kind: place
+- lead_key: nw-57
+  reference: 57 NW
+  reference_scheme: london-address
+  label: 57 NW
+  kind: place
+- lead_key: nw-70
+  reference: 70 NW
+  reference_scheme: london-address
+  label: 70 NW
+  kind: place
+- lead_key: nw-96
+  reference: 96 NW
+  reference_scheme: london-address
+  label: 96 NW
+  kind: place
+- lead_key: sw-8
+  reference: 8 SW
+  reference_scheme: london-address
+  label: 8 SW
+  kind: place
+- lead_key: sw-13
+  reference: 13 SW
+  reference_scheme: london-address
+  label: 13 SW
+  kind: place
+- lead_key: sw-16
+  reference: 16 SW
+  reference_scheme: london-address
+  label: 16 SW
+  kind: place
+- lead_key: wc-17
+  reference: 17 WC
+  reference_scheme: london-address
+  label: 17 WC
+  kind: place
+- lead_key: wc-37
+  reference: 37 WC
+  reference_scheme: london-address
+  label: 37 WC
+  kind: place
+- lead_key: wc-76
+  reference: 76 WC
+  reference_scheme: london-address
+  label: 76 WC
+  kind: place
+- lead_key: ec-30
+  reference: 30 EC
+  reference_scheme: london-address
+  label: 30 EC
+  kind: place
+- lead_key: ec-52
+  reference: 52 EC
+  reference_scheme: london-address
+  label: 52 EC
+  kind: place
+- lead_key: ec-68
+  reference: 68 EC
+  reference_scheme: london-address
+  label: 68 EC
+  kind: place
+- lead_key: ec-69
+  reference: 69 EC
+  reference_scheme: london-address
+  label: 69 EC
+  kind: place
+resource_refs:
+- demo-1-vanishing-from-hyde-park-directory
+- demo-1-vanishing-from-hyde-park-map
+- demo-1-vanishing-from-hyde-park-newspaper
+- demo-1-vanishing-from-hyde-park-informants

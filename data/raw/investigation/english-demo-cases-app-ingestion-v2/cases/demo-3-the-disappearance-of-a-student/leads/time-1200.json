@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1200",
+  "reference": "1200",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      2
+    ],
+    "region": "time code 1200"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1200",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1200",
+        "page": 2
+      },
+      "sections": [
+        {
+          "section_id": "time-1200-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You realize that your mission will be a bit more complicated than anticipated when the morgue supervisor responds to your question in the negative.\n\n“No, I haven’t received a corpse matching your description in months. Besides, I must admit that lately, it has been very calm. The only body that I received last night was this worker that was crushed by a girder. Look at his thick, dirty, black nails. I have never seen anything like that before. This city never ceases to amaze me.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

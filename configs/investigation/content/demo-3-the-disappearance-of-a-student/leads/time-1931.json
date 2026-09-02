@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1931",
+  "reference": "1931",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      7
+    ],
+    "region": "time code 1931"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1931",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1931",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1931-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Emily opens the door. At first, she has a closed face and a defensive attitude. However, when you ask her about Albert, she finally proves talkative.\n\n“Albert is a bit of a strange boy. I saw him wandering around with a pickax covered in dirt. In the corridor. Late at night. I think he’s a sleepwalker, and I must say it’s been weeks since I saw him. He may have gone on a trip. I always found him a little scary, so I never talked to him much.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1931",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1931",
+        "page": 7
+      },
+      "sections": [
+        {
+          "section_id": "time-1931-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Making sure to keep the tenant away, you enter Emily’s room. At first glance, it seems perfectly maintained. A little too much, even. You quickly notice that the stack of books and the writing utensils on her desk are covered in dust, indicating that they have not been used for quite some time. The same cannot be said of the typewriter and the piles of documents hidden under the bed. Most are political leaflets whose primary goal is the emancipation of women. Some pamphlets draw a parallel between the English suffragette movement and the application of their methods in the United States. You find her diary, in which she shares her remarks and thoughts about the boarding house. She does not understand why Rose is infatuated with this ‘loser’ Albert, whom she reproaches for his rather suspicious behavior. She describes his nocturnal comings and goings and deems them to be sleepwalking."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

@@ -44,6 +44,11 @@ from multi_agent_personalities.application.investigation_visit_service import (
     record_visit_analysis,
     visit_lead,
     visit_case_lead,
+    visit_playable_case_lead,
+    disclose_case_sections,
+    pending_case_interaction,
+    complete_case_interaction,
+    revisit_playable_case_lead,
 )
 from multi_agent_personalities.application.investigation_mock import (
     HERCULE_POIROT_ID,
@@ -122,6 +127,9 @@ __all__ = [
     "record_group_decision", "record_hypothesis", "record_visit_analysis",
     "project_lead_conversation",
     "resolve_case_lead", "visit_case_lead",
+    "visit_playable_case_lead", "disclose_case_sections",
+    "pending_case_interaction", "complete_case_interaction",
+    "revisit_playable_case_lead",
     "build_lead_discussion_context", "visit_lead",
     "run_mock_conversation",
 ]

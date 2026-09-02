@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-91",
+  "reference": "91 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "91 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-91-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "One man says he saw Gilly in The Unicorn."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

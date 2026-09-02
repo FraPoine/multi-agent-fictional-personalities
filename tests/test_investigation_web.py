@@ -50,10 +50,14 @@ def test_router_exposes_only_lead_visit_mutations(web_client) -> None:
             "/investigations/{session_id}/visits/{visit_id}/information",
             ("POST",),
         ),
-        (
-            "/investigations/{session_id}/visits/{visit_id}/discussion",
-            ("POST",),
-        ),
+            (
+                "/investigations/{session_id}/visits/{visit_id}/discussion",
+                ("POST",),
+            ),
+            (
+                "/investigations/{session_id}/visits/{visit_id}/interaction",
+                ("POST",),
+            ),
         ("/investigations/{session_id}/finalize", ("POST",)),
     }
     paths = {item[0] for item in investigation_routes}

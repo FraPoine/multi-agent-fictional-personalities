@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "sw-8",
+  "reference": "8 SW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "8 SW entry"
+  },
+  "sections": [
+    {
+      "section_id": "sw-8-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "Mycroft receives us in the visitors sitting-room of the Diogenes Club: “Oppenheimer was already politically compromised, but this recent affair may very well put an end to his career, if proofs are the slightest bit credible. And we are talking about the Times, not a vulgar rag.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

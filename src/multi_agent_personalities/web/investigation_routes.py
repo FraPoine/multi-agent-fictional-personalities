@@ -20,6 +20,10 @@ from multi_agent_personalities.application import (
     investigation_mock_capabilities,
     reveal_information,
     visit_case_lead,
+    visit_playable_case_lead,
+    disclose_case_sections,
+    complete_case_interaction,
+    revisit_playable_case_lead,
     visit_lead,
 )
 from multi_agent_personalities.case_catalog import (
@@ -227,6 +231,7 @@ def create_investigation_router(
                         default_case_catalog_directory(project_root).parent
                     ),
                     selected_lead_id=selected_lead_id,
+                    case_content_catalog=registry.case_content_catalog,
                 ),
             },
             status_code=status_code,
@@ -279,6 +284,8 @@ def create_investigation_router(
             raise InvestigationWorkflowConflictError(
                 "Completed investigations are read-only."
             )
+        if record.session.case_state and record.session.case_state.outcome:
+            raise InvestigationWorkflowConflictError("This case has ended and is read-only.")
         if not any(item.visit_id == visit_id for item in record.session.visits):
             raise InvestigationResourceNotFoundError(visit_id)
         if record.session.visits[-1].visit_id != visit_id:
@@ -479,6 +486,7 @@ def create_investigation_router(
         request: Request,
         session_id: str,
         reference: Annotated[str | None, Form()] = None,
+        mode: Annotated[str | None, Form()] = None,
     ) -> Response:
         raw_reference = reference or ""
         if not raw_reference.strip() or len(raw_reference) > MAX_LEAD_REFERENCE_LENGTH:
@@ -503,11 +511,11 @@ def create_investigation_router(
                 raise InvestigationResourceNotFoundError(
                     record.session.case_id
                 ) from error
-            result = visit_case_lead(
-                record.session,
-                case_definition=case_definition,
-                id_factory=record.runtime.id_factory,
-                raw_reference=raw_reference,
+            content = registry.case_content_catalog.get(record.session.case_id) if registry.case_content_catalog else None
+            result = (
+                visit_playable_case_lead(record.session, case_definition=case_definition, case_content=content, id_factory=record.runtime.id_factory, raw_reference=raw_reference, mode=(mode or None))
+                if content is not None else
+                visit_case_lead(record.session, case_definition=case_definition, id_factory=record.runtime.id_factory, raw_reference=raw_reference)
             )
             return InvestigationSessionMutation(
                 session=result.session,
@@ -537,6 +545,7 @@ def create_investigation_router(
         request: Request,
         session_id: str,
         lead_id: str,
+        mode: Annotated[str | None, Form()] = None,
     ) -> Response:
         def mutate(
             record: InvestigationSessionRecord,
@@ -551,10 +560,11 @@ def create_investigation_router(
                 raise InvestigationWorkflowConflictError(
                     "The selected lead is already current."
                 )
-            updated = visit_lead(
-                record.session,
-                id_factory=record.runtime.id_factory,
-                lead_id=lead_id,
+            content = registry.case_content_catalog.get(record.session.case_id) if registry.case_content_catalog else None
+            updated = (
+                revisit_playable_case_lead(record.session, case_content=content, lead_id=lead_id, mode=(mode or None), id_factory=record.runtime.id_factory)
+                if content is not None else
+                visit_lead(record.session, id_factory=record.runtime.id_factory, lead_id=lead_id, mode=(mode or None))
             )
             return InvestigationSessionMutation(session=updated, result=None)
 
@@ -570,6 +580,26 @@ def create_investigation_router(
             url=f"/investigations/{session_id}?lead={lead_id}",
             status_code=303,
         )
+
+    @router.post(
+        "/investigations/{session_id}/visits/{visit_id}/interaction",
+        response_class=HTMLResponse,
+        name="complete_investigation_interaction",
+    )
+    async def complete_investigation_interaction(
+        request: Request, session_id: str, visit_id: str,
+        interaction_id: Annotated[str, Form()], option_id: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            require_current_visit(record, visit_id)
+            content = registry.case_content_catalog.get(record.session.case_id) if registry.case_content_catalog else None
+            if content is None: raise InvestigationWorkflowConflictError("This case has no preloaded interaction.")
+            updated = complete_case_interaction(record.session, case_content=content, visit_id=visit_id, interaction_id=interaction_id, option_id=option_id, id_factory=record.runtime.id_factory)
+            return InvestigationSessionMutation(session=updated, result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Interaction could not be completed")
+        if isinstance(result, Response): return result
+        record, _ = result
+        return RedirectResponse(url=f"/investigations/{session_id}?lead={record.session.visits[-1].lead_id}", status_code=303)
 
     @router.post(
         "/investigations/{session_id}/visits/{visit_id}/information",

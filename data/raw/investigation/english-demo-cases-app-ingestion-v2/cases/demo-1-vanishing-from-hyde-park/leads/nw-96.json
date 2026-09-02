@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "nw-96",
+  "reference": "96 NW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "96 NW entry"
+  },
+  "sections": [
+    {
+      "section_id": "nw-96-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "As we search the bushes, we see, in the mud, the traces of dog’s paws joined seemingly by those of a man, and leaving in the same direction, due east. We find an abandoned string a little farther on."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-2005",
+  "reference": "2005",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      5
+    ],
+    "region": "time code 2005"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-2005",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 2005",
+        "page": 5
+      },
+      "sections": [
+        {
+          "section_id": "time-2005-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {},
+            "requires_items": [
+              "rose_brooch"
+            ]
+          },
+          "texts": {
+            "en": "Rose’s parents stiffen when they see the jewel. Her father clenches his fists before turning away to hide his emotion. It is her mother who finally speaks up: “Yes, it is Rose’s brooch. We gave it to her before she left for the city to study. A reward for her efforts and good luck… Does it mean that you’ve… that she’s…” You catch the poor woman as she collapses. You keep repeating that you haven’t found her daughter yet before she snaps back to reality.\n\nYou leave filled with emotion and a renewed determination: you will find Rose, whatever the cost!"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

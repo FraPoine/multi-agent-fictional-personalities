@@ -8,7 +8,9 @@ from multi_agent_personalities.case_catalog import CaseCatalog, CaseResourceType
 from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.application.investigation_visit_service import (
     project_lead_conversation,
+    pending_case_interaction,
 )
+from multi_agent_personalities.case_content_catalog import CaseContentCatalog
 from multi_agent_personalities.models import InvestigationStatus, Message
 from multi_agent_personalities.web.investigation_store import InvestigationSessionRecord
 
@@ -39,6 +41,14 @@ class InvestigationResourcePresentation:
     description: str
     date: str | None
     asset_available: bool
+    asset_url: str | None
+
+
+@dataclass(frozen=True)
+class InvestigationInteractionPresentation:
+    interaction_id: str
+    prompt: str
+    options: tuple[tuple[str, str], ...]
 
 
 @dataclass(frozen=True)
@@ -66,6 +76,8 @@ class InvestigationSessionPresentation:
     completed: bool
     can_finalize: bool
     final_theory: "InvestigationFinalTheoryPresentation | None"
+    modes: tuple[str, ...]
+    lead_budget_remaining: int | None
 
 
 @dataclass(frozen=True)
@@ -112,6 +124,7 @@ class InvestigationLeadDetailPresentation:
     writable_visit_id: str | None
     visits: tuple[InvestigationVisitPresentation, ...]
     message_count: int
+    interaction: InvestigationInteractionPresentation | None
 
 
 @dataclass(frozen=True)
@@ -174,6 +187,7 @@ def present_session(
     case_catalog: CaseCatalog,
     resource_base_directory: Path,
     selected_lead_id: str | None = None,
+    case_content_catalog: CaseContentCatalog | None = None,
 ) -> InvestigationSessionPresentation:
     """Project an immutable Lead/Visit snapshot for the web shell."""
     participants = tuple(
@@ -191,7 +205,7 @@ def present_session(
     )
     session = record.session
     case_definition = case_catalog.get(session.case_id)
-    completed = session.status is InvestigationStatus.COMPLETED
+    completed = session.status is InvestigationStatus.COMPLETED or bool(session.case_state and session.case_state.outcome)
     lead_by_id = {lead.lead_id: lead for lead in session.leads}
     current_visit = session.visits[-1] if session.visits else None
     resolved_lead_id = (
@@ -283,6 +297,8 @@ def present_session(
             current_visit is not None
             and current_visit.lead_id == resolved_lead_id
         )
+        content = case_content_catalog.get(session.case_id) if case_content_catalog else None
+        pending = pending_case_interaction(session, case_content=content, visit_id=current_visit.visit_id) if content is not None and is_current and current_visit is not None else None
         selected_detail = InvestigationLeadDetailPresentation(
             lead_id=selected_lead.lead_id,
             label=selected_lead.label,
@@ -292,6 +308,11 @@ def present_session(
             writable_visit_id=current_visit.visit_id if is_current else None,
             visits=tuple(selected_visits),
             message_count=len(projected_messages),
+            interaction=(InvestigationInteractionPresentation(
+                interaction_id=pending.interaction_id,
+                prompt=pending.prompt_texts["en"],
+                options=tuple((x.option_id, x.label_texts["en"]) for x in pending.options),
+            ) if pending else None),
         )
     information_by_id = {
         item.information_id: item for item in session.revealed_information
@@ -323,7 +344,7 @@ def present_session(
         case_title=case_definition.title,
         case_short_description=case_definition.short_description,
         introduction=session.case_introduction,
-        status=session.status.value.replace("_", " ").title(),
+        status=("Ended" if session.case_state and session.case_state.outcome else session.status.value.replace("_", " ").title()),
         participants=participants,
         lead_count=len(session.leads),
         visit_count=len(session.visits),
@@ -343,6 +364,8 @@ def present_session(
             and session.final_theory is None
         ),
         final_theory=final_theory,
+        modes=(case_content_catalog.get(session.case_id).state.modes if case_content_catalog and case_content_catalog.get(session.case_id) else ()),
+        lead_budget_remaining=(session.case_state.lead_budget_remaining if session.case_state else None),
     )
 
 
@@ -384,6 +407,7 @@ def _resource_groups(
                         Path(resource_base_directory) / resource.asset_path
                     ).is_file()
                 ),
+                asset_url=(f"/case-assets/{resource.asset_path.as_posix()}" if resource.asset_path is not None else None),
             )
             for resource in visible
             if resource.type is resource_type

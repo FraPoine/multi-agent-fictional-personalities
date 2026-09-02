@@ -1,5 +1,12 @@
 # Roadmap
 
+## Sprint 7 demo-case integration — complete
+
+Three English demos now exercise rich static content, authoritative disclosure,
+gates, state, explicit interactions, time-code references, and local images.
+Automated question answering/scoring remains future work; spoiler files are
+outside the gameplay loader. The long owned Sherlock case remains out of scope.
+
 The target for the first usable release is August 7, 2026. The final course deadline is in September; no exact date is currently documented.
 
 ## Sprint 1

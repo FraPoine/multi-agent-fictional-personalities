@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "printed_rule_texts": {
+    "en": "Holmes solved this case by following 2 leads: Mrs Nance (32 NW) and Howard Parker (68 EC) to take Charly back. He used the article “Scandal at the Parliament” and scored 100 points. Your score 1: Howard Parker (30 points); 2. Entering very discreetly in Grosvenor Investments (40 points); 3. At Howard Parker’s (30 points); 4. He was lured with his favourite ball (40 points). Decrease your score by 5 points for each lead followed after the 2nd."
+  },
+  "holmes_lead_count": 2,
+  "printed_holmes_score": 100,
+  "answer_elements": [
+    {
+      "question_id": "q1",
+      "answer_texts": {
+        "en": "Howard Parker"
+      },
+      "points": 30
+    },
+    {
+      "question_id": "q2",
+      "answer_texts": {
+        "en": "Entering very discreetly in Grosvenor Investments"
+      },
+      "points": 40
+    },
+    {
+      "question_id": "q3",
+      "answer_texts": {
+        "en": "At Howard Parker’s"
+      },
+      "points": 30
+    },
+    {
+      "question_id": "q4",
+      "answer_texts": {
+        "en": "He was lured with his favourite ball"
+      },
+      "points": 40
+    }
+  ],
+  "lead_penalty": {
+    "after_lead": 2,
+    "points_per_additional_lead": -5
+  },
+  "needs_review": true,
+  "review_note": "The printed answer elements total 140 while the source says Holmes scored 100. Both are preserved without reconciliation.",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 1,
+    "region": "upside-down scoring text"
+  }
+}

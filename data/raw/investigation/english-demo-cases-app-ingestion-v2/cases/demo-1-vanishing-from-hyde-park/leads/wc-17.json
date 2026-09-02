@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "wc-17",
+  "reference": "17 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "17 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-17-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "We review the Somerset House logbooks: Yvonne Nance, née Parker: married to Robert Nance on August 17, 1857 (Robert Nance, deceased on December 13, 1885); no child, only one brother him too deceased, no will on record."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

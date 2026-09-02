@@ -54,8 +54,9 @@ def test_repository_catalogue_loads_multiple_synthetic_cases_in_file_order() -> 
 
     assert isinstance(catalogue, CaseCatalog)
     assert [case.case_id for case in catalogue.cases] == [
-        "archive-absence",
-        "observatory-signal",
+        "archive-absence", "demo-1-vanishing-from-hyde-park",
+        "demo-2-an-irregular-meeting",
+        "demo-3-the-disappearance-of-a-student", "observatory-signal",
     ]
     assert all(case.leads for case in catalogue.cases)
 
@@ -163,7 +164,7 @@ def test_catalogue_loader_is_local_only(
 
     catalogue = load_case_catalog(default_case_catalog_directory(ROOT))
 
-    assert len(catalogue.cases) == 2
+    assert len(catalogue.cases) == 5
 
 
 def test_registry_copies_case_provenance_and_isolates_same_case_sessions() -> None:

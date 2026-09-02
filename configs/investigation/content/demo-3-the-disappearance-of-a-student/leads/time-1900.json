@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1900",
+  "reference": "1900",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      2,
+      3,
+      6,
+      8
+    ],
+    "region": "time code 1900"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1900",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1900",
+        "pages": [
+          2,
+          3
+        ]
+      },
+      "sections": [
+        {
+          "section_id": "time-1900-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Mrs. Charline’s boarding house is a three-story building whose windows, like eyes, give it an inquisitive look. It is located in a quiet area of Arkham, some three hundred yards from the university. An ideal boarding house for students looking for a roof, cooked food, and some peace and quiet for a modest sum of money.\n\nYou have to knock several times on the door before some small woman opens the door suspiciously. Then, dazzled by your gleaming uniforms, she lowers her guard and ushers you into her living room which adjoins a kitchen smelling of herbs and stew. Quickly, you realize that Mrs. Charline speaks little and makes you repeat twice everything you ask her.\n\n“Oh! You know, my little students, they’re a bit like the children I never had. Well, yes, my husband died on the front in 1918. I was a nurse there in France, but I really couldn’t do anything for him. I still blame myself, and I never started a new life. So, instead, I take good care of my little ones. I cook good food for them and clean up after them when they leave dirt on the kitchen floor. I take my work seriously, and I keep things tidy here.”\n\nYou try asking her for the list of the boarding house tenants between two anecdotes about her job as a nurse during the war.\n\n“On the second floor, I have Gerald (1921). He has quite a personality, that one. He reminds me of my husband in his youth. You’ll find Rose’s room (1922) on the same floor. She is very nice. You won’t be able to talk to her; she’s on vacation with her parents as far as I know. On the third floor, Emily occupies the room at the end of the hall, and on your left, you’ll find that of Daryl (1932). Not much of a talker, that one. Always in his books. Quite the opposite of Emily (1931), who’s real devil, but always willing to give me a hand. She’s a beautiful person. You’ll find Albert’s room (1941) on the top floor. Anyone will tell you that he’s the most brilliant one of the bunch. His work is the only thing that matters to him, and that’s only become more true in the past few months. Besides, it’s quite simple; he works so much that I haven’t seen him at all lately. If you want to talk to him, you should go and knock on his door.”\n\nBefore leaving, Mrs. Charline hands you over a large bunch of keys and adds:\n\n“I wrote the name of each student on the keys. It’s better that way; I have had memory problems for some years now.”\n\nBefore continuing your investigations, you take a quick tour of the ground floor. The living room is plain, only adorned with a carpet in red tones and, on the mantel, a photograph of a young couple: a soldier and a nurse. Mrs. Charline’s room is most ordinary. The garden is tiny and well maintained. The kitchen is full of food and utensils. A chopper placed next to two beautiful chickens draws your eyes to the table. Further away, you notice a large combination lock affixed to a door that probably leads to a pantry."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1900",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1900",
+        "page": 6
+      },
+      "sections": [
+        {
+          "section_id": "time-1900-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Mrs. Charline’s boarding house is a three-story building whose windows, like eyes, give it an inquisitive look. It is located in a quiet area of Arkham, some three hundred yards from the university. An ideal boarding house for students looking for a roof, cooked food, and some peace and quiet for a modest sum of money.\n\nYou decide to ferret about the ground floor in the absence of its owner. The living room is plain, only adorned with a carpet in red tones and, on the mantel, a photograph of a young couple: a soldier and a nurse. Mrs. Charline’s room is most ordinary. The garden is tiny and well maintained. The kitchen is full of food and utensils. A chopper placed next to two beautiful chickens draws your eyes to the table. Further away, you notice a large combination lock affixed to a door that probably leads to a pantry. Everything is perfectly maintained and cleaned with care, except perhaps the underside of the kitchen furniture, which conceals traces of dirt."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "intervention-1900",
+      "mode": "intervention",
+      "lead_cost": 0,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Intervention / 1900",
+        "page": 8
+      },
+      "sections": [
+        {
+          "section_id": "time-1900-intervention-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "A quick overview of the boarding house allows you to focus on one essential point: the pantry. After breaking open the lock with a crowbar, you notice a flight of stairs leading to the basement.\n\nAs you are about to descend the stairs, two men in black frock coats stop you, flashing badges for a federal bureau you didn’t know existed: the BOI. At the sight of their gear — a flashlight attached to a 12-gauge shotgun, trench daggers, heavy-caliber handguns, and harnesses strung over their suits — you take a step back. These guys are professionals. They undertake to descend into the bowels of the earth. After an hour and a series of detonations, the two men finally come back upstairs, dirty and injured.\n\n“There’s nothing more we can do for these kids. You did everything you could, but it was already too late.”\n\nThe taller of the two places a caring hand on your shoulder and continues:\n\n“You did an outstanding job today. We always need resourceful and courageous guys like you at the Bureau. If you’re interested, come and see us tomorrow morning.”\n\nThey leave as quickly as they came. No one would know they had been here if it weren’t for the traces of dirt on the floor, the smell of rotting carcass emanating from the basement, and this business card from the Bureau of Investigation.\n\nYou have completed your mission and can now discover even more exciting and strange adventures in the Bureau of Investigation game."
+          },
+          "effects": [
+            {
+              "type": "end_case",
+              "outcome": "mission_completed"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

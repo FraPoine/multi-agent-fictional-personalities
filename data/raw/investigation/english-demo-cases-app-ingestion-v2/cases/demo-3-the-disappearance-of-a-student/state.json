@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "flags": [],
+  "choices": [],
+  "lead_budget": {
+    "initial": 10,
+    "adjustments": [
+      {
+        "trigger": {
+          "mode": "interview",
+          "reference": "2000"
+        },
+        "amount": 3
+      }
+    ]
+  },
+  "items": [
+    {
+      "item_id": "rose_brooch",
+      "initial": false,
+      "grant": {
+        "mode": "investigation",
+        "reference": "1921"
+      }
+    }
+  ],
+  "derived_references": [
+    {
+      "rule": "add 5 to the relevant paragraph when using rose_brooch",
+      "requires_item": "rose_brooch",
+      "mappings": {
+        "1921": "1926",
+        "1922": "1927",
+        "1931": "1936",
+        "1932": "1937",
+        "2000": "2005"
+      }
+    }
+  ],
+  "modes": [
+    "interview",
+    "investigation",
+    "intervention"
+  ],
+  "intervention": {
+    "available_after_lead_budget": true,
+    "exactly_one_entry": true,
+    "ends_case": true
+  },
+  "default_revisit_policy": "not specified by source"
+}

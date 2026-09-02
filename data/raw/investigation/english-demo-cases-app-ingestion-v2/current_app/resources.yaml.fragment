@@ -1,0 +1,48 @@
+resources:
+- resource_id: demo-1-vanishing-from-hyde-park-directory
+  type: directory
+  title: Directory
+  asset_path: assets/demo-1-vanishing-from-hyde-park/directory.png
+  initially_available: true
+- resource_id: demo-1-vanishing-from-hyde-park-map
+  type: map
+  title: Map of London
+  asset_path: assets/demo-1-vanishing-from-hyde-park/map.png
+  initially_available: true
+- resource_id: demo-1-vanishing-from-hyde-park-newspaper
+  type: newspaper
+  title: The Times — Evening edition
+  asset_path: assets/demo-1-vanishing-from-hyde-park/newspaper.png
+  initially_available: true
+  date: '1888-03-14'
+- resource_id: demo-1-vanishing-from-hyde-park-informants
+  type: informants
+  title: Informants
+  asset_path: assets/demo-1-vanishing-from-hyde-park/informants.png
+  initially_available: true
+- resource_id: demo-2-an-irregular-meeting-directory
+  type: directory
+  title: Directory
+  asset_path: assets/demo-2-an-irregular-meeting/directory.png
+  initially_available: true
+- resource_id: demo-2-an-irregular-meeting-map
+  type: map
+  title: Map of London
+  asset_path: assets/demo-2-an-irregular-meeting/map.png
+  initially_available: true
+- resource_id: demo-2-an-irregular-meeting-newspaper
+  type: newspaper
+  title: The Times
+  asset_path: assets/demo-2-an-irregular-meeting/newspaper.png
+  initially_available: true
+  date: '1880-09-18'
+- resource_id: demo-2-an-irregular-meeting-informants
+  type: informants
+  title: Informants and circled-letter tracker
+  asset_path: assets/demo-2-an-irregular-meeting/informants.png
+  initially_available: true
+- resource_id: demo-3-the-disappearance-of-a-student-floor-plans
+  type: map
+  title: Mrs. Charline’s Boarding House Floor Plans
+  asset_path: assets/demo-3-the-disappearance-of-a-student/floor-plans.png
+  initially_available: true

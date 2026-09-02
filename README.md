@@ -28,6 +28,13 @@ reproducibility components. The final study has not been completed.
 
 ## Current implementation status
 
+The investigation lobby now includes three validated English demo cases in
+addition to retained synthetic fixtures. User-supplied provenance stays under
+`data/raw/investigation/`; normal runtime loading uses spoiler-free derived
+definitions and assets under `configs/investigation/`. Eligible authoritative
+sections become provenance-bearing `RevealedInformation`. London-address,
+Carlton-interior, and four-digit time-code references work offline.
+
 The repository currently provides structured synthetic persona fixtures for
 Sherlock Holmes and Hercule Poirot, deterministic local mock responses,
 round-robin multi-agent simulation, and explicit per-run message history.

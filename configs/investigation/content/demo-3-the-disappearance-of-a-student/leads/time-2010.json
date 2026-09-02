@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-2010",
+  "reference": "2010",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      5,
+      7
+    ],
+    "region": "time code 2010"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-2010",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 2010",
+        "page": 5
+      },
+      "sections": [
+        {
+          "section_id": "time-2010-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "The tall redhead introduces himself with these words:\n\n“Hey, guys. There’s nothing to worry about! I used to work for the police. I’m James Peacock, a private investigator.”\n\nYou shake hands, and the atmosphere is instantly friendly: you speak the same language and have the same goal.\n\n“The Millers hired me. They’re worried about their daughter. So far, I haven’t found anything alarming. I deduced she had a crush on her nerd of a roommate, and in my opinion, she eloped with him. So I know it’s not to their liking, but hey, when Cupid shows up with his Thompson, God knows what can happen!”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-2010",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 2010",
+        "page": 7
+      },
+      "sections": [
+        {
+          "section_id": "time-2010-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You take the time to observe this curious individual as he bustles in and around his truck. He reads some documents and the contents of a large brown envelope. But he is quickly interrupted by the arrival of two bruisers in black frock coats. The conversation is short, as he finds himself threatened by one of them while the other grabs most of the papers he was just rifling through."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

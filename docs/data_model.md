@@ -1,5 +1,14 @@
 # Data Model
 
+## Playable case content
+
+`CaseContentDefinition` complements rather than enlarges `CaseDefinition`.
+`ContentSection` owns stable text, gates, an optional explicit interaction, and
+effects. `CasePlayState` is immutable runtime state and never duplicates static
+narrative or solution/scoring data. `LeadVisit.mode` selects Demo 3 variants.
+Automatic disclosures use `source_kind="case-section"`; gate notices use
+`source_kind="case-gate"`.
+
 ## Purpose
 
 This document defines the main entities used by the project, their attributes, relationships, and storage locations.

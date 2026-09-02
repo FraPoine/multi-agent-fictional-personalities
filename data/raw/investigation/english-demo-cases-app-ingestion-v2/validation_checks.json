@@ -1,0 +1,467 @@
+{
+  "schema_version": 1,
+  "repository_commit": "bbc30ef0979574f50853dbcb3518e69892c254b9",
+  "status": "pass",
+  "checks": [
+    {
+      "check": "current CaseDefinition",
+      "status": "pass",
+      "detail": "3/3 current-app YAML files accepted by the repository model"
+    },
+    {
+      "check": "current load_case_catalog",
+      "status": "pass",
+      "detail": "catalog loaded with 3 cases and 9 resources; every resource_ref resolved"
+    },
+    {
+      "check": "catalogue manifest",
+      "status": "pass",
+      "detail": "global manifest lists 3 cases"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park case_id consistency",
+      "status": "pass",
+      "detail": "all normal rich files use the catalogue case_id"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park resource resolution",
+      "status": "pass",
+      "detail": "4 current-app resource refs resolve"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park safe rich asset demo-1-vanishing-from-hyde-park-directory",
+      "status": "pass",
+      "detail": "assets/directory.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park rich asset exists demo-1-vanishing-from-hyde-park-directory",
+      "status": "pass",
+      "detail": "assets/directory.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park safe rich asset demo-1-vanishing-from-hyde-park-map",
+      "status": "pass",
+      "detail": "assets/map.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park rich asset exists demo-1-vanishing-from-hyde-park-map",
+      "status": "pass",
+      "detail": "assets/map.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park safe rich asset demo-1-vanishing-from-hyde-park-newspaper",
+      "status": "pass",
+      "detail": "assets/newspaper.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park rich asset exists demo-1-vanishing-from-hyde-park-newspaper",
+      "status": "pass",
+      "detail": "assets/newspaper.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park safe rich asset demo-1-vanishing-from-hyde-park-informants",
+      "status": "pass",
+      "detail": "assets/informants.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park rich asset exists demo-1-vanishing-from-hyde-park-informants",
+      "status": "pass",
+      "detail": "assets/informants.png"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park lead count parity",
+      "status": "pass",
+      "detail": "18 YAML leads equal 18 rich lead files"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-16",
+      "status": "pass",
+      "detail": "16 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-32",
+      "status": "pass",
+      "detail": "32 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-50",
+      "status": "pass",
+      "detail": "50 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-53",
+      "status": "pass",
+      "detail": "53 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-56",
+      "status": "pass",
+      "detail": "56 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-57",
+      "status": "pass",
+      "detail": "57 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-70",
+      "status": "pass",
+      "detail": "70 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file nw-96",
+      "status": "pass",
+      "detail": "96 NW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file sw-8",
+      "status": "pass",
+      "detail": "8 SW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file sw-13",
+      "status": "pass",
+      "detail": "13 SW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file sw-16",
+      "status": "pass",
+      "detail": "16 SW matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file wc-17",
+      "status": "pass",
+      "detail": "17 WC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file wc-37",
+      "status": "pass",
+      "detail": "37 WC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file wc-76",
+      "status": "pass",
+      "detail": "76 WC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file ec-30",
+      "status": "pass",
+      "detail": "30 EC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file ec-52",
+      "status": "pass",
+      "detail": "52 EC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file ec-68",
+      "status": "pass",
+      "detail": "68 EC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park cross-file ec-69",
+      "status": "pass",
+      "detail": "69 EC matches"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park flag declarations",
+      "status": "pass",
+      "detail": "used=[], declared=[]"
+    },
+    {
+      "check": "demo-1-vanishing-from-hyde-park spoiler-key firewall",
+      "status": "pass",
+      "detail": "no answer, Holmes-route or clue-importance keys in normal content"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting case_id consistency",
+      "status": "pass",
+      "detail": "all normal rich files use the catalogue case_id"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting resource resolution",
+      "status": "pass",
+      "detail": "4 current-app resource refs resolve"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting safe rich asset demo-2-an-irregular-meeting-directory",
+      "status": "pass",
+      "detail": "assets/directory.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting rich asset exists demo-2-an-irregular-meeting-directory",
+      "status": "pass",
+      "detail": "assets/directory.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting safe rich asset demo-2-an-irregular-meeting-map",
+      "status": "pass",
+      "detail": "assets/map.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting rich asset exists demo-2-an-irregular-meeting-map",
+      "status": "pass",
+      "detail": "assets/map.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting safe rich asset demo-2-an-irregular-meeting-newspaper",
+      "status": "pass",
+      "detail": "assets/newspaper.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting rich asset exists demo-2-an-irregular-meeting-newspaper",
+      "status": "pass",
+      "detail": "assets/newspaper.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting safe rich asset demo-2-an-irregular-meeting-informants",
+      "status": "pass",
+      "detail": "assets/informants.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting rich asset exists demo-2-an-irregular-meeting-informants",
+      "status": "pass",
+      "detail": "assets/informants.png"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting lead count parity",
+      "status": "pass",
+      "detail": "26 YAML leads equal 26 rich lead files"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-17",
+      "status": "pass",
+      "detail": "17 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-19",
+      "status": "pass",
+      "detail": "19 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-20",
+      "status": "pass",
+      "detail": "20 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-21",
+      "status": "pass",
+      "detail": "21 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-22",
+      "status": "pass",
+      "detail": "22 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-23",
+      "status": "pass",
+      "detail": "23 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-24",
+      "status": "pass",
+      "detail": "24 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-25",
+      "status": "pass",
+      "detail": "25 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-26",
+      "status": "pass",
+      "detail": "26 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-27",
+      "status": "pass",
+      "detail": "27 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-28",
+      "status": "pass",
+      "detail": "28 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-29",
+      "status": "pass",
+      "detail": "29 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-30",
+      "status": "pass",
+      "detail": "30 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-33",
+      "status": "pass",
+      "detail": "33 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-68",
+      "status": "pass",
+      "detail": "68 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-90",
+      "status": "pass",
+      "detail": "90 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-91",
+      "status": "pass",
+      "detail": "91 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-92",
+      "status": "pass",
+      "detail": "92 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file wc-94",
+      "status": "pass",
+      "detail": "94 WC matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-4",
+      "status": "pass",
+      "detail": "4 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-10",
+      "status": "pass",
+      "detail": "10 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-11",
+      "status": "pass",
+      "detail": "11 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-13",
+      "status": "pass",
+      "detail": "13 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-52",
+      "status": "pass",
+      "detail": "52 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-85",
+      "status": "pass",
+      "detail": "85 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting cross-file sw-86",
+      "status": "pass",
+      "detail": "86 SW matches"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting flag declarations",
+      "status": "pass",
+      "detail": "used=['A', 'B', 'C'], declared=['A', 'B', 'C']"
+    },
+    {
+      "check": "demo-2-an-irregular-meeting spoiler-key firewall",
+      "status": "pass",
+      "detail": "no answer, Holmes-route or clue-importance keys in normal content"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student case_id consistency",
+      "status": "pass",
+      "detail": "all normal rich files use the catalogue case_id"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student resource resolution",
+      "status": "pass",
+      "detail": "1 current-app resource refs resolve"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student safe rich asset demo-3-the-disappearance-of-a-student-floor-plans",
+      "status": "pass",
+      "detail": "assets/floor-plans.png"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student rich asset exists demo-3-the-disappearance-of-a-student-floor-plans",
+      "status": "pass",
+      "detail": "assets/floor-plans.png"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student unsupported scheme boundary",
+      "status": "pass",
+      "detail": "time-code rich leads preserved; strict YAML intentionally has zero leads"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student flag declarations",
+      "status": "pass",
+      "detail": "used=[], declared=[]"
+    },
+    {
+      "check": "demo-3-the-disappearance-of-a-student spoiler-key firewall",
+      "status": "pass",
+      "detail": "no answer, Holmes-route or clue-importance keys in normal content"
+    },
+    {
+      "check": "rich lead counts",
+      "status": "pass",
+      "detail": "{'demo-1-vanishing-from-hyde-park': 18, 'demo-2-an-irregular-meeting': 26, 'demo-3-the-disappearance-of-a-student': 18}"
+    },
+    {
+      "check": "Demo 3 variant count",
+      "status": "pass",
+      "detail": "32 playable Interview/Investigation/Intervention variants"
+    },
+    {
+      "check": "asset count",
+      "status": "pass",
+      "detail": "9 rich resource assets exist; equivalent current-app copies also included"
+    },
+    {
+      "check": "safe app asset demo-1-vanishing-from-hyde-park-directory",
+      "status": "pass",
+      "detail": "assets/demo-1-vanishing-from-hyde-park/directory.png"
+    },
+    {
+      "check": "safe app asset demo-1-vanishing-from-hyde-park-map",
+      "status": "pass",
+      "detail": "assets/demo-1-vanishing-from-hyde-park/map.png"
+    },
+    {
+      "check": "safe app asset demo-1-vanishing-from-hyde-park-newspaper",
+      "status": "pass",
+      "detail": "assets/demo-1-vanishing-from-hyde-park/newspaper.png"
+    },
+    {
+      "check": "safe app asset demo-1-vanishing-from-hyde-park-informants",
+      "status": "pass",
+      "detail": "assets/demo-1-vanishing-from-hyde-park/informants.png"
+    },
+    {
+      "check": "safe app asset demo-2-an-irregular-meeting-directory",
+      "status": "pass",
+      "detail": "assets/demo-2-an-irregular-meeting/directory.png"
+    },
+    {
+      "check": "safe app asset demo-2-an-irregular-meeting-map",
+      "status": "pass",
+      "detail": "assets/demo-2-an-irregular-meeting/map.png"
+    },
+    {
+      "check": "safe app asset demo-2-an-irregular-meeting-newspaper",
+      "status": "pass",
+      "detail": "assets/demo-2-an-irregular-meeting/newspaper.png"
+    },
+    {
+      "check": "safe app asset demo-2-an-irregular-meeting-informants",
+      "status": "pass",
+      "detail": "assets/demo-2-an-irregular-meeting/informants.png"
+    },
+    {
+      "check": "safe app asset demo-3-the-disappearance-of-a-student-floor-plans",
+      "status": "pass",
+      "detail": "assets/demo-3-the-disappearance-of-a-student/floor-plans.png"
+    }
+  ]
+}

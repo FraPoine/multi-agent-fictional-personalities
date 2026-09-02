@@ -7,6 +7,7 @@ from threading import Lock
 from typing import Generic, TypeVar
 
 from multi_agent_personalities.case_catalog import CaseCatalog, CaseDefinition
+from multi_agent_personalities.case_content_catalog import CaseContentCatalog
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
@@ -59,13 +60,14 @@ class InvestigationSessionMutation(Generic[T]):
 class InMemoryInvestigationRegistry:
     """Own process-local investigation records with per-session serialization."""
 
-    def __init__(self, *, case_catalog: CaseCatalog | None = None) -> None:
+    def __init__(self, *, case_catalog: CaseCatalog | None = None, case_content_catalog: CaseContentCatalog | None = None) -> None:
         self._registry_lock = Lock()
         self._creation_lock = Lock()
         self._records: dict[str, InvestigationSessionRecord] = {}
         self._session_locks: dict[str, Lock] = {}
         self._next_session_sequence = 1
         self._case_catalog = case_catalog
+        self._case_content_catalog = case_content_catalog
 
     @property
     def session_ids(self) -> tuple[str, ...]:
@@ -77,6 +79,10 @@ class InMemoryInvestigationRegistry:
     def case_catalog(self) -> CaseCatalog | None:
         """Expose the immutable catalogue configured for session creation."""
         return self._case_catalog
+
+    @property
+    def case_content_catalog(self) -> CaseContentCatalog | None:
+        return self._case_content_catalog
 
     def create(
         self,
@@ -122,6 +128,7 @@ class InMemoryInvestigationRegistry:
                 introduction=resolved_introduction,
                 participant_ids=runtime.participant_ids,
                 case_id=resolved_case_id,
+                case_content=(self._case_content_catalog.get(resolved_case_id) if self._case_content_catalog else None),
             )
             record = InvestigationSessionRecord(
                 session_sequence=session_sequence,

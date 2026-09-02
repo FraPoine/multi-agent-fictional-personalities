@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1400",
+  "reference": "1400",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      2
+    ],
+    "region": "time code 1400"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1400",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1400",
+        "page": 2
+      },
+      "sections": [
+        {
+          "section_id": "time-1400-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Max Senrick, a field staff sergeant, receives you in his office. He does not look down on you, and you appreciate that. You worked together several years ago and got along well. He offers to tip you off about Mrs. Charline’s boarding house.\n\n“We’ve dealt with two kids from there before. One of the Raxons, Gerald, I believe. We caught him pissing on a patrol car. He was drunk. He had a half-empty bottle of whiskey on him, but we let him off with a warning. When he’s sober, he’s a nice guy. There’s also Emily Sundeer, a rebel too. She’s into politics, a ‘suffragette,’ as they say. But I never heard of Albert Copper.”\n\nThen he adds in a low voice:\n\n“But how many of you are investigating this case? I must confess that I met with a private eye. He was with the police ten years ago, so we exchange tips from time to time. He’s a tall redhead with an improbable face. He also wanted information about the boarding house. Then, there were two guys from Boston, military types. They told me they were from the interrogation office or something. Feds, I think. They were clearly looking for information about Albert. And now you. Can’t be a coincidence.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

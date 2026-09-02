@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "nw-32",
+  "reference": "32 NW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "NW AREA / 32 NW multi-stage entry"
+  },
+  "sections": [
+    {
+      "section_id": "nw-32-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {},
+      "effects": [],
+      "interaction": {
+        "type": "single_choice",
+        "interaction_id": "choose-floor",
+        "prompt_texts": {
+          "en": "What floor will you be stopping at? (Each paragraph counts as a lead.)"
+        },
+        "options": [
+          {
+            "option_id": "ground-floor",
+            "label_texts": {
+              "en": "GROUND FLOOR"
+            }
+          },
+          {
+            "option_id": "top-floor",
+            "label_texts": {
+              "en": "TOP FLOOR"
+            }
+          }
+        ],
+        "required_before_reveal": true
+      },
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "nw-32-s02",
+      "order": 2,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_choices": {
+          "choose-floor": [
+            "ground-floor"
+          ]
+        }
+      },
+      "texts": {
+        "en": "Mrs Nance invites us in her sitting-room. We notice a wicker basket and a blanket in a corner of the room, close to the front door. “Did you find Charly?” She slumps in an armchair, fixing then a picture of her dog, carrying a ball in his mouth. “This is my sole souvenir of him now,” she states sadly. “I haven’t been able to lay my hands on his favourite ball for a week, and now, he’s the one who disappeared…”\n\n“And did your nephew find anything?”\n\n“Howie? No, but I think his mind is set on other things. He comes to see me every Thursday, but last Thursday, he got here very late and was restless. He didn’t want to tell me what was bothering him. Do you think he’s in some kind of trouble?” she asks us, concerned."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged",
+      "lead_cost": 1
+    },
+    {
+      "section_id": "nw-32-s03",
+      "order": 3,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_choices": {
+          "choose-floor": [
+            "top-floor"
+          ]
+        }
+      },
+      "texts": {},
+      "effects": [],
+      "interaction": {
+        "type": "single_choice",
+        "interaction_id": "choose-top-floor-approach",
+        "prompt_texts": {
+          "en": "Would you rather knock at the door or go to the attic?"
+        },
+        "options": [
+          {
+            "option_id": "door",
+            "label_texts": {
+              "en": "DOOR"
+            }
+          },
+          {
+            "option_id": "attic",
+            "label_texts": {
+              "en": "ATTIC"
+            }
+          }
+        ],
+        "required_before_reveal": true
+      },
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "nw-32-s04",
+      "order": 4,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_choices": {
+          "choose-floor": [
+            "top-floor"
+          ],
+          "choose-top-floor-approach": [
+            "door"
+          ]
+        }
+      },
+      "texts": {
+        "en": "The manager of Grosvenor Investments receives us but does not tell us anything that we have not read in the Times’ article. He is sorry for Mrs Nance’s dog, but he has other things to take care of."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged",
+      "lead_cost": 1
+    },
+    {
+      "section_id": "nw-32-s05",
+      "order": 5,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_choices": {
+          "choose-floor": [
+            "top-floor"
+          ],
+          "choose-top-floor-approach": [
+            "attic"
+          ]
+        }
+      },
+      "texts": {
+        "en": "After a few contortions, we find a way to discreetly enter in the premises located under the attic, but we are soon stopped by a man: “Hey, guys, what do you think you’re doing?”\n\n“We’re investigating…”\n\n“You see, after what happened last night, I’m not in a talkative mood… John, tell the night watchman that we found the passage the other snoopers took to get in. And you, out!”\n\nYou no longer can access the top floor during this investigation."
+      },
+      "effects": [
+        {
+          "type": "close_scope_after_reveal",
+          "scope": "nw-32-top-floor"
+        }
+      ],
+      "interaction": null,
+      "return_policy_after_reveal": "top_floor_closed",
+      "lead_cost": 1
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-22",
+  "reference": "22 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "22 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-22-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "The doorman refuses to send street children to speak to a guest. However, Wiggins distracts him while we glimpse the room log, and a moment later we are at Mr Sartori’s room on the upper floor.\n\n“Hello,” says Wiggins, “We’re with hotel security.” Mr Sartori squints, then removes his glasses and cleans them. He replaces them, then squints at us again.\n\n“We wanted to check the diamond is secure,” adds Wiggins.\n\nSartori tells us it is and gestures to a safe near the locked window."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

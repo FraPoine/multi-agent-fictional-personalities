@@ -1,5 +1,14 @@
 # Functional Specification
 
+## Integrated English demos
+
+Three supplied demos are selectable. London aliases and exact four-digit
+`time-code` inputs are supported; malformed syntax is distinct from a valid but
+unknown case reference. Preloaded visits disclose eligible sections, revisits
+can unlock gated sections, and applied effects are idempotent. Confirmation and
+single-choice interactions require an explicit player POST. Repository-local
+images are served through a path-confined endpoint and rendered in the case UI.
+
 ## Sprint 7 Lead/Visit web redesign
 
 The catalogue-driven Lead/Visit browser flow described here is complete for

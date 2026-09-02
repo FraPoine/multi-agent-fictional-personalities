@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1300",
+  "reference": "1300",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      2,
+      6
+    ],
+    "region": "time code 1300"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1300",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1300",
+        "page": 2
+      },
+      "sections": [
+        {
+          "section_id": "time-1300-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Professor Bradshaw welcomes you into his office.\n\n“I can’t imagine Albert giving up on his studies. On the contrary, he is one of my most diligent and brilliant students.”\n\nYou ask him if there were any warning signs as to his disappearance.\n\n“No, absolutely nothing. Admittedly, he had been tired for weeks, probably because of the personal work I require from my students. I think I am strict, but fair. In any case, his disappearance is of great concern to me.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1300",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1300",
+        "page": 6
+      },
+      "sections": [
+        {
+          "section_id": "time-1300-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You spend a good while watching the comings and goings in the university surroundings and quickly realize that given the number of students on the premises, it will be challenging to recognize anyone. However, thanks to Burt’s description of Professor Bradshaw, you manage to spot him in the middle of a crowd of students before too long. You follow him, at first with your eyes, then on foot as he heads down a small alley that borders a walled park. There he meets a suspicious-looking redheaded man. Bradshaw hands him a brown envelope. The two men quickly separate before going about their business."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

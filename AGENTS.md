@@ -33,6 +33,13 @@ later, and run experiments and investigation sessions afterward.
 
 ## Current offline implementation
 
+Three English demo cases are integrated from the auditable source package in
+`data/raw/investigation/english-demo-cases-app-ingestion-v2/` into validated,
+spoiler-free runtime content and assets in `configs/investigation/`. Section
+effects are the sole transition authority; state files declare initial values.
+Authoritative text enters runtime knowledge only as `RevealedInformation` with
+stable source provenance.
+
 Sprints 5–7 and the six-task case-catalogue integration are complete. The
 repository provides both the existing conversation
 CLI and a local FastAPI/Jinja web interface for deterministic mock

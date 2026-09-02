@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1918",
+  "reference": "1918",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      6,
+      8
+    ],
+    "region": "time code 1918"
+  },
+  "variants": [
+    {
+      "variant_id": "investigation-1918",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1918",
+        "page": 6
+      },
+      "sections": [
+        {
+          "section_id": "time-1918-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Now that the landlady has gone to buy some food at the nearby market, you discreetly enter her kitchen and fiddle with the combination lock that bars the door leading to the pantry. The combination you deduced is correct and opens the way, not to the pantry but a flight of damp steps. Armed only with flashlights, you begin to descend, listening only to your courage.\n\nThe stone floor quickly gives way to a chaos of rocks and loose earth. The damp narrow passageway sinks deeper and deeper. Finally, after roughly a hundred feet, a mass of bloody rags mixed with bones and shreds of flesh gives you a glimpse of the sad truth. Rose didn’t just disappear. She was served as food to some hungry animal. You hurry to follow a filthy trail of blood and pieces of flesh, like some sort of disgusting treasure hunt. As the passageway splits into several galleries, you begin to hear screams, grunts and footsteps. And they are all converging on the same point: you. The flashlights slip out of your hands as the tide of fangs and claws sweeps you away. And there, in the beam of a flashlight, you see a body curled up on the ground.\n\nYou have perfectly completed your mission by finding the bodies of the two students without any external help. Ironically, it would seem that your sagacity and curiosity will not be rewarded today.\n\nYou’re dead."
+          },
+          "effects": [
+            {
+              "type": "end_case",
+              "outcome": "investigators_dead"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "intervention-1918",
+      "mode": "intervention",
+      "lead_cost": 0,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Intervention / 1918",
+        "page": 8
+      },
+      "sections": [
+        {
+          "section_id": "time-1918-intervention-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You glance over at your colleagues from the police station who have come to lend you a hand. Their determined looks restore your confidence, and you launch the intervention. Everyone knows their part, and you quickly secure the first floor. You rush to the kitchen and fiddle with the combination lock that bars the door leading to the pantry. 1… 9… 1… 8… You were right! Instead of a pantry, a flight of damp stairs awaits you. Encouraged by the presence of your brothers in arms, you make your way down.\n\nQuickly, the stone floor gives way to a chaos of rocks and loose earth. As you progress through a muddy trench with some difficulty, you are stopped by injunctions further up the assault column: “Stop! Come back up!”\n\nClimbing the stairs last, you discover your colleagues in a semi-circle facing two guys in black frock coats flashing badges for a federal bureau you didn’t know existed: the BOI. These men look impressive: flashlights attached to 12-gauge shotguns, trench daggers, heavy-caliber handguns, and harnesses over their suits. These guys are professionals. The tallest points to the stairs behind you: “We are taking command of this operation. Your mission: stop anyone else from following us in. Now step aside.” Then, they undertake to descend into the bowels of the earth. After an hour and a series of detonations, the two men finally come back up, dirty and injured.\n\n“There’s nothing more we can do for these kids. You did everything you could, but it was already too late.”\n\nThe taller of the two places a caring hand on your shoulder and continues:\n\n“You did an outstanding job today. We always need resourceful and courageous guys like you at the Bureau. So if you’re interested, come and see us tomorrow morning.”\n\nThey leave as quickly as they came. No one would know they had been here if it weren’t for the traces of dirt on the floor, the smell of rotting carcass emanating from the basement, and this business card from the Bureau of Investigation.\n\nYou have completed your mission and can now discover even more exciting and strange adventures in the Bureau of Investigation game."
+          },
+          "effects": [
+            {
+              "type": "end_case",
+              "outcome": "mission_completed"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

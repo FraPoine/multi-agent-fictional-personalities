@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-29",
+  "reference": "29 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "29 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-29-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "“I know Gilly – we share a love of ale. We met just over two weeks ago when she fell onto me, burped, and asked if the Afghan War arches would be put up along Haymarket. She lodges next to a stable yard, in the house on the end of the row.”\n\nCircle the letter A."
+      },
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag_id": "A"
+        }
+      ],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

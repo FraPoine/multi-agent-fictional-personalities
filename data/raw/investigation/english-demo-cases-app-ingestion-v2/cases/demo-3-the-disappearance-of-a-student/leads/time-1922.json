@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1922",
+  "reference": "1922",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      6,
+      7
+    ],
+    "region": "time code 1922"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1922",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1922",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1922-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "You knock on Rose’s door but to no avail. No one answers."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1922",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1922",
+        "pages": [
+          6,
+          7
+        ]
+      },
+      "sections": [
+        {
+          "section_id": "time-1922-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Rose’s room is neatly kept. Nothing seems unusual. However, after a short search, you find many letters she received from her parents, which give a glimpse of quiet, everyday life in the small town of Ipswich (2000). You also learn that Rose must be there at this very moment. The crumpled piece of paper you take from the waste-paper basket turns out to be the breakup letter Albert wrote her last week. Finally, Rose’s jewelry box is complete except for a case that could hold, for example, a pendant."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-92",
+  "reference": "92 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "92 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-92-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [
+          "B"
+        ],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": "stop_lead",
+        "failure_texts": {
+          "en": "Have you circled B? If not, you learn nothing. If you have, read on:"
+        }
+      },
+      "texts": {
+        "en": "“Welcome to the river, friends!” says Tinker, stepping into the mud. His legs disappear completely. With some uncertainty, we follow, grimacing as the cold sludge slips between our toes. Ten minutes later, Tinker shouts, and holds up a strip of metal.\n\nCircle the letter C. You can return to locations to use new circled letters."
+      },
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag_id": "C"
+        }
+      ],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

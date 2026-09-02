@@ -9,6 +9,12 @@ from multi_agent_personalities.case_catalog import (
     CaseLeadDefinition,
     parse_supported_case_lead_reference,
 )
+from multi_agent_personalities.case_content_catalog import (
+    CaseContentDefinition,
+    ContentEffect,
+    ContentInteraction,
+    ContentSection,
+)
 
 from multi_agent_personalities.application.investigation_prompts import (
     InvestigationPromptName,
@@ -46,6 +52,8 @@ from multi_agent_personalities.models import (
     LeadVisit,
     Message,
     RevealedInformation,
+    CaseChoiceState,
+    CasePlayState,
 )
 from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.simulation import (
@@ -67,6 +75,7 @@ def create_session(
     introduction: str,
     participant_ids: Sequence[str],
     case_id: str = "legacy-local-demo",
+    case_content: CaseContentDefinition | None = None,
 ) -> InvestigationSession:
     """Create one active investigation with an empty Lead/Visit graph."""
     if not isinstance(id_factory, DeterministicInvestigationIdFactory):
@@ -86,12 +95,22 @@ def create_session(
     id_factory.visit_id(1)
     id_factory.information_id(0)
     id_factory.discussion_segment_id(1, 1)
+    if case_content is not None and case_content.case_id != case_id:
+        raise ValueError("case_content must match case_id")
+    state = None
+    if case_content is not None:
+        state = CasePlayState(
+            flags=tuple(x.flag_id for x in case_content.state.flags if x.initial),
+            items=tuple(x.item_id for x in case_content.state.items if x.initial),
+            lead_budget_remaining=(case_content.state.lead_budget.initial if case_content.state.lead_budget else None),
+        )
     return InvestigationSession(
         session_id=id_factory.session_id,
         case_id=case_id,
         case_introduction=introduction,
         participant_ids=tuple(participant_ids),
         status=InvestigationStatus.ACTIVE,
+        case_state=state,
     )
 
 
@@ -285,6 +304,7 @@ def visit_lead(
     kind: str | None = None,
     case_lead_key: str | None = None,
     reference: str | None = None,
+    mode: str | None = None,
 ) -> InvestigationSession:
     """Visit a new semantic lead or revisit an existing lead."""
     snapshot = _validated_snapshot(session, id_factory)
@@ -317,10 +337,175 @@ def visit_lead(
         session_id=snapshot.session_id,
         lead_id=resolved_lead.lead_id,
         visit_index=visit_index,
+        mode=mode,
     )
     payload = snapshot.model_dump(mode="python")
     payload.update(leads=updated_leads, visits=(*snapshot.visits, new_visit))
     return InvestigationSession.model_validate(payload)
+
+
+def _state_payload(session: InvestigationSession) -> dict:
+    if session.case_state is None:
+        raise ValueError("case has no playable content state")
+    return session.case_state.model_dump(mode="python")
+
+
+def _section_gate_passes(section: ContentSection, state: CasePlayState) -> bool:
+    flags, items = set(state.flags), set(state.items)
+    choices = {x.choice_id: x.option_id for x in state.choices}
+    gate = section.gate
+    return (
+        set(gate.requires_all_flags) <= flags
+        and (not gate.requires_any_flags or bool(set(gate.requires_any_flags) & flags))
+        and not (set(gate.forbids_flags) & flags)
+        and set(gate.requires_items) <= items
+        and set(gate.requires_interactions) <= set(state.completed_interactions)
+        and all(choices.get(key) in options for key, options in gate.requires_choices.items())
+    )
+
+
+def _apply_effect(payload: dict, effect: ContentEffect, lead_key: str) -> None:
+    def add(field: str, value: str) -> None:
+        payload[field] = (*payload[field], value) if value not in payload[field] else payload[field]
+    if effect.type == "set_flag": add("flags", effect.flag_id)  # type: ignore[arg-type]
+    elif effect.type == "grant_item": add("items", effect.item_id)  # type: ignore[arg-type]
+    elif effect.type == "increase_lead_budget":
+        if payload["lead_budget_remaining"] is None: raise ValueError("lead budget effect without declared budget")
+        payload["lead_budget_remaining"] += effect.amount
+    elif effect.type == "close_lead_after_reveal": add("closed_lead_keys", lead_key)
+    elif effect.type == "close_scope_after_reveal": add("closed_scopes", effect.scope)  # type: ignore[arg-type]
+    elif effect.type == "end_case": payload["outcome"] = effect.outcome
+
+
+def disclose_case_sections(
+    session: InvestigationSession, *, case_content: CaseContentDefinition,
+    visit_id: str, id_factory: DeterministicInvestigationIdFactory,
+) -> InvestigationSession:
+    """Reveal currently eligible static sections and apply each effect once."""
+    snapshot = _validated_snapshot(session, id_factory)
+    visit = _require_current_visit(snapshot, visit_id)
+    lead = _lead_by_id(snapshot, visit.lead_id)
+    if lead.case_lead_key is None: return snapshot
+    content_lead = case_content.lead(lead.case_lead_key)
+    sections = content_lead.sections_for_mode(visit.mode)
+    state = snapshot.case_state
+    if state is None: raise ValueError("case content requires initialized state")
+    already = {x.source_id for x in snapshot.revealed_information if x.source_kind == "case-section"}
+    for section in sections:
+        if section.section_id in already or section.section_id in state.applied_section_ids:
+            continue
+        if not _section_gate_passes(section, state):
+            failure = section.gate.failure_texts.get("en")
+            failure_id = f"{section.section_id}-gate"
+            known = {x.source_id for x in snapshot.revealed_information if x.source_kind == "case-gate"}
+            if failure and failure_id not in known:
+                snapshot = reveal_information(snapshot, visit_id=visit_id, information_texts=(failure,), id_factory=id_factory, source_kind="case-gate", source_ids=(failure_id,))
+            if section.gate.failure_behavior:
+                break
+            continue
+        interaction = section.interaction
+        if interaction is not None and interaction.required_before_reveal:
+            completed = interaction.interaction_id in state.completed_interactions
+            chosen = interaction.interaction_id in {x.choice_id for x in state.choices}
+            if not completed and not chosen: break
+        text = section.texts.get("en")
+        if text:
+            snapshot = reveal_information(snapshot, visit_id=visit_id, information_texts=(text,), id_factory=id_factory, source_kind="case-section", source_ids=(section.section_id,))
+        payload = _state_payload(snapshot)
+        for effect in section.effects: _apply_effect(payload, effect, lead.case_lead_key)
+        payload["applied_section_ids"] = (*payload["applied_section_ids"], section.section_id)
+        session_payload = snapshot.model_dump(mode="python")
+        session_payload["case_state"] = CasePlayState.model_validate(payload)
+        snapshot = InvestigationSession.model_validate(session_payload)
+        state = snapshot.case_state
+    return snapshot
+
+
+def pending_case_interaction(session: InvestigationSession, *, case_content: CaseContentDefinition, visit_id: str) -> ContentInteraction | None:
+    visit = _visit_by_id(session, visit_id); lead = _lead_by_id(session, visit.lead_id)
+    if lead.case_lead_key is None or session.case_state is None: return None
+    state = session.case_state
+    for section in case_content.lead(lead.case_lead_key).sections_for_mode(visit.mode):
+        if section.section_id in state.applied_section_ids: continue
+        if not _section_gate_passes(section, state):
+            if section.gate.failure_behavior: return None
+            continue
+        if section.interaction and section.interaction.required_before_reveal:
+            done = section.interaction.interaction_id in state.completed_interactions or section.interaction.interaction_id in {x.choice_id for x in state.choices}
+            if not done: return section.interaction
+        return None
+    return None
+
+
+def complete_case_interaction(
+    session: InvestigationSession, *, case_content: CaseContentDefinition, visit_id: str,
+    interaction_id: str, option_id: str | None, id_factory: DeterministicInvestigationIdFactory,
+) -> InvestigationSession:
+    snapshot = _validated_snapshot(session, id_factory); _require_current_visit(snapshot, visit_id)
+    if snapshot.case_state and snapshot.case_state.outcome: raise ValueError("case has ended")
+    interaction = pending_case_interaction(snapshot, case_content=case_content, visit_id=visit_id)
+    if interaction is None or interaction.interaction_id != interaction_id: raise ValueError("interaction is not currently available")
+    payload = _state_payload(snapshot)
+    if interaction.type == "confirmation":
+        if option_id not in (None, "confirm"): raise ValueError("confirmation does not accept a choice")
+        payload["completed_interactions"] = (*payload["completed_interactions"], interaction_id)
+    else:
+        valid = {x.option_id for x in interaction.options}
+        if option_id not in valid: raise ValueError("invalid interaction choice")
+        payload["choices"] = (*payload["choices"], CaseChoiceState(choice_id=interaction_id, option_id=option_id))
+    session_payload = snapshot.model_dump(mode="python"); session_payload["case_state"] = CasePlayState.model_validate(payload)
+    updated = InvestigationSession.model_validate(session_payload)
+    return disclose_case_sections(updated, case_content=case_content, visit_id=visit_id, id_factory=id_factory)
+
+
+def visit_playable_case_lead(
+    session: InvestigationSession, *, case_definition: CaseDefinition, case_content: CaseContentDefinition,
+    raw_reference: str, mode: str | None, id_factory: DeterministicInvestigationIdFactory,
+) -> CaseLeadVisitResult:
+    definition = resolve_case_lead(case_definition, raw_reference)
+    state = session.case_state
+    if state is None: raise ValueError("playable case state is not initialized")
+    if state.outcome: raise ValueError("case has ended")
+    if definition.lead_key in state.closed_lead_keys: raise ValueError("case lead is closed")
+    existing = next((x for x in session.leads if x.case_lead_key == definition.lead_key), None)
+    if existing is not None: raise CurrentCaseLeadConflictError("revisit this known lead explicitly")
+    updated = visit_lead(session, id_factory=id_factory, label=definition.label, kind=definition.kind, case_lead_key=definition.lead_key, reference=definition.reference, mode=mode)
+    visit = updated.visits[-1]
+    content_lead = case_content.lead(definition.lead_key)
+    if content_lead.variants:
+        variant = next((x for x in content_lead.variants if x.mode == mode), None)
+        if variant is None: raise ValueError("selected mode is unavailable for this lead")
+        payload = _state_payload(updated)
+        if payload["lead_budget_remaining"] is not None:
+            if variant.mode == "intervention" and payload["lead_budget_remaining"] > 0: raise ValueError("intervention is not available while lead budget remains")
+            if variant.lead_cost > payload["lead_budget_remaining"]: raise ValueError("lead budget is exhausted")
+            payload["lead_budget_remaining"] -= variant.lead_cost
+            raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
+    updated = disclose_case_sections(updated, case_content=case_content, visit_id=visit.visit_id, id_factory=id_factory)
+    return CaseLeadVisitResult(updated, updated.leads[-1], True)
+
+
+def revisit_playable_case_lead(
+    session: InvestigationSession, *, case_content: CaseContentDefinition,
+    lead_id: str, mode: str | None, id_factory: DeterministicInvestigationIdFactory,
+) -> InvestigationSession:
+    """Create an explicit revisit and disclose information unlocked since last visit."""
+    lead = _lead_by_id(session, lead_id)
+    if lead.case_lead_key is None or session.case_state is None: raise ValueError("lead is not backed by playable case content")
+    if session.case_state.outcome: raise ValueError("case has ended")
+    if lead.case_lead_key in session.case_state.closed_lead_keys: raise ValueError("case lead is closed")
+    content_lead = case_content.lead(lead.case_lead_key)
+    updated = visit_lead(session, id_factory=id_factory, lead_id=lead_id, mode=mode)
+    if content_lead.variants:
+        variant = next((x for x in content_lead.variants if x.mode == mode), None)
+        if variant is None: raise ValueError("selected mode is unavailable for this lead")
+        payload = _state_payload(updated)
+        if payload["lead_budget_remaining"] is not None:
+            if variant.mode == "intervention" and payload["lead_budget_remaining"] > 0: raise ValueError("intervention is not available while lead budget remains")
+            if variant.lead_cost > payload["lead_budget_remaining"]: raise ValueError("lead budget is exhausted")
+            payload["lead_budget_remaining"] -= variant.lead_cost
+            raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
+    return disclose_case_sections(updated, case_content=case_content, visit_id=updated.visits[-1].visit_id, id_factory=id_factory)
 
 
 def reveal_information(

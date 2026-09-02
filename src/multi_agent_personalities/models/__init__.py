@@ -31,6 +31,8 @@ from multi_agent_personalities.models.investigation import (
     InvestigationStatus,
     LeadVisit,
     RevealedInformation,
+    CaseChoiceState,
+    CasePlayState,
     validate_unique_clue_ids,
 )
 from multi_agent_personalities.models.message import Message
@@ -50,7 +52,7 @@ __all__ = [
     "GenerationResult", "GroupDecision", "GroupDecisionType", "Hypothesis",
     "HypothesisStatus", "InvestigationLead",
     "InvestigationSession", "InvestigationStatus",
-    "LeadVisit", "RevealedInformation",
+    "LeadVisit", "RevealedInformation", "CaseChoiceState", "CasePlayState",
     "Message", "Persona", "PublicEvaluationTrial", "RaterResponse",
     "TokenUsage", "TrialAnswer", "EvaluationTrial", "validate_run_id",
 ]

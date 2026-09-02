@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "source_language": "en",
+  "play_language": "en",
+  "printed_title": "An Irregular Meeting",
+  "source_aliases": [
+    "The Baker Street Irregulars"
+  ],
+  "source_files": [
+    {
+      "filename": "Demo 2 - The Baker Street Irregulars.pdf",
+      "sha256": "31102a24122707d4edd9f9824dbb485554ccd382a3b1b96cfacb8b3f87684939",
+      "pages": 2,
+      "role": "official supplied English demo"
+    }
+  ],
+  "date": "1880-09-18",
+  "authors": [],
+  "status": "complete",
+  "reference_schemes": [
+    "london-address"
+  ],
+  "requires_app_extension": true,
+  "gameplay_instructions": {
+    "texts": {
+      "en": "Use the Directory, Map, Informants and Newspaper. Circle A, B and C only when instructed, and revisit locations when the printed entry permits it."
+    }
+  }
+}

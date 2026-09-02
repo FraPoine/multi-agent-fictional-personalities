@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-2000",
+  "reference": "2000",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      5,
+      7
+    ],
+    "region": "time code 2000"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-2000",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 2000",
+        "pages": [
+          4,
+          5
+        ]
+      },
+      "sections": [
+        {
+          "section_id": "time-2000-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Ipswich is less than an hour away from Arkham, but you appreciate the journey as an opportunity to escape the dull atmosphere of your own neighborhood. The small house belonging to Rose’s parents is surrounded by a garden perfectly delineated. After exchanging the usual courtesies and sipping an excellent coffee the hostess served you, the Millers tell you that they also are looking for someone: their daughter. They have not seen her for a week. She was supposed to pay them a visit, but she never made it to Ipswich. The father even made the trip to Arkham, to no avail. The mother informs you that they hired a private detective two days ago: a tall redhead with a broken nose, but they have heard any news from him yet.\n\nWhen Burt learns of Rose’s disappearance, he grants you a few extra hours to find both students. You can visit 3 additional leads."
+          },
+          "effects": [
+            {
+              "type": "increase_lead_budget",
+              "amount": 3
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-2000",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 2000",
+        "page": 7
+      },
+      "sections": [
+        {
+          "section_id": "time-2000-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "After spending an hour waiting in your car, not far from the house of Rose’s parents, you see a suspicious-looking individual knocking on their door. He speaks with Rose’s father for a few minutes before continuing on his way. A quick tailing reveals his ‘headquarters’: a covered truck that he has converted into a mobile office (2010)."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

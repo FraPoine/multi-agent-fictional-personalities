@@ -27,6 +27,7 @@ from multi_agent_personalities.web.investigation_routes import (
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
 )
+from multi_agent_personalities.case_content_catalog import default_case_content_directory, load_case_content_catalog
 
 
 WEB_DIRECTORY = Path(__file__).resolve().parent
@@ -280,8 +281,11 @@ def create_app(
         if case_catalog is None
         else case_catalog
     )
+    resolved_case_content_catalog = load_case_content_catalog(
+        default_case_content_directory(resolved_project_root), resolved_case_catalog
+    ) if case_catalog is None and default_case_content_directory(resolved_project_root).is_dir() else None
     resolved_investigation_registry = (
-        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog)
+        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog)
         if investigation_registry is None
         else investigation_registry
     )
@@ -296,6 +300,7 @@ def create_app(
     )
     application.state.investigation_registry = resolved_investigation_registry
     application.state.case_catalog = resolved_case_catalog
+    application.state.case_content_catalog = resolved_case_content_catalog
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the fixed local assets without a worker-thread hop."""
@@ -310,6 +315,16 @@ def create_app(
             content=(STATIC_DIRECTORY / path).read_bytes(),
             media_type=media_types[path],
         )
+
+    @application.get("/case-assets/{path:path}", name="case_asset")
+    async def case_asset(path: str) -> Response:
+        base = default_case_catalog_directory(resolved_project_root).parent.resolve()
+        candidate = (base / path).resolve()
+        if base not in candidate.parents or not candidate.is_file():
+            return Response(status_code=404)
+        media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".svg": "image/svg+xml"}.get(candidate.suffix.lower())
+        if media is None: return Response(status_code=404)
+        return Response(content=candidate.read_bytes(), media_type=media)
 
     @application.get("/", response_class=HTMLResponse)
     async def home(request: Request) -> HTMLResponse:

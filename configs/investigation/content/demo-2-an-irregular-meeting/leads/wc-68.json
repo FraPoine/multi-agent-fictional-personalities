@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-68",
+  "reference": "68 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "68 WC multi-stage entry; final uniform choice visually continues before 90 WC"
+  },
+  "sections": [
+    {
+      "section_id": "wc-68-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "There is a row of lodgings at 68 WC. In the yard, pieces of rotten fruit lie next to a barrel marked with a chalk cross, as if they’ve been thrown at it."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "wc-68-s02",
+      "order": 2,
+      "gate": {
+        "requires_all_flags": [
+          "A"
+        ],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": "stop_lead_revisitable",
+        "failure_texts": {
+          "en": "Have you circled A? If not, you must leave, but can come back later. If you have circled A, read on:"
+        }
+      },
+      "texts": {
+        "en": "Ducking out of sight of a boy scooping up horse manure, we approach the house at the end of the row and stop outside a window. Just then, a woman leaves the house, counting money, and heads for the market at Covent Garden.\n\n“That’s her,” mutters Simpson. “And this is her lodging. The window is fastened inside but it looks weak. We need something to break it open.”\n\n“A crowbar or piece of pipe?” asks Tinker. “I find stuff like that all the time! I’m a mudlark, see, and traipse through river mud looking for bits to sell. We might find something north of the railway bridge.” He points to the south-east.\n\nCircle the letter B."
+      },
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag_id": "B"
+        }
+      ],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "wc-68-s03",
+      "order": 3,
+      "gate": {
+        "requires_all_flags": [
+          "C"
+        ],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": "stop_lead_revisitable",
+        "failure_texts": {
+          "en": "Have you circled C? If not, you must leave, but can come back later. If you have circled C, read on:"
+        }
+      },
+      "texts": {},
+      "effects": [],
+      "interaction": {
+        "type": "confirmation",
+        "interaction_id": "break-in",
+        "prompt_texts": {
+          "en": "“We’ll have one chance,” says Wiggins, “Do we know what to look for?” Do not read the rest of this entry until you want to break in – after breaking in, you may not return to Gilly’s lodging."
+        },
+        "required_before_reveal": true
+      },
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "wc-68-s04",
+      "order": 4,
+      "gate": {
+        "requires_all_flags": [
+          "C"
+        ],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_interactions": [
+          "break-in"
+        ]
+      },
+      "texts": {
+        "en": "Inside, we find a pamphlet for Moby Dick with a drawing of a whale suspended by two ropes and ‘Saturday 6pm’ circled in pencil. Next to it are a wig and moustache. Simpson throws them into the fireplace and holds up a box of matches. “I sell matches on the street,” he says, as he strikes one and sets the fire blazing."
+      },
+      "effects": [
+        {
+          "type": "close_lead_after_reveal"
+        }
+      ],
+      "interaction": {
+        "type": "single_choice",
+        "interaction_id": "burn-uniform",
+        "prompt_texts": {
+          "en": "You have time to burn one more thing - warden’s uniform, footman’s uniform or cook’s uniform. Write down your choice."
+        },
+        "options": [
+          {
+            "option_id": "warden",
+            "label_texts": {
+              "en": "warden’s uniform"
+            }
+          },
+          {
+            "option_id": "footman",
+            "label_texts": {
+              "en": "footman’s uniform"
+            }
+          },
+          {
+            "option_id": "cook",
+            "label_texts": {
+              "en": "cook’s uniform"
+            }
+          }
+        ],
+        "required_before_reveal": true
+      },
+      "return_policy_after_reveal": "closed_after_reveal"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "sw-4",
+  "reference": "4 SW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "4 SW entry"
+  },
+  "sections": [
+    {
+      "section_id": "sw-4-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "Wiggins glances upwards and his jaw drops. Looking up, we see a huge plaster whale suspended above the stage by two ropes. “It’s for Moby Dick,” the theatre manager says. “Our most ambitious production to date. At the end, two stagehands climb up and lower it down.” He points at a rope ladder leading to a narrow balcony, which runs round the entire upper storey of the theatre. “And yes, we know Gilly Niles. She worked here from ’74 to December ’79, when we caught her stealing and got her sent to Millbank. She’s still bitter and angry, and has never come back. Not that she’d be welcome anyway – we can’t have her thieving from our patrons. And she’s a great actress, but we’d see through any disguise she could muster. Trust me, we’ve seen all her tricks.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

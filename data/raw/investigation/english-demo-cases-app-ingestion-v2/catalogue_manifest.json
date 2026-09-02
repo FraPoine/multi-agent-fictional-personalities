@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "case_id": "demo-1-vanishing-from-hyde-park",
+      "title": "Vanishing from Hyde Park",
+      "app_case_file": "current_app/cases/demo-1-vanishing-from-hyde-park.yaml",
+      "content_directory": "cases/demo-1-vanishing-from-hyde-park"
+    },
+    {
+      "case_id": "demo-2-an-irregular-meeting",
+      "title": "An Irregular Meeting",
+      "app_case_file": "current_app/cases/demo-2-an-irregular-meeting.yaml",
+      "content_directory": "cases/demo-2-an-irregular-meeting"
+    },
+    {
+      "case_id": "demo-3-the-disappearance-of-a-student",
+      "title": "The Disappearance of a Student",
+      "app_case_file": "current_app/cases/demo-3-the-disappearance-of-a-student.yaml",
+      "content_directory": "cases/demo-3-the-disappearance-of-a-student"
+    }
+  ]
+}

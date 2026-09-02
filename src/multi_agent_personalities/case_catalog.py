@@ -33,6 +33,7 @@ CaseKey = Annotated[
 ]
 LONDON_ADDRESS_SCHEME = "london-address"
 CARLTON_INTERIOR_SCHEME = "carlton-interior"
+TIME_CODE_SCHEME = "time-code"
 
 
 def normalize_london_address_reference(raw_reference: str) -> str:
@@ -62,12 +63,24 @@ def normalize_carlton_interior_reference(raw_reference: str) -> str:
     return f"{match.group(1)}-{match.group(2)}"
 
 
+def normalize_time_code_reference(raw_reference: str) -> str:
+    """Normalize a four-digit printed case reference."""
+    if not isinstance(raw_reference, str) or not raw_reference.strip():
+        raise ValueError("lead reference must not be empty")
+    candidate = raw_reference.strip()
+    if re.fullmatch(r"\d{4}", candidate) is None:
+        raise ValueError("invalid time-code reference")
+    return candidate
+
+
 def normalize_case_lead_reference(reference_scheme: str, raw_reference: str) -> str:
     """Normalize a reference with its explicitly declared structural scheme."""
     if reference_scheme == LONDON_ADDRESS_SCHEME:
         return normalize_london_address_reference(raw_reference)
     if reference_scheme == CARLTON_INTERIOR_SCHEME:
         return normalize_carlton_interior_reference(raw_reference)
+    if reference_scheme == TIME_CODE_SCHEME:
+        return normalize_time_code_reference(raw_reference)
     raise ValueError(f"unsupported lead reference_scheme: {reference_scheme!r}")
 
 
@@ -86,6 +99,7 @@ def parse_supported_case_lead_reference(
     normalizers = (
         (LONDON_ADDRESS_SCHEME, normalize_london_address_reference),
         (CARLTON_INTERIOR_SCHEME, normalize_carlton_interior_reference),
+        (TIME_CODE_SCHEME, normalize_time_code_reference),
     )
     for scheme, normalizer in normalizers:
         try:

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "nw-70",
+  "reference": "70 NW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "70 NW entry"
+  },
+  "sections": [
+    {
+      "section_id": "nw-70-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "A red-faced man welcomes us into his butcher shop. He prepares before us a terrine, meticulously grinding a game’s meat, whose origin we can hardly identify: “Ah! You’re here for the old bag’s pooch? Saw nothing, heard nothing, but I won’t complain. I thought I was coming to a quiet neighbourhood, and not a night went by without the dog barking at every passer-by. It was hell! I tolerated it because the lady came to take her regular lot of kidneys for her ‘precious’. Not easy to sell them, and only on a per order basis. He was probably better pampered than Queen Victoria’s dog himself. This world is crazy, trust me.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

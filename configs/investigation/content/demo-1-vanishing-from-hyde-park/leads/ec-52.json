@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "ec-52",
+  "reference": "52 EC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "52 EC entry"
+  },
+  "sections": [
+    {
+      "section_id": "ec-52-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "The owner of the Raven & Rat, Porky Shinwell, seems amused by our questions: “So, now you’re reduced to looking for a pooch? I hope he didn’t bite a bad guy, because in such a case: a good bag and off to the bottom of the Thames!”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

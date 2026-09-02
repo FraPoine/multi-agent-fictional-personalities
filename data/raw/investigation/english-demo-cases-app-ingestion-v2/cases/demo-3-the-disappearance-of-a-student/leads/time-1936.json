@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1936",
+  "reference": "1936",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4
+    ],
+    "region": "time code 1936"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1936",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1936",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1936-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {},
+            "requires_items": [
+              "rose_brooch"
+            ]
+          },
+          "texts": {
+            "en": "Emily takes a good look at the brooch and tells you that it must have belonged to Rose."
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

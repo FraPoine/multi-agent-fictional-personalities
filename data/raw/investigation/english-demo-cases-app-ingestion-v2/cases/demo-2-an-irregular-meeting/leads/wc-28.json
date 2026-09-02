@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-28",
+  "reference": "28 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "28 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-28-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [
+          "B"
+        ],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": "stop_lead",
+        "failure_texts": {
+          "en": "Have you circled B? If not, you go elsewhere. If you have, read on:"
+        }
+      },
+      "texts": {
+        "en": "We spot Gilly picking up discarded rotten fruit and putting it in a bag. Then she buys a sailor’s knife – the type normally used for gutting fish and cutting rope. As we follow her out of the market, she looks round, and seems to realise we’re following her. A moment later, she’s vanished."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

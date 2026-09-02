@@ -1,5 +1,15 @@
 # Architecture
 
+## Playable demo content boundary
+
+`CaseCatalog` owns lobby and structural metadata. `CaseContentCatalog`
+independently loads validated lead sections, gates, interactions, and initial
+state from `configs/investigation/content/`; it never opens spoiler files.
+Static definitions remain outside sessions. `CasePlayState` stores only flags,
+items, choices, interaction completion, closures, budgets, applied section IDs,
+and outcomes. Section effects alone perform transitions, and text enters agent
+context only through `RevealedInformation`.
+
 ## Lead/Visit web presentation
 
 Sprint 7 adds a server-side presentation boundary in

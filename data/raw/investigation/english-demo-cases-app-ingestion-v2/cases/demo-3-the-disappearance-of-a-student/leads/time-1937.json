@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1937",
+  "reference": "1937",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4
+    ],
+    "region": "time code 1937"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1937",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1937",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1937-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {},
+            "requires_items": [
+              "rose_brooch"
+            ]
+          },
+          "texts": {
+            "en": "Daryl intently looks at the brooch, as if immersed in an ocean of indecision, before telling you:\n\n“Can’t remember if it belonged to Rose or Emily. I’m terribly sorry.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "flags": [
+    {
+      "flag_id": "A",
+      "initial": false
+    },
+    {
+      "flag_id": "B",
+      "initial": false
+    },
+    {
+      "flag_id": "C",
+      "initial": false
+    }
+  ],
+  "choices": [
+    {
+      "choice_id": "burn-uniform",
+      "scope": "wc-68",
+      "options": [
+        "warden",
+        "footman",
+        "cook"
+      ]
+    }
+  ],
+  "interactions": [
+    {
+      "interaction_id": "break-in",
+      "scope": "wc-68",
+      "type": "confirmation",
+      "initial": "unconfirmed"
+    }
+  ],
+  "default_revisit_policy": "revisitable"
+}

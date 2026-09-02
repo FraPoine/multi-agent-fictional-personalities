@@ -140,6 +140,7 @@ class LeadVisit(BaseModel):
     session_id: NonEmptyStr
     lead_id: NonEmptyStr
     visit_index: PositiveStrictInt
+    mode: NonEmptyStr | None = None
     revealed_information_ids: tuple[NonEmptyStr, ...] = ()
     conversation_run_ids: tuple[NonEmptyStr, ...] = ()
 
@@ -179,6 +180,41 @@ class RevealedInformation(BaseModel):
         if (self.source_kind is None) != (self.source_id is None):
             raise ValueError("source_kind and source_id must be supplied together")
         return self
+
+
+class CaseChoiceState(BaseModel):
+    """One explicit player choice retained in the session snapshot."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    choice_id: NonEmptyStr
+    option_id: NonEmptyStr
+
+
+class CasePlayState(BaseModel):
+    """Minimal deterministic state used by preloaded playable cases."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    flags: tuple[NonEmptyStr, ...] = ()
+    items: tuple[NonEmptyStr, ...] = ()
+    choices: tuple[CaseChoiceState, ...] = ()
+    completed_interactions: tuple[NonEmptyStr, ...] = ()
+    closed_lead_keys: tuple[NonEmptyStr, ...] = ()
+    closed_scopes: tuple[NonEmptyStr, ...] = ()
+    applied_section_ids: tuple[NonEmptyStr, ...] = ()
+    lead_budget_remaining: NonNegativeStrictInt | None = None
+    outcome: NonEmptyStr | None = None
+
+    @field_validator("flags", "items", "completed_interactions", "closed_lead_keys", "closed_scopes", "applied_section_ids")
+    @classmethod
+    def validate_unique_state_ids(cls, value: tuple[str, ...], info: ValidationInfo) -> tuple[str, ...]:
+        return _reject_duplicate_strings(value, info.field_name)
+
+    @field_validator("choices")
+    @classmethod
+    def validate_unique_choices(cls, value: tuple[CaseChoiceState, ...]) -> tuple[CaseChoiceState, ...]:
+        if len({x.choice_id for x in value}) != len(value):
+            raise ValueError("choices must contain unique choice_id values")
+        return value
 
 
 def _reject_duplicate_strings(
@@ -433,6 +469,7 @@ class InvestigationSession(BaseModel):
     hypotheses: tuple[Hypothesis, ...] = ()
     decisions: tuple[GroupDecision, ...] = ()
     final_theory: FinalTheory | None = None
+    case_state: CasePlayState | None = None
 
     @field_validator("case_introduction")
     @classmethod

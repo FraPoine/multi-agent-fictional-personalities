@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-23",
+  "reference": "23 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "23 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-23-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "We speak to an opera singer, practising her scales in the open air. “You adorable ragamuffins!” she exclaims, “I do not know Gilly the Goat I’m afraid. Ask in The Unicorn.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

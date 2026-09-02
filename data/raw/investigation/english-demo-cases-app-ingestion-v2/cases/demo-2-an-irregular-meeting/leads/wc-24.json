@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-24",
+  "reference": "24 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "24 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-24-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "We follow the crowds to the Ansidei Madonna. It is very large – perhaps 5 by 7 feet. Through the formidable locked and barred window, we see an arch going to a window in the Haymarket Theatre. A warden tells us only the Head Warden has access to the window keys."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

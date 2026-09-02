@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "lead_key": "time-1921",
+  "reference": "1921",
+  "reference_scheme": "time-code",
+  "requires_app_extension": true,
+  "source": {
+    "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+    "pages": [
+      4,
+      6,
+      8
+    ],
+    "region": "time code 1921"
+  },
+  "variants": [
+    {
+      "variant_id": "interview-1921",
+      "mode": "interview",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Interview / 1921",
+        "page": 4
+      },
+      "sections": [
+        {
+          "section_id": "time-1921-interview-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Gerald opens the door, his eyes empty and a breath more than questionable in this time of prohibition. He does not like the police, and this much is clear from the tone of his voice. Nevertheless, he answers your questions.\n\n“I don’t know much about Albert. I don’t hang out much with him. He’s deeply committed to his work. Not like me! I try to enjoy life to the fullest, if you know what I mean.”\n\nBut then he remembers something.\n\n“Ah! Yes, his only leisure is to spend as much time as possible with Rose. Students in a boarding house and all that stuff… You know the drill, don’t you? Unless you didn’t pursue higher education? I saw them last, here on this very landing a month or so ago. They were having a bit of an argument, I think.”"
+          },
+          "effects": [],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "investigation-1921",
+      "mode": "investigation",
+      "lead_cost": 1,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Investigation / 1921",
+        "page": 6
+      },
+      "sections": [
+        {
+          "section_id": "time-1921-investigation-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Taking advantage of Gerald’s absence, you use the keys entrusted to you by Mrs. Charline to let yourselves into his room. Apart from a creaky floor that reminds you a ship’s deck, an assortment of trash, and dirty clothes, you find nothing of great interest. But! Ah, yes, you find in the drawer of his nightstand a beautifully made brooch that must have belonged to a woman.\n\nIf you want to ask someone about this brooch or associate it with a particular location, add 5 to the relevant paragraph and read the corresponding entry."
+          },
+          "effects": [
+            {
+              "type": "grant_item",
+              "item_id": "rose_brooch"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    },
+    {
+      "variant_id": "intervention-1921",
+      "mode": "intervention",
+      "lead_cost": 0,
+      "source": {
+        "document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf",
+        "region": "Intervention / 1921",
+        "page": 8
+      },
+      "sections": [
+        {
+          "section_id": "time-1921-intervention-s01",
+          "order": 1,
+          "gate": {
+            "requires_all_flags": [],
+            "requires_any_flags": [],
+            "forbids_flags": [],
+            "failure_behavior": null,
+            "failure_texts": {}
+          },
+          "texts": {
+            "en": "Searching through Gerald’s room, you find a rather large stock of contraband alcohol under, carefully hidden under the floorboards. There are too many of them to be for his personal consumption. Gerald just earned a one-way ticket to jail.\n\nBut no trace of Albert or anyone else. You failed."
+          },
+          "effects": [
+            {
+              "type": "end_case",
+              "outcome": "mission_failed"
+            }
+          ],
+          "interaction": null,
+          "return_policy_after_reveal": "unchanged"
+        }
+      ]
+    }
+  ]
+}

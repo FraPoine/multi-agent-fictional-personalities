@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "sw-86",
+  "reference": "86 SW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "86 SW entry"
+  },
+  "sections": [
+    {
+      "section_id": "sw-86-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "The Colonial Institute contains books and papers concerning British colonies. It is open to the public but they refuse to let in a group of street children. An arch runs from an upper-storey window of the Institute to an open window of the theatre across the road. A kitchen girl is throwing out food waste. “The window keys are kept in the staff office,” she tells us. “I can use ’em if I so please, as can any of them that work here – footmen, librarians, and wardens.” As we leave, we see two maids carrying bags of uniforms away down the street, presumably to get them cleaned."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

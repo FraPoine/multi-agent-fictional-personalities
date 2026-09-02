@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "questions": [
+    {
+      "question_id": "q1",
+      "order": 1,
+      "series": 1,
+      "texts": {
+        "en": "Who abducted Charly?"
+      }
+    },
+    {
+      "question_id": "q2",
+      "order": 2,
+      "series": 1,
+      "texts": {
+        "en": "Why?"
+      }
+    },
+    {
+      "question_id": "q3",
+      "order": 3,
+      "series": 1,
+      "texts": {
+        "en": "Where is Charly?"
+      }
+    },
+    {
+      "question_id": "q4",
+      "order": 4,
+      "series": 2,
+      "texts": {
+        "en": "How was Charly abducted without anyone taking notice?"
+      }
+    }
+  ]
+}

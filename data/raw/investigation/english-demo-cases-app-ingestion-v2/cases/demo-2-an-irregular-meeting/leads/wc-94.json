@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-94",
+  "reference": "94 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "94 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-94-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "The stage is set with a table, two chairs, and a teapot. Backstage, we find an actress with long ornate eyelashes, applying makeup. “Ah, that cunning rapscallion,” she says, “We’ve never employed her, and never will. I did see her on Maiden Lane last week, drunk.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

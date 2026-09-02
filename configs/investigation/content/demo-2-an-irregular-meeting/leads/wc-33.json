@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "wc-33",
+  "reference": "33 WC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "33 WC entry"
+  },
+  "sections": [
+    {
+      "section_id": "wc-33-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "“I’m ashamed to be her sister. Gilly blames The Haymarket for ruining her acting career, but it’s her own fault. She can make amazing wigs and makeup, and acts so well, but she’s never been able to resist taking other people’s things. She took new lodging in August – said it’s a ground floor room, end of the row, and mentioned something about the smell of horse manure.”\n\nCircle the letter A."
+      },
+      "effects": [
+        {
+          "type": "set_flag",
+          "flag_id": "A"
+        }
+      ],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

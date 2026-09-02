@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "ec-30",
+  "reference": "30 EC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "30 EC entry"
+  },
+  "sections": [
+    {
+      "section_id": "ec-30-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "Henry Ellis accepts to see us despite his seemingly busy schedule: “We just set the cat among the pigeons with the article on Oppenheimer, that we included at the very last moment. Parker played it smart. He and the chief editor seem rather sure of their sources. Otherwise, they wouldn’t have published the article.”\n\n“We are investigating the disappearance of a German Spitz in Hyde Park and we would like to know...”\n\n“I think that apart from advising you to make an announcement in the Times, I cannot be of any help to you,” Ellis cuts off, obviously uninterested."
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "lead_key": "sw-13",
+  "reference": "13 SW",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 2 - The Baker Street Irregulars.pdf",
+    "page": 2,
+    "region": "13 SW entry"
+  },
+  "sections": [
+    {
+      "section_id": "sw-13-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "We manage to convince a junior constable by the name of Peterson to tell us about Gilly the Ghost. “She’s a petty thief,” he says. “Spends most of her ill-gotten gains on ale. I can’t see her pulling off any grand thefts, although she is cunning and devious. No idea where she’s living.”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

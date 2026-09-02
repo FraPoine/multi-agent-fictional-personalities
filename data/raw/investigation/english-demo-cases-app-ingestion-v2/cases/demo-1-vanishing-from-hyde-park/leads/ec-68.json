@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "lead_key": "ec-68",
+  "reference": "68 EC",
+  "reference_scheme": "london-address",
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 2,
+    "region": "68 EC entry"
+  },
+  "sections": [
+    {
+      "section_id": "ec-68-s01",
+      "order": 1,
+      "gate": {
+        "requires_all_flags": [],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {}
+      },
+      "texts": {
+        "en": "We follow Cannon Street up to number 68 and knock at the door of Howard Parker’s flat, on the third floor. A young man, looking sleepy, receives us in the corridor, shutting the door behind him. A tad surprised by our investigation, he quickly shortens the conversation: “For the time being, I haven’t heard anything about Charly, but I’m not particularly worried. Every dog has his day! My aunt worries way too much and I’ve better things to do. And so do you, don’t you?”"
+      },
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    }
+  ]
+}

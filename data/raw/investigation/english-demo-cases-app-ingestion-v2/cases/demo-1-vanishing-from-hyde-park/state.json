@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "flags": [],
+  "choices": [
+    {
+      "choice_id": "choose-floor",
+      "scope": "nw-32",
+      "options": [
+        "ground-floor",
+        "top-floor"
+      ]
+    },
+    {
+      "choice_id": "choose-top-floor-approach",
+      "scope": "nw-32",
+      "options": [
+        "door",
+        "attic"
+      ]
+    }
+  ],
+  "default_revisit_policy": "revisitable",
+  "scopes": [
+    {
+      "scope_id": "nw-32-top-floor",
+      "initially_available": true
+    }
+  ]
+}

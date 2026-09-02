@@ -1374,3 +1374,6 @@ body {
     .opening-investigators ul { grid-template-columns: 1fr; }
     .conclusion-action { align-items: stretch; flex-direction: column; }
 }
+.case-resource-gallery { position: fixed; right: 4.5rem; bottom: 1rem; z-index: 15; max-width: min(32rem, 70vw); }
+.case-resource-gallery details { background: var(--surface, #fff); border: 1px solid #d7d0c4; border-radius: .5rem; padding: .5rem; box-shadow: 0 8px 24px rgb(0 0 0 / 15%); }
+.case-resource-gallery img { display: block; max-width: 100%; max-height: 65vh; object-fit: contain; margin-top: .5rem; }
