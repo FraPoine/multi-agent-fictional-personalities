@@ -7,7 +7,10 @@
 effects. `CasePlayState` is immutable runtime state and never duplicates static
 narrative or solution/scoring data. `LeadVisit.mode` selects Demo 3 variants.
 Automatic disclosures use `source_kind="case-section"`; gate notices use
-`source_kind="case-gate"`.
+`source_kind="case-gate"`. `LeadAccountingEntry` records section-once,
+first-semantic-visit, or per-variant-visit charges and idempotent budget
+adjustments. Normalized state configuration declares its accounting and revisit
+policy explicitly and rejects unknown fields.
 
 ## Purpose
 

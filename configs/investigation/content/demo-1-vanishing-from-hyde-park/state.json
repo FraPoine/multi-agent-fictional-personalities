@@ -20,7 +20,8 @@
       ]
     }
   ],
-  "default_revisit_policy": "revisitable",
+  "lead_accounting": "section_once",
+  "revisit_charging": "uncharged",
   "scopes": [
     {
       "scope_id": "nw-32-top-floor",

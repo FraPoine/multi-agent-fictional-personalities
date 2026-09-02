@@ -97,11 +97,23 @@
       "texts": {
         "en": "Inside, we find a pamphlet for Moby Dick with a drawing of a whale suspended by two ropes and ‘Saturday 6pm’ circled in pencil. Next to it are a wig and moustache. Simpson throws them into the fireplace and holds up a box of matches. “I sell matches on the street,” he says, as he strikes one and sets the fire blazing."
       },
-      "effects": [
-        {
-          "type": "close_lead_after_reveal"
-        }
-      ],
+      "effects": [],
+      "interaction": null,
+      "return_policy_after_reveal": "unchanged"
+    },
+    {
+      "section_id": "wc-68-s05",
+      "order": 5,
+      "gate": {
+        "requires_all_flags": ["C"],
+        "requires_any_flags": [],
+        "forbids_flags": [],
+        "failure_behavior": null,
+        "failure_texts": {},
+        "requires_interactions": ["break-in"]
+      },
+      "texts": {},
+      "effects": [{"type": "close_lead_after_reveal"}],
       "interaction": {
         "type": "single_choice",
         "interaction_id": "burn-uniform",

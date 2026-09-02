@@ -49,6 +49,14 @@ from multi_agent_personalities.application.investigation_visit_service import (
     pending_case_interaction,
     complete_case_interaction,
     revisit_playable_case_lead,
+    supported_case_lead_modes,
+    reveal_manual_information,
+    GameplayConflictError,
+    InvalidGameplayModeError,
+    LockedGameplayNodeError,
+    ClosedGameplayNodeError,
+    GameplayBudgetError,
+    ManualRevealForbiddenError,
 )
 from multi_agent_personalities.application.investigation_mock import (
     HERCULE_POIROT_ID,
@@ -130,6 +138,10 @@ __all__ = [
     "visit_playable_case_lead", "disclose_case_sections",
     "pending_case_interaction", "complete_case_interaction",
     "revisit_playable_case_lead",
+    "supported_case_lead_modes", "reveal_manual_information",
+    "GameplayConflictError", "InvalidGameplayModeError",
+    "LockedGameplayNodeError", "ClosedGameplayNodeError",
+    "GameplayBudgetError", "ManualRevealForbiddenError",
     "build_lead_discussion_context", "visit_lead",
     "run_mock_conversation",
 ]

@@ -2,13 +2,14 @@
 
 from collections.abc import Sequence
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
     StrictStr,
+    StrictInt,
     StringConstraints,
     ValidationInfo,
     field_validator,
@@ -190,6 +191,25 @@ class CaseChoiceState(BaseModel):
     option_id: NonEmptyStr
 
 
+class LeadAccountingEntry(BaseModel):
+    """One immutable, auditable gameplay charge or credit."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    source_kind: Literal["section-cost", "first-visit", "variant-visit", "budget-adjustment"]
+    source_id: NonEmptyStr
+    lead_id: NonEmptyStr
+    visit_id: NonEmptyStr
+    amount: StrictInt
+    uniqueness: Literal["once-per-section", "once-per-lead", "once-per-visit"]
+
+    @field_validator("amount")
+    @classmethod
+    def validate_nonzero_amount(cls, value: int) -> int:
+        if value == 0:
+            raise ValueError("accounting amount must not be zero")
+        return value
+
+
 class CasePlayState(BaseModel):
     """Minimal deterministic state used by preloaded playable cases."""
 
@@ -203,6 +223,7 @@ class CasePlayState(BaseModel):
     applied_section_ids: tuple[NonEmptyStr, ...] = ()
     lead_budget_remaining: NonNegativeStrictInt | None = None
     outcome: NonEmptyStr | None = None
+    accounting_entries: tuple[LeadAccountingEntry, ...] = ()
 
     @field_validator("flags", "items", "completed_interactions", "closed_lead_keys", "closed_scopes", "applied_section_ids")
     @classmethod
@@ -214,6 +235,14 @@ class CasePlayState(BaseModel):
     def validate_unique_choices(cls, value: tuple[CaseChoiceState, ...]) -> tuple[CaseChoiceState, ...]:
         if len({x.choice_id for x in value}) != len(value):
             raise ValueError("choices must contain unique choice_id values")
+        return value
+
+    @field_validator("accounting_entries")
+    @classmethod
+    def validate_unique_accounting(cls, value: tuple[LeadAccountingEntry, ...]) -> tuple[LeadAccountingEntry, ...]:
+        keys = [(x.source_kind, x.source_id, x.visit_id if x.uniqueness == "once-per-visit" else None) for x in value]
+        if len(keys) != len(set(keys)):
+            raise ValueError("accounting entries violate uniqueness semantics")
         return value
 
 
@@ -1026,16 +1055,18 @@ class InvestigationSession(BaseModel):
         ):
             raise ValueError("final theory references an unknown hypothesis")
 
-        if (
-            self.status is InvestigationStatus.COMPLETED
-            and self.final_theory is None
-        ):
-            raise ValueError("completed sessions require a final theory")
+        authored_outcome = self.case_state is not None and self.case_state.outcome is not None
+        if self.status is InvestigationStatus.COMPLETED and self.final_theory is None and not authored_outcome:
+            raise ValueError("completed sessions require a final theory or authored outcome")
         if (
             self.final_theory is not None
             and self.status is not InvestigationStatus.COMPLETED
         ):
             raise ValueError("non-completed sessions must not contain a final theory")
+        if authored_outcome and self.status is not InvestigationStatus.COMPLETED:
+            raise ValueError("authored outcomes require completed status")
+        if authored_outcome and self.final_theory is not None:
+            raise ValueError("authored outcome and final theory are mutually exclusive")
         return self
 
 

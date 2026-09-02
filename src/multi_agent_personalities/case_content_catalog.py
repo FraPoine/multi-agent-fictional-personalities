@@ -21,8 +21,18 @@ class ContentGate(BaseModel):
     requires_items: tuple[Key, ...] = ()
     requires_interactions: tuple[Key, ...] = ()
     requires_choices: dict[Key, tuple[Key, ...]] = {}
-    failure_behavior: str | None = None
+    failure_behavior: Literal["stop_lead", "stop_lead_revisitable"] | None = None
     failure_texts: dict[str, str] = {}
+
+
+class ContentSource(BaseModel):
+    """Auditable pointer back to the supplied source document."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    document: NonEmptyStr
+    page: int | None = Field(default=None, ge=1)
+    pages: tuple[int, ...] = ()
+    region: NonEmptyStr
 
 
 class ContentEffect(BaseModel):
@@ -80,8 +90,9 @@ class ContentSection(BaseModel):
     gate: ContentGate = ContentGate()
     effects: tuple[ContentEffect, ...] = ()
     interaction: ContentInteraction | None = None
-    return_policy_after_reveal: NonEmptyStr
+    return_policy_after_reveal: Literal["unchanged", "top_floor_closed", "closed_after_reveal"]
     lead_cost: int = Field(default=0, ge=0)
+    scope_id: Key | None = None
 
 
 class ContentVariant(BaseModel):
@@ -89,7 +100,7 @@ class ContentVariant(BaseModel):
     variant_id: Key
     mode: Key
     lead_cost: int = Field(default=0, ge=0)
-    source: dict | None = None
+    source: ContentSource | None = None
     sections: tuple[ContentSection, ...]
 
 
@@ -100,7 +111,7 @@ class ContentLead(BaseModel):
     lead_key: Key
     reference: NonEmptyStr
     reference_scheme: NonEmptyStr
-    source: dict
+    source: ContentSource
     requires_app_extension: bool = False
     sections: tuple[ContentSection, ...] = ()
     variants: tuple[ContentVariant, ...] = ()
@@ -134,7 +145,7 @@ class FlagDefinition(BaseModel):
 
 
 class ItemDefinition(BaseModel):
-    model_config = ConfigDict(extra="ignore", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True)
     item_id: Key
     initial: bool
 
@@ -156,17 +167,30 @@ class StateInteractionDefinition(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     interaction_id: Key
     scope: Key
-    type: Key
-    initial: Key
+    type: Literal["confirmation"]
+    initial: Literal["unconfirmed"]
 
 
 class LeadBudgetDefinition(BaseModel):
-    model_config = ConfigDict(extra="ignore", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True)
     initial: int = Field(ge=0)
 
 
+class DerivedReferenceDefinition(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    requires_item: Key
+    mappings: dict[NonEmptyStr, NonEmptyStr]
+
+
+class InterventionDefinition(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    available_after_lead_budget: bool
+    exactly_one_entry: bool
+    ends_case: bool
+
+
 class StateDefinition(BaseModel):
-    model_config = ConfigDict(extra="ignore", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True)
     schema_version: Literal[1]
     case_id: Key
     flags: tuple[FlagDefinition, ...] = ()
@@ -176,6 +200,10 @@ class StateDefinition(BaseModel):
     items: tuple[ItemDefinition, ...] = ()
     lead_budget: LeadBudgetDefinition | None = None
     modes: tuple[Key, ...] = ()
+    derived_references: tuple[DerivedReferenceDefinition, ...] = ()
+    intervention: InterventionDefinition | None = None
+    lead_accounting: Literal["section_once", "first_visit", "variant_visit"]
+    revisit_charging: Literal["uncharged", "configured_variant"]
 
 
 class CaseContentDefinition(BaseModel):
@@ -193,11 +221,17 @@ class CaseContentDefinition(BaseModel):
         section_ids = [x.section_id for x in section_groups]
         if len(lead_keys) != len(set(lead_keys)): raise ValueError("duplicate lead_key")
         if len(section_ids) != len(set(section_ids)): raise ValueError("duplicate section_id")
+        if any(x.scope not in set(lead_keys) for x in (*self.state.choices, *self.state.interactions)):
+            raise ValueError("choice or interaction scope must reference a lead_key")
         flags = {x.flag_id for x in self.state.flags}; items = {x.item_id for x in self.state.items}
         choices = {x.choice_id: set(x.options) for x in self.state.choices}
-        scopes = {x.scope_id for x in self.state.scopes} | {x.scope for x in self.state.choices} | {x.scope for x in self.state.interactions}
+        scopes = {x.scope_id for x in self.state.scopes}
+        governed_scopes: set[str] = set()
         interactions = {x.interaction_id for x in self.state.interactions}
         for section in section_groups:
+            if section.scope_id:
+                if section.scope_id not in scopes: raise ValueError("dangling scope reference")
+                governed_scopes.add(section.scope_id)
             if section.interaction:
                 interactions.add(section.interaction.interaction_id)
                 if section.interaction.type == "single_choice":
@@ -212,7 +246,31 @@ class CaseContentDefinition(BaseModel):
                 if effect.flag_id and effect.flag_id not in flags: raise ValueError("dangling flag reference")
                 if effect.item_id and effect.item_id not in items: raise ValueError("dangling item reference")
                 if effect.scope and effect.scope not in scopes: raise ValueError("dangling scope reference")
+        closure_scopes = {effect.scope for section in section_groups for effect in section.effects if effect.type == "close_scope_after_reveal"}
+        if not closure_scopes <= governed_scopes: raise ValueError("closure scope has no governed runtime node")
+        for derived in self.state.derived_references:
+            if derived.requires_item not in items: raise ValueError("dangling item reference")
+            for target in derived.mappings.values():
+                matching = [lead for lead in self.leads if lead.reference == target]
+                if not matching or not any(derived.requires_item in section.gate.requires_items for lead in matching for section in (lead.sections or tuple(s for v in lead.variants for s in v.sections))):
+                    raise ValueError("derived reference target must be governed by its required item")
+        declared_modes = set(self.state.modes)
+        used_modes = {variant.mode for lead in self.leads for variant in lead.variants}
+        if declared_modes != used_modes:
+            raise ValueError("declared modes must match lead variants")
+        if self.state.lead_accounting == "variant_visit" and self.state.lead_budget is None:
+            raise ValueError("variant_visit accounting requires a lead budget")
+        if self.state.lead_accounting != "variant_visit" and any(variant.lead_cost for lead in self.leads for variant in lead.variants):
+            raise ValueError("variant lead costs require variant_visit accounting")
         return self
+
+    @property
+    def authored(self) -> bool:
+        return True
+
+    def supported_modes(self, lead_key: str) -> tuple[str, ...]:
+        lead = self.lead(lead_key)
+        return tuple(variant.mode for variant in lead.variants)
 
     def lead(self, lead_key: str) -> ContentLead:
         for lead in self.leads:

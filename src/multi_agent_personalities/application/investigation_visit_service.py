@@ -54,6 +54,7 @@ from multi_agent_personalities.models import (
     RevealedInformation,
     CaseChoiceState,
     CasePlayState,
+    LeadAccountingEntry,
 )
 from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.simulation import (
@@ -102,6 +103,7 @@ def create_session(
         state = CasePlayState(
             flags=tuple(x.flag_id for x in case_content.state.flags if x.initial),
             items=tuple(x.item_id for x in case_content.state.items if x.initial),
+            closed_scopes=tuple(x.scope_id for x in case_content.state.scopes if not x.initially_available),
             lead_budget_remaining=(case_content.state.lead_budget.initial if case_content.state.lead_budget else None),
         )
     return InvestigationSession(
@@ -142,6 +144,30 @@ class UnknownCaseLeadReferenceError(LookupError):
 
 class CurrentCaseLeadConflictError(ValueError):
     """Raised when the resolved semantic lead is already current."""
+
+
+class GameplayConflictError(ValueError):
+    """Base error for a structurally valid but unavailable gameplay action."""
+
+
+class InvalidGameplayModeError(GameplayConflictError):
+    """Raised when a lead does not support the selected mode."""
+
+
+class LockedGameplayNodeError(GameplayConflictError):
+    """Raised when authored prerequisites do not permit a gameplay node."""
+
+
+class ClosedGameplayNodeError(GameplayConflictError):
+    """Raised when an irreversible authored closure blocks future play."""
+
+
+class GameplayBudgetError(GameplayConflictError):
+    """Raised when a valid action cannot be afforded or selected yet."""
+
+
+class ManualRevealForbiddenError(GameplayConflictError):
+    """Raised when direct Game Master injection targets an authored case."""
 
 
 @dataclass(frozen=True)
@@ -350,6 +376,18 @@ def _state_payload(session: InvestigationSession) -> dict:
     return session.case_state.model_dump(mode="python")
 
 
+def supported_case_lead_modes(case_content: CaseContentDefinition, lead_key: str) -> tuple[str, ...]:
+    """Return the deterministic authored modes for one semantic lead."""
+    try:
+        return case_content.supported_modes(lead_key)
+    except KeyError as error:
+        raise UnknownCaseLeadReferenceError(f"unknown case lead_key: {lead_key!r}") from error
+
+
+def _append_accounting(payload: dict, entry: LeadAccountingEntry) -> None:
+    payload["accounting_entries"] = (*payload["accounting_entries"], entry)
+
+
 def _section_gate_passes(section: ContentSection, state: CasePlayState) -> bool:
     flags, items = set(state.flags), set(state.items)
     choices = {x.choice_id: x.option_id for x in state.choices}
@@ -364,7 +402,7 @@ def _section_gate_passes(section: ContentSection, state: CasePlayState) -> bool:
     )
 
 
-def _apply_effect(payload: dict, effect: ContentEffect, lead_key: str) -> None:
+def _apply_effect(payload: dict, effect: ContentEffect, lead_key: str, lead_id: str, visit_id: str, section_id: str) -> None:
     def add(field: str, value: str) -> None:
         payload[field] = (*payload[field], value) if value not in payload[field] else payload[field]
     if effect.type == "set_flag": add("flags", effect.flag_id)  # type: ignore[arg-type]
@@ -372,9 +410,50 @@ def _apply_effect(payload: dict, effect: ContentEffect, lead_key: str) -> None:
     elif effect.type == "increase_lead_budget":
         if payload["lead_budget_remaining"] is None: raise ValueError("lead budget effect without declared budget")
         payload["lead_budget_remaining"] += effect.amount
+        _append_accounting(payload, LeadAccountingEntry(source_kind="budget-adjustment", source_id=section_id, lead_id=lead_id, visit_id=visit_id, amount=-effect.amount, uniqueness="once-per-section"))
     elif effect.type == "close_lead_after_reveal": add("closed_lead_keys", lead_key)
     elif effect.type == "close_scope_after_reveal": add("closed_scopes", effect.scope)  # type: ignore[arg-type]
     elif effect.type == "end_case": payload["outcome"] = effect.outcome
+
+
+def _mode_sections(content_lead, mode: str | None) -> tuple[ContentSection, ...]:
+    try:
+        return content_lead.sections_for_mode(mode)
+    except ValueError as error:
+        raise InvalidGameplayModeError(str(error)) from error
+
+
+def _preflight_sections(sections: tuple[ContentSection, ...], state: CasePlayState, *, allow_fully_disclosed: bool = False) -> None:
+    """Require at least one reachable, open, not-yet-applied authored node."""
+    has_unapplied = False
+    for section in sections:
+        if section.section_id in state.applied_section_ids:
+            continue
+        has_unapplied = True
+        if not _section_gate_passes(section, state):
+            if section.gate.failure_behavior:
+                raise LockedGameplayNodeError(f"section {section.section_id!r} prerequisites are not satisfied")
+            continue
+        if section.scope_id and section.scope_id in state.closed_scopes:
+            raise ClosedGameplayNodeError(f"scope {section.scope_id!r} is closed")
+        return
+    if allow_fully_disclosed and not has_unapplied:
+        return
+    raise LockedGameplayNodeError("no authored content is currently available")
+
+
+def _variant_preflight(content_lead, mode: str | None, state: CasePlayState, *, allow_fully_disclosed: bool = False):
+    sections = _mode_sections(content_lead, mode)
+    _preflight_sections(sections, state, allow_fully_disclosed=allow_fully_disclosed)
+    if not content_lead.variants:
+        return None
+    variant = next(item for item in content_lead.variants if item.mode == mode)
+    remaining = state.lead_budget_remaining
+    if variant.mode == "intervention" and remaining is not None and remaining > 0:
+        raise GameplayBudgetError("intervention is not available while lead budget remains")
+    if remaining is not None and variant.lead_cost > remaining:
+        raise GameplayBudgetError("lead budget is exhausted")
+    return variant
 
 
 def disclose_case_sections(
@@ -394,6 +473,8 @@ def disclose_case_sections(
     for section in sections:
         if section.section_id in already or section.section_id in state.applied_section_ids:
             continue
+        if section.scope_id and section.scope_id in state.closed_scopes:
+            break
         if not _section_gate_passes(section, state):
             failure = section.gate.failure_texts.get("en")
             failure_id = f"{section.section_id}-gate"
@@ -412,10 +493,14 @@ def disclose_case_sections(
         if text:
             snapshot = reveal_information(snapshot, visit_id=visit_id, information_texts=(text,), id_factory=id_factory, source_kind="case-section", source_ids=(section.section_id,))
         payload = _state_payload(snapshot)
-        for effect in section.effects: _apply_effect(payload, effect, lead.case_lead_key)
+        if section.lead_cost:
+            _append_accounting(payload, LeadAccountingEntry(source_kind="section-cost", source_id=section.section_id, lead_id=lead.lead_id, visit_id=visit.visit_id, amount=section.lead_cost, uniqueness="once-per-section"))
+        for effect in section.effects: _apply_effect(payload, effect, lead.case_lead_key, lead.lead_id, visit.visit_id, section.section_id)
         payload["applied_section_ids"] = (*payload["applied_section_ids"], section.section_id)
         session_payload = snapshot.model_dump(mode="python")
         session_payload["case_state"] = CasePlayState.model_validate(payload)
+        if payload["outcome"] is not None:
+            session_payload["status"] = InvestigationStatus.COMPLETED
         snapshot = InvestigationSession.model_validate(session_payload)
         state = snapshot.case_state
     return snapshot
@@ -427,6 +512,7 @@ def pending_case_interaction(session: InvestigationSession, *, case_content: Cas
     state = session.case_state
     for section in case_content.lead(lead.case_lead_key).sections_for_mode(visit.mode):
         if section.section_id in state.applied_section_ids: continue
+        if section.scope_id and section.scope_id in state.closed_scopes: return None
         if not _section_gate_passes(section, state):
             if section.gate.failure_behavior: return None
             continue
@@ -442,16 +528,16 @@ def complete_case_interaction(
     interaction_id: str, option_id: str | None, id_factory: DeterministicInvestigationIdFactory,
 ) -> InvestigationSession:
     snapshot = _validated_snapshot(session, id_factory); _require_current_visit(snapshot, visit_id)
-    if snapshot.case_state and snapshot.case_state.outcome: raise ValueError("case has ended")
+    if snapshot.case_state and snapshot.case_state.outcome: raise ClosedGameplayNodeError("case has ended")
     interaction = pending_case_interaction(snapshot, case_content=case_content, visit_id=visit_id)
-    if interaction is None or interaction.interaction_id != interaction_id: raise ValueError("interaction is not currently available")
+    if interaction is None or interaction.interaction_id != interaction_id: raise LockedGameplayNodeError("interaction is not currently available")
     payload = _state_payload(snapshot)
     if interaction.type == "confirmation":
-        if option_id not in (None, "confirm"): raise ValueError("confirmation does not accept a choice")
+        if option_id not in (None, "confirm"): raise GameplayConflictError("confirmation does not accept a choice")
         payload["completed_interactions"] = (*payload["completed_interactions"], interaction_id)
     else:
         valid = {x.option_id for x in interaction.options}
-        if option_id not in valid: raise ValueError("invalid interaction choice")
+        if option_id not in valid: raise GameplayConflictError("invalid interaction choice")
         payload["choices"] = (*payload["choices"], CaseChoiceState(choice_id=interaction_id, option_id=option_id))
     session_payload = snapshot.model_dump(mode="python"); session_payload["case_state"] = CasePlayState.model_validate(payload)
     updated = InvestigationSession.model_validate(session_payload)
@@ -462,25 +548,26 @@ def visit_playable_case_lead(
     session: InvestigationSession, *, case_definition: CaseDefinition, case_content: CaseContentDefinition,
     raw_reference: str, mode: str | None, id_factory: DeterministicInvestigationIdFactory,
 ) -> CaseLeadVisitResult:
+    if session.case_id != case_definition.case_id or case_content.case_id != session.case_id:
+        raise GameplayConflictError("case definition and content must match the session")
     definition = resolve_case_lead(case_definition, raw_reference)
     state = session.case_state
     if state is None: raise ValueError("playable case state is not initialized")
-    if state.outcome: raise ValueError("case has ended")
-    if definition.lead_key in state.closed_lead_keys: raise ValueError("case lead is closed")
+    if state.outcome: raise ClosedGameplayNodeError("case has ended")
+    if definition.lead_key in state.closed_lead_keys: raise ClosedGameplayNodeError("case lead is closed")
     existing = next((x for x in session.leads if x.case_lead_key == definition.lead_key), None)
     if existing is not None: raise CurrentCaseLeadConflictError("revisit this known lead explicitly")
+    content_lead = case_content.lead(definition.lead_key)
+    variant = _variant_preflight(content_lead, mode, state)
     updated = visit_lead(session, id_factory=id_factory, label=definition.label, kind=definition.kind, case_lead_key=definition.lead_key, reference=definition.reference, mode=mode)
     visit = updated.visits[-1]
-    content_lead = case_content.lead(definition.lead_key)
-    if content_lead.variants:
-        variant = next((x for x in content_lead.variants if x.mode == mode), None)
-        if variant is None: raise ValueError("selected mode is unavailable for this lead")
-        payload = _state_payload(updated)
-        if payload["lead_budget_remaining"] is not None:
-            if variant.mode == "intervention" and payload["lead_budget_remaining"] > 0: raise ValueError("intervention is not available while lead budget remains")
-            if variant.lead_cost > payload["lead_budget_remaining"]: raise ValueError("lead budget is exhausted")
-            payload["lead_budget_remaining"] -= variant.lead_cost
-            raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
+    payload = _state_payload(updated)
+    if case_content.state.lead_accounting == "first_visit":
+        _append_accounting(payload, LeadAccountingEntry(source_kind="first-visit", source_id=definition.lead_key, lead_id=updated.leads[-1].lead_id, visit_id=visit.visit_id, amount=1, uniqueness="once-per-lead"))
+    if variant is not None and variant.lead_cost:
+        payload["lead_budget_remaining"] -= variant.lead_cost
+        _append_accounting(payload, LeadAccountingEntry(source_kind="variant-visit", source_id=variant.variant_id, lead_id=updated.leads[-1].lead_id, visit_id=visit.visit_id, amount=variant.lead_cost, uniqueness="once-per-visit"))
+    raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
     updated = disclose_case_sections(updated, case_content=case_content, visit_id=visit.visit_id, id_factory=id_factory)
     return CaseLeadVisitResult(updated, updated.leads[-1], True)
 
@@ -491,20 +578,19 @@ def revisit_playable_case_lead(
 ) -> InvestigationSession:
     """Create an explicit revisit and disclose information unlocked since last visit."""
     lead = _lead_by_id(session, lead_id)
+    if case_content.case_id != session.case_id:
+        raise GameplayConflictError("case content must match the session")
     if lead.case_lead_key is None or session.case_state is None: raise ValueError("lead is not backed by playable case content")
-    if session.case_state.outcome: raise ValueError("case has ended")
-    if lead.case_lead_key in session.case_state.closed_lead_keys: raise ValueError("case lead is closed")
+    if session.case_state.outcome: raise ClosedGameplayNodeError("case has ended")
+    if lead.case_lead_key in session.case_state.closed_lead_keys: raise ClosedGameplayNodeError("case lead is closed")
     content_lead = case_content.lead(lead.case_lead_key)
+    variant = _variant_preflight(content_lead, mode, session.case_state, allow_fully_disclosed=(case_content.state.revisit_charging == "uncharged"))
     updated = visit_lead(session, id_factory=id_factory, lead_id=lead_id, mode=mode)
-    if content_lead.variants:
-        variant = next((x for x in content_lead.variants if x.mode == mode), None)
-        if variant is None: raise ValueError("selected mode is unavailable for this lead")
+    if variant is not None and variant.lead_cost:
         payload = _state_payload(updated)
-        if payload["lead_budget_remaining"] is not None:
-            if variant.mode == "intervention" and payload["lead_budget_remaining"] > 0: raise ValueError("intervention is not available while lead budget remains")
-            if variant.lead_cost > payload["lead_budget_remaining"]: raise ValueError("lead budget is exhausted")
-            payload["lead_budget_remaining"] -= variant.lead_cost
-            raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
+        payload["lead_budget_remaining"] -= variant.lead_cost
+        _append_accounting(payload, LeadAccountingEntry(source_kind="variant-visit", source_id=variant.variant_id, lead_id=lead.lead_id, visit_id=updated.visits[-1].visit_id, amount=variant.lead_cost, uniqueness="once-per-visit"))
+        raw = updated.model_dump(mode="python"); raw["case_state"] = CasePlayState.model_validate(payload); updated = InvestigationSession.model_validate(raw)
     return disclose_case_sections(updated, case_content=case_content, visit_id=updated.visits[-1].visit_id, id_factory=id_factory)
 
 
@@ -574,6 +660,16 @@ def reveal_information(
         revealed_information=(*snapshot.revealed_information, *additions),
     )
     return InvestigationSession.model_validate(payload)
+
+
+def reveal_manual_information(
+    session: InvestigationSession, *, case_content: CaseContentDefinition | None,
+    visit_id: str, information_texts: Sequence[str], id_factory: DeterministicInvestigationIdFactory,
+) -> InvestigationSession:
+    """Apply the explicit authored/manual capability policy at service level."""
+    if case_content is not None and case_content.authored:
+        raise ManualRevealForbiddenError("direct information injection is disabled for authored cases")
+    return reveal_information(session, visit_id=visit_id, information_texts=information_texts, id_factory=id_factory)
 
 
 def project_lead_conversation(

@@ -71,6 +71,7 @@
     },
     {
       "section_id": "nw-32-s03",
+      "scope_id": "nw-32-top-floor",
       "order": 3,
       "gate": {
         "requires_all_flags": [],
@@ -112,6 +113,7 @@
     },
     {
       "section_id": "nw-32-s04",
+      "scope_id": "nw-32-top-floor",
       "order": 4,
       "gate": {
         "requires_all_flags": [],
@@ -138,6 +140,7 @@
     },
     {
       "section_id": "nw-32-s05",
+      "scope_id": "nw-32-top-floor",
       "order": 5,
       "gate": {
         "requires_all_flags": [],

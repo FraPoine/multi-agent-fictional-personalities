@@ -7,8 +7,11 @@ independently loads validated lead sections, gates, interactions, and initial
 state from `configs/investigation/content/`; it never opens spoiler files.
 Static definitions remain outside sessions. `CasePlayState` stores only flags,
 items, choices, interaction completion, closures, budgets, applied section IDs,
-and outcomes. Section effects alone perform transitions, and text enters agent
-context only through `RevealedInformation`.
+outcomes, and an immutable accounting ledger. Section effects alone perform
+transitions, and text enters agent context only through `RevealedInformation`.
+Authored operations preflight modes, gates, closures, and budget before a visit
+exists. Authored terminal effects complete the session without generating a
+`FinalTheory`; those terminal representations are mutually exclusive.
 
 ## Lead/Visit web presentation
 

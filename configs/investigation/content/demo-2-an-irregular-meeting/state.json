@@ -34,5 +34,6 @@
       "initial": "unconfirmed"
     }
   ],
-  "default_revisit_policy": "revisitable"
+  "lead_accounting": "first_visit",
+  "revisit_charging": "uncharged"
 }

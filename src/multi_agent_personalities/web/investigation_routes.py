@@ -24,6 +24,7 @@ from multi_agent_personalities.application import (
     disclose_case_sections,
     complete_case_interaction,
     revisit_playable_case_lead,
+    reveal_manual_information,
     visit_lead,
 )
 from multi_agent_personalities.case_catalog import (
@@ -630,8 +631,10 @@ def create_investigation_router(
             record: InvestigationSessionRecord,
         ) -> InvestigationSessionMutation[None]:
             require_current_visit(record, visit_id)
-            updated = reveal_information(
+            content = registry.case_content_catalog.get(record.session.case_id) if registry.case_content_catalog else None
+            updated = reveal_manual_information(
                 record.session,
+                case_content=content,
                 visit_id=visit_id,
                 information_texts=(normalized,),
                 id_factory=record.runtime.id_factory,
