@@ -13,6 +13,19 @@ Authored operations preflight modes, gates, closures, and budget before a visit
 exists. Authored terminal effects complete the session without generating a
 `FinalTheory`; those terminal representations are mutually exclusive.
 
+## Official conclusion spoiler firewall
+
+Public definitions in `configs/investigation/conclusions/public/` may load at
+startup. Private scoring and long solutions have separate directories and lazy
+repositories. Scoring is opened only after answer lock; the solution is opened
+only by explicit solution reveal. Private definitions are never placed in the
+mock runtime or answer-draft prompts.
+
+Official conclusions use `READY_FOR_FINAL` through draft, lock, and
+player-confirmed deterministic scoring, which freezes gameplay. Explicit
+solution reveal transitions to `COMPLETED`. Official conclusion, authored
+outcome, and generated `FinalTheory` are mutually exclusive terminal paths.
+
 ## Lead/Visit web presentation
 
 Sprint 7 adds a server-side presentation boundary in

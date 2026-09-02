@@ -17,6 +17,7 @@ from pydantic import (
 )
 
 from multi_agent_personalities.models.conversation import ConversationRun
+from multi_agent_personalities.conclusion_catalog import OfficialAnswerElement, PrivateScoringDefinition
 
 
 NonEmptyStr = Annotated[
@@ -59,6 +60,19 @@ class InvestigationStatus(str, Enum):
     READY_FOR_FINAL = "ready_for_final"
     COMPLETED = "completed"
     ABANDONED = "abandoned"
+
+
+class ConclusionMode(str, Enum):
+    OFFICIAL_QUESTIONS = "official_questions"
+    AUTHORED_OUTCOME = "authored_outcome"
+    GENERATED_FINAL_THEORY = "generated_final_theory"
+
+
+class ConclusionPhase(str, Enum):
+    DRAFT = "draft"
+    ANSWERS_LOCKED = "answers_locked"
+    SCORED = "scored"
+    SOLUTION_REVEALED = "solution_revealed"
 
 
 class InvestigationRoundStatus(str, Enum):
@@ -208,6 +222,80 @@ class LeadAccountingEntry(BaseModel):
         if value == 0:
             raise ValueError("accounting amount must not be zero")
         return value
+
+
+class ConclusionAnswer(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    question_id: NonEmptyStr
+    text: StrictStr
+    locked: bool = False
+
+    @field_validator("text")
+    @classmethod
+    def validate_answer_text(cls, value: str) -> str:
+        if not value.strip(): raise ValueError("answer text must not be empty")
+        return value
+
+
+class OfficialScoreResult(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    awarded_element_ids: tuple[NonEmptyStr, ...]
+    answer_points: NonNegativeStrictInt
+    counted_leads: NonNegativeStrictInt
+    lead_penalty: int = Field(strict=True, le=0)
+    total_score: int = Field(strict=True)
+    printed_holmes_score: int = Field(strict=True)
+    answer_element_total: NonNegativeStrictInt
+    provisional: bool
+    needs_review: bool
+    review_note: NonEmptyStr | None = None
+
+
+class RevealedSolution(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    text: StrictStr
+
+    @field_validator("text")
+    @classmethod
+    def validate_solution_text(cls, value: str) -> str:
+        if not value.strip(): raise ValueError("solution text must not be empty")
+        return value
+
+
+class InvestigationConclusionState(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    mode: ConclusionMode
+    phase: ConclusionPhase
+    question_ids: tuple[NonEmptyStr, ...]
+    answers: tuple[ConclusionAnswer, ...] = ()
+    answer_elements: tuple[OfficialAnswerElement, ...] = ()
+    scoring_definition: PrivateScoringDefinition | None = None
+    score_result: OfficialScoreResult | None = None
+    revealed_solution: RevealedSolution | None = None
+
+    @model_validator(mode="after")
+    def validate_lifecycle(self) -> "InvestigationConclusionState":
+        if self.mode is not ConclusionMode.OFFICIAL_QUESTIONS:
+            raise ValueError("session conclusion state supports official questions only")
+        if len(self.question_ids) != len(set(self.question_ids)) or not self.question_ids:
+            raise ValueError("official conclusion requires unique questions")
+        answer_ids = [x.question_id for x in self.answers]
+        if len(answer_ids) != len(set(answer_ids)) or not set(answer_ids) <= set(self.question_ids):
+            raise ValueError("answers must uniquely reference public questions")
+        if self.phase is not ConclusionPhase.DRAFT:
+            if set(answer_ids) != set(self.question_ids) or not all(x.locked for x in self.answers):
+                raise ValueError("post-draft phases require one locked answer per question")
+        elif any(x.locked for x in self.answers):
+            raise ValueError("draft-phase answers cannot be locked")
+        if self.phase in (ConclusionPhase.SCORED, ConclusionPhase.SOLUTION_REVEALED) and self.score_result is None:
+            raise ValueError("scored phases require a score result")
+        if self.score_result is not None and self.scoring_definition is None:
+            raise ValueError("score result requires unlocked scoring definition")
+        if self.phase is ConclusionPhase.SOLUTION_REVEALED:
+            if self.revealed_solution is None: raise ValueError("solution phase requires revealed solution")
+        elif self.revealed_solution is not None:
+            raise ValueError("solution can exist only in solution_revealed phase")
+        return self
 
 
 class CasePlayState(BaseModel):
@@ -488,6 +576,7 @@ class InvestigationSession(BaseModel):
     case_introduction: StrictStr
     participant_ids: tuple[NonEmptyStr, ...] = Field(min_length=2)
     status: InvestigationStatus
+    conclusion_mode: ConclusionMode = ConclusionMode.GENERATED_FINAL_THEORY
     leads: tuple[InvestigationLead, ...] = ()
     visits: tuple[LeadVisit, ...] = ()
     revealed_information: tuple[RevealedInformation, ...] = ()
@@ -499,6 +588,7 @@ class InvestigationSession(BaseModel):
     decisions: tuple[GroupDecision, ...] = ()
     final_theory: FinalTheory | None = None
     case_state: CasePlayState | None = None
+    conclusion: InvestigationConclusionState | None = None
 
     @field_validator("case_introduction")
     @classmethod
@@ -1056,8 +1146,12 @@ class InvestigationSession(BaseModel):
             raise ValueError("final theory references an unknown hypothesis")
 
         authored_outcome = self.case_state is not None and self.case_state.outcome is not None
-        if self.status is InvestigationStatus.COMPLETED and self.final_theory is None and not authored_outcome:
-            raise ValueError("completed sessions require a final theory or authored outcome")
+        official_complete = self.conclusion is not None and self.conclusion.phase is ConclusionPhase.SOLUTION_REVEALED
+        if authored_outcome and self.final_theory is not None:
+            raise ValueError("authored outcome and final theory are mutually exclusive")
+        artifacts = sum((self.final_theory is not None, authored_outcome, official_complete))
+        if self.status is InvestigationStatus.COMPLETED and artifacts != 1:
+            raise ValueError("completed sessions require exactly one terminal artifact")
         if (
             self.final_theory is not None
             and self.status is not InvestigationStatus.COMPLETED
@@ -1065,8 +1159,19 @@ class InvestigationSession(BaseModel):
             raise ValueError("non-completed sessions must not contain a final theory")
         if authored_outcome and self.status is not InvestigationStatus.COMPLETED:
             raise ValueError("authored outcomes require completed status")
-        if authored_outcome and self.final_theory is not None:
-            raise ValueError("authored outcome and final theory are mutually exclusive")
+        if self.conclusion is not None:
+            if self.conclusion_mode is not ConclusionMode.OFFICIAL_QUESTIONS:
+                raise ValueError("official conclusion state requires official conclusion mode")
+            if authored_outcome or self.final_theory is not None:
+                raise ValueError("official conclusion conflicts with another terminal path")
+            if self.status not in (InvestigationStatus.READY_FOR_FINAL, InvestigationStatus.COMPLETED):
+                raise ValueError("official conclusion requires ready-for-final or completed status")
+            if self.status is InvestigationStatus.COMPLETED and not official_complete:
+                raise ValueError("completed official conclusion requires revealed solution")
+        if authored_outcome and self.conclusion_mode is not ConclusionMode.AUTHORED_OUTCOME:
+            raise ValueError("authored outcome requires authored-outcome conclusion mode")
+        if self.final_theory is not None and self.conclusion_mode is not ConclusionMode.GENERATED_FINAL_THEORY:
+            raise ValueError("final theory requires generated-final-theory conclusion mode")
         return self
 
 

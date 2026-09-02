@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "solution_texts": {
+    "en": "We all gather in Mrs Hudson's living room. On the coffee table, there is a vase\nwith a bunch of violets. In a corner of the room, a dog is eating meat from a\nbowl, paying no attention to us. Holmes starts without preamble:\n\n\"An easy case to solve. A letter, with no ransom demand, typed, most probably\non a Remington, so valued in the publishing industry. A very considerate\nculprit, or anxious not to draw attention. A discreet abduction during the\nusual walk of our client: this most probably points to a close acquaintance.\nThe nephew, reporter at the Times? Given the article on the neighbouring\nGrosvenor Investment company, with very specific details about bribes, the\nscenario becomes crystal clear: last Thursday, on March 8, the nephew sees and\nrecognises the parliamentarian Oppenheimer when going to visit his aunt,\nunderstands he has a scoop, and devises a stratagem so as to enter discreetly\nin the premises, but the barking of the dog near the door may jeopardize his\naction. We can now go and explain to Mrs Nance...\"\n\nHolmes solved this case by following 2 leads: Mrs Nance (32 NW) and Howard\nParker (68 EC) to take Charly back. He used the article \"Scandal at the\nParliament\" and scored 100 points."
+  },
+  "holmes_route": [
+    "32 NW",
+    "68 EC"
+  ],
+  "source": {
+    "document": "Demo 1 - The Thames Murders and Other Cases.pdf",
+    "page": 1,
+    "region": "upside-down Solution and Holmes route"
+  }
+}

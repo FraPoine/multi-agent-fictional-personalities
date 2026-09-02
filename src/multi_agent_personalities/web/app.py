@@ -28,6 +28,7 @@ from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
 )
 from multi_agent_personalities.case_content_catalog import default_case_content_directory, load_case_content_catalog
+from multi_agent_personalities.conclusion_catalog import default_public_conclusion_directory, load_public_conclusion_catalog
 
 
 WEB_DIRECTORY = Path(__file__).resolve().parent
@@ -284,8 +285,11 @@ def create_app(
     resolved_case_content_catalog = load_case_content_catalog(
         default_case_content_directory(resolved_project_root), resolved_case_catalog
     ) if case_catalog is None and default_case_content_directory(resolved_project_root).is_dir() else None
+    public_conclusion_catalog = load_public_conclusion_catalog(
+        default_public_conclusion_directory(resolved_project_root), resolved_case_catalog
+    ) if case_catalog is None and default_public_conclusion_directory(resolved_project_root).is_dir() else None
     resolved_investigation_registry = (
-        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog)
+        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog, public_conclusion_catalog=public_conclusion_catalog)
         if investigation_registry is None
         else investigation_registry
     )
@@ -301,6 +305,7 @@ def create_app(
     application.state.investigation_registry = resolved_investigation_registry
     application.state.case_catalog = resolved_case_catalog
     application.state.case_content_catalog = resolved_case_content_catalog
+    application.state.public_conclusion_catalog = public_conclusion_catalog
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the fixed local assets without a worker-thread hop."""

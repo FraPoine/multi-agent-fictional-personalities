@@ -13,7 +13,7 @@ from multi_agent_personalities.application import (
     pending_case_interaction, reveal_manual_information,
     supported_case_lead_modes,
 )
-from multi_agent_personalities.models import FinalTheory, InvestigationSession, InvestigationStatus
+from multi_agent_personalities.models import ConclusionMode, FinalTheory, InvestigationSession, InvestigationStatus
 from multi_agent_personalities.case_catalog import (
     default_case_catalog_directory, load_case_catalog,
     normalize_time_code_reference, parse_supported_case_lead_reference,
@@ -30,7 +30,8 @@ CONTENT = load_case_content_catalog(default_case_content_directory(ROOT), CATALO
 def session(case_id: str, sequence: int = 1):
     case = CATALOG.get(case_id); content = CONTENT.get(case_id)
     factory = DeterministicInvestigationIdFactory(sequence)
-    return create_session(id_factory=factory, introduction=case.opening, participant_ids=("sherlock_holmes", "hercule_poirot"), case_id=case_id, case_content=content), case, content, factory
+    mode = ConclusionMode.AUTHORED_OUTCOME if case_id == "demo-3-the-disappearance-of-a-student" else ConclusionMode.OFFICIAL_QUESTIONS
+    return create_session(id_factory=factory, introduction=case.opening, participant_ids=("sherlock_holmes", "hercule_poirot"), case_id=case_id, case_content=content, conclusion_mode=mode), case, content, factory
 
 
 def test_all_three_demo_content_definitions_load_without_spoilers() -> None:

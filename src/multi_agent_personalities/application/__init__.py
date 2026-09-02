@@ -102,6 +102,13 @@ from multi_agent_personalities.application.investigation_structured_output impor
     StructuredOutputError,
     parse_structured_generation,
 )
+from multi_agent_personalities.application.official_conclusion_service import (
+    AnswerDraftProvider, ConclusionConflictError, DeterministicAnswerDraftProvider,
+    DraftGenerationResult, build_safe_answer_context, confirm_official_score,
+    generate_official_answer_drafts, lock_official_answers,
+    reveal_official_answer_elements, reveal_official_solution,
+    start_official_conclusion, update_official_answer,
+)
 
 __all__ = [
     "ConversationResult", "DeterministicInvestigationIdFactory",
@@ -144,6 +151,12 @@ __all__ = [
     "GameplayBudgetError", "ManualRevealForbiddenError",
     "build_lead_discussion_context", "visit_lead",
     "run_mock_conversation",
+    "AnswerDraftProvider", "ConclusionConflictError",
+    "DeterministicAnswerDraftProvider", "DraftGenerationResult",
+    "build_safe_answer_context", "confirm_official_score",
+    "generate_official_answer_drafts", "lock_official_answers",
+    "reveal_official_answer_elements", "reveal_official_solution",
+    "start_official_conclusion", "update_official_answer",
 ]
 
 # These names intentionally remain module attributes until the deferred Sprint 7

@@ -8,6 +8,8 @@ from typing import Generic, TypeVar
 
 from multi_agent_personalities.case_catalog import CaseCatalog, CaseDefinition
 from multi_agent_personalities.case_content_catalog import CaseContentCatalog
+from multi_agent_personalities.conclusion_catalog import PublicConclusionCatalog
+from multi_agent_personalities.models import ConclusionMode
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
 )
@@ -60,7 +62,7 @@ class InvestigationSessionMutation(Generic[T]):
 class InMemoryInvestigationRegistry:
     """Own process-local investigation records with per-session serialization."""
 
-    def __init__(self, *, case_catalog: CaseCatalog | None = None, case_content_catalog: CaseContentCatalog | None = None) -> None:
+    def __init__(self, *, case_catalog: CaseCatalog | None = None, case_content_catalog: CaseContentCatalog | None = None, public_conclusion_catalog: PublicConclusionCatalog | None = None) -> None:
         self._registry_lock = Lock()
         self._creation_lock = Lock()
         self._records: dict[str, InvestigationSessionRecord] = {}
@@ -68,6 +70,7 @@ class InMemoryInvestigationRegistry:
         self._next_session_sequence = 1
         self._case_catalog = case_catalog
         self._case_content_catalog = case_content_catalog
+        self._public_conclusion_catalog = public_conclusion_catalog
 
     @property
     def session_ids(self) -> tuple[str, ...]:
@@ -129,6 +132,7 @@ class InMemoryInvestigationRegistry:
                 participant_ids=runtime.participant_ids,
                 case_id=resolved_case_id,
                 case_content=(self._case_content_catalog.get(resolved_case_id) if self._case_content_catalog else None),
+                conclusion_mode=(ConclusionMode(self._public_conclusion_catalog.get(resolved_case_id).conclusion_mode) if self._public_conclusion_catalog and self._public_conclusion_catalog.get(resolved_case_id) else ConclusionMode.GENERATED_FINAL_THEORY),
             )
             record = InvestigationSessionRecord(
                 session_sequence=session_sequence,

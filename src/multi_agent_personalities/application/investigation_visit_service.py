@@ -54,6 +54,7 @@ from multi_agent_personalities.models import (
     RevealedInformation,
     CaseChoiceState,
     CasePlayState,
+    ConclusionMode,
     LeadAccountingEntry,
 )
 from multi_agent_personalities.llm.base import LLMProvider
@@ -77,6 +78,7 @@ def create_session(
     participant_ids: Sequence[str],
     case_id: str = "legacy-local-demo",
     case_content: CaseContentDefinition | None = None,
+    conclusion_mode: ConclusionMode = ConclusionMode.GENERATED_FINAL_THEORY,
 ) -> InvestigationSession:
     """Create one active investigation with an empty Lead/Visit graph."""
     if not isinstance(id_factory, DeterministicInvestigationIdFactory):
@@ -112,6 +114,7 @@ def create_session(
         case_introduction=introduction,
         participant_ids=tuple(participant_ids),
         status=InvestigationStatus.ACTIVE,
+        conclusion_mode=conclusion_mode,
         case_state=state,
     )
 
@@ -947,6 +950,8 @@ def finalize_lead_investigation(
 ) -> LeadFinalizationResult:
     """Explicitly finalize valid Lead/Visit history without reasoning gates."""
     snapshot = _validated_snapshot(session, id_factory)
+    if snapshot.conclusion_mode is not ConclusionMode.GENERATED_FINAL_THEORY:
+        raise GameplayConflictError("this case does not use generated final theory")
     if not snapshot.visits:
         raise ValueError("finalization requires at least one lead visit")
     if not snapshot.revealed_information:

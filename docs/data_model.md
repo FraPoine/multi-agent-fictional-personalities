@@ -12,6 +12,12 @@ first-semantic-visit, or per-variant-visit charges and idempotent budget
 adjustments. Normalized state configuration declares its accounting and revisit
 policy explicitly and rejects unknown fields.
 
+Official conclusion state retains public question IDs, editable or locked
+answers, post-lock official elements, a deterministic score result, and an
+explicitly revealed solution. Its phases are `draft`, `answers_locked`,
+`scored`, and `solution_revealed`. Public definitions and private scoring and
+solution models use independent strict loaders.
+
 ## Purpose
 
 This document defines the main entities used by the project, their attributes, relationships, and storage locations.

@@ -1347,8 +1347,8 @@ def test_final_theory_hypotheses_must_resolve() -> None:
         InvestigationSession.model_validate(payload)
 
 
-def test_completed_session_requires_final_theory() -> None:
-    with pytest.raises(ValidationError, match="require a final theory"):
+def test_completed_session_requires_one_terminal_artifact() -> None:
+    with pytest.raises(ValidationError, match="exactly one terminal artifact"):
         InvestigationSession.model_validate(minimal_payload("completed"))
 
 

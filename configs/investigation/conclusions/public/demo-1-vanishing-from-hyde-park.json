@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "case_id": "demo-1-vanishing-from-hyde-park",
+  "conclusion_mode": "official_questions",
   "questions": [
     {
       "question_id": "q1",
