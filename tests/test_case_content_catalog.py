@@ -130,6 +130,43 @@ def test_demo1_section_cost_is_charged_once_and_closed_scope_blocks_revisit() ->
     assert closed.revealed_information
 
 
+def test_demo1_all_narratives_cost_one_and_navigation_prompts_cost_zero() -> None:
+    content = CONTENT.get("demo-1-vanishing-from-hyde-park")
+    ordinary = [lead.sections[0] for lead in content.leads if lead.lead_key != "nw-32"]
+    assert len(ordinary) == 17
+    assert all(section.texts and section.lead_cost == 1 for section in ordinary)
+    nw32 = content.lead("nw-32")
+    assert [(section.section_id, section.lead_cost) for section in nw32.sections] == [
+        ("nw-32-s01", 0), ("nw-32-s02", 1), ("nw-32-s03", 0),
+        ("nw-32-s04", 1), ("nw-32-s05", 1),
+    ]
+
+
+def test_demo1_scope_membership_is_exact_and_ordinary_rereading_is_free() -> None:
+    current, case, content, factory = session("demo-1-vanishing-from-hyde-park")
+    scope = content.state.scopes[0]
+    assert scope.scope_id == "nw-32-top-floor"
+    assert scope.governed_section_ids == ("nw-32-s03", "nw-32-s04", "nw-32-s05")
+    assert scope.governed_interaction_ids == ("choose-top-floor-approach",)
+    assert scope.governed_options == {"choose-floor": ("top-floor",)}
+    assert content.lead("nw-32").sections[1].scope_id is None
+    first = visit_playable_case_lead(current, case_definition=case, case_content=content, raw_reference="17 WC", mode=None, id_factory=factory).session
+    reread = revisit_playable_case_lead(first, case_content=content, lead_id=first.leads[0].lead_id, mode=None, id_factory=factory)
+    assert [(entry.source_id, entry.amount) for entry in reread.case_state.accounting_entries] == [("wc-17-s01", 1)]
+    assert len(reread.revealed_information) == 1
+
+
+def test_demo1_section_once_missing_narrative_cost_fails_strictly(tmp_path: Path) -> None:
+    source = default_case_content_directory(ROOT) / "demo-1-vanishing-from-hyde-park"
+    target = tmp_path / source.name
+    import shutil
+    shutil.copytree(source, target)
+    path = target / "leads" / "wc-17.json"
+    data = json.loads(path.read_text()); del data["sections"][0]["lead_cost"]; path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="section_once narrative"):
+        load_case_content_catalog(tmp_path)
+
+
 def test_demo2_first_visits_count_but_revisit_does_not_and_wc68_order_is_correct() -> None:
     current, case, content, factory = session("demo-2-an-irregular-meeting")
     a = visit_playable_case_lead(current, case_definition=case, case_content=content, raw_reference="29 WC", mode=None, id_factory=factory).session
@@ -142,10 +179,20 @@ def test_demo2_first_visits_count_but_revisit_does_not_and_wc68_order_is_correct
     interaction = pending_case_interaction(revisit, case_content=content, visit_id=revisit.visits[-1].visit_id)
     assert interaction.interaction_id == "break-in"
     inside = complete_case_interaction(revisit, case_content=content, visit_id=revisit.visits[-1].visit_id, interaction_id="break-in", option_id=None, id_factory=factory)
+    assert "wc-68" in inside.case_state.closed_lead_keys
+    assert inside.case_state.continuation_visit_id == inside.visits[-1].visit_id
     assert inside.revealed_information[-1].source_id == "wc-68-s04"
     assert "Inside, we find a pamphlet for Moby Dick" in inside.revealed_information[-1].text
     assert pending_case_interaction(inside, case_content=content, visit_id=inside.visits[-1].visit_id).interaction_id == "burn-uniform"
     assert len([x for x in inside.case_state.accounting_entries if x.source_kind == "first-visit"]) == 3
+    before = inside.model_dump(mode="python")
+    with pytest.raises(ClosedGameplayNodeError):
+        visit_playable_case_lead(inside, case_definition=case, case_content=content, raw_reference="17 WC", mode=None, id_factory=factory)
+    assert inside.model_dump(mode="python") == before
+    completed = complete_case_interaction(inside, case_content=content, visit_id=inside.visits[-1].visit_id, interaction_id="burn-uniform", option_id="footman", id_factory=factory)
+    assert completed.case_state.continuation_visit_id is None
+    with pytest.raises(ClosedGameplayNodeError):
+        revisit_playable_case_lead(completed, case_content=content, lead_id=lodging.leads[-1].lead_id, mode=None, id_factory=factory)
 
 
 def test_authored_terminal_outcome_completes_without_final_theory_and_is_exclusive() -> None:
@@ -191,4 +238,23 @@ def test_dangling_scope_is_rejected(tmp_path: Path) -> None:
     data["sections"][-1]["effects"][0]["scope"] = "missing-scope"
     path.write_text(json.dumps(data))
     with pytest.raises(ValueError, match="dangling scope"):
+        load_case_content_catalog(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    (
+        ("governed_section_ids", ["missing-section"], "dangling governed section"),
+        ("governed_interaction_ids", ["missing-interaction"], "dangling governed interaction"),
+        ("governed_options", {"choose-floor": ["missing-option"]}, "dangling governed option"),
+    ),
+)
+def test_scope_governed_references_are_strict(tmp_path: Path, field: str, value, message: str) -> None:
+    source = default_case_content_directory(ROOT) / "demo-1-vanishing-from-hyde-park"
+    target = tmp_path / source.name
+    import shutil
+    shutil.copytree(source, target)
+    path = target / "state.json"; data = json.loads(path.read_text())
+    data["scopes"][0][field] = value; path.write_text(json.dumps(data))
+    with pytest.raises(ValueError, match=message):
         load_case_content_catalog(tmp_path)

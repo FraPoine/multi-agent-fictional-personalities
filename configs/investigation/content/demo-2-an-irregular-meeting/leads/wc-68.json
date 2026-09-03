@@ -75,7 +75,8 @@
         "prompt_texts": {
           "en": "“We’ll have one chance,” says Wiggins, “Do we know what to look for?” Do not read the rest of this entry until you want to break in – after breaking in, you may not return to Gilly’s lodging."
         },
-        "required_before_reveal": true
+        "required_before_reveal": true,
+        "closes_lead_on_completion": true
       },
       "return_policy_after_reveal": "unchanged"
     },

@@ -25,7 +25,8 @@
       },
       "effects": [],
       "interaction": null,
-      "return_policy_after_reveal": "unchanged"
+      "return_policy_after_reveal": "unchanged",
+      "lead_cost": 1
     }
   ]
 }

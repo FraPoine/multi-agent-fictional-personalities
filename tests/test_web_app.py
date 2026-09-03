@@ -18,6 +18,7 @@ from multi_agent_personalities.case_catalog import (
     default_case_catalog_directory,
     load_case_catalog,
 )
+from multi_agent_personalities.web.investigation_store import InMemoryInvestigationRegistry
 
 
 web_module = importlib.import_module("multi_agent_personalities.web.app")
@@ -32,6 +33,24 @@ EXPECTED_ARTIFACTS = (
     "messages.jsonl",
     "transcript.md",
 )
+
+
+def test_catalogue_injection_keeps_default_content_and_conclusions() -> None:
+    injected_registry = InMemoryInvestigationRegistry()
+    application = web_module.create_app(
+        project_root=REPOSITORY_ROOT,
+        case_catalog=REPOSITORY_CASE_CATALOG,
+        investigation_registry=injected_registry,
+    )
+    assert application.state.case_content_catalog is injected_registry.case_content_catalog
+    assert application.state.public_conclusion_catalog is injected_registry.public_conclusion_catalog
+    assert {case.case_id for case in injected_registry.case_content_catalog.cases} == {
+        case.case_id for case in injected_registry.public_conclusion_catalog.cases
+    } == {
+        "demo-1-vanishing-from-hyde-park",
+        "demo-2-an-irregular-meeting",
+        "demo-3-the-disappearance-of-a-student",
+    }
 VALID_FORM_DATA = {
     "characters": ["sherlock", "poirot"],
     "topic": TOPIC,

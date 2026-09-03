@@ -69,6 +69,7 @@ class ContentInteraction(BaseModel):
     prompt_texts: dict[str, NonEmptyStr]
     options: tuple[InteractionOption, ...] = ()
     required_before_reveal: bool
+    closes_lead_on_completion: bool = False
 
     @model_validator(mode="after")
     def validate_options(self) -> "ContentInteraction":
@@ -79,6 +80,8 @@ class ContentInteraction(BaseModel):
             raise ValueError("single_choice interaction requires options")
         if self.type == "confirmation" and ids:
             raise ValueError("confirmation interaction cannot declare options")
+        if self.closes_lead_on_completion and self.type != "confirmation":
+            raise ValueError("only confirmation interactions can close a lead on completion")
         return self
 
 
@@ -161,6 +164,19 @@ class ScopeDefinition(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     scope_id: Key
     initially_available: bool
+    governed_section_ids: tuple[Key, ...]
+    governed_interaction_ids: tuple[Key, ...]
+    governed_options: dict[Key, tuple[Key, ...]]
+
+    @model_validator(mode="after")
+    def validate_governed_members(self) -> "ScopeDefinition":
+        if not self.governed_section_ids:
+            raise ValueError("scope must govern at least one section")
+        if not self.governed_interaction_ids:
+            raise ValueError("scope must govern at least one interaction")
+        if not self.governed_options or any(not options for options in self.governed_options.values()):
+            raise ValueError("scope must govern at least one option")
+        return self
 
 
 class StateInteractionDefinition(BaseModel):
@@ -248,6 +264,32 @@ class CaseContentDefinition(BaseModel):
                 if effect.scope and effect.scope not in scopes: raise ValueError("dangling scope reference")
         closure_scopes = {effect.scope for section in section_groups for effect in section.effects if effect.type == "close_scope_after_reveal"}
         if not closure_scopes <= governed_scopes: raise ValueError("closure scope has no governed runtime node")
+        by_section = {section.section_id: section for section in section_groups}
+        interaction_options = {
+            section.interaction.interaction_id: {option.option_id for option in section.interaction.options}
+            for section in section_groups if section.interaction is not None
+        }
+        for scope in self.state.scopes:
+            governed_sections = set(scope.governed_section_ids)
+            if not governed_sections <= set(by_section): raise ValueError("scope has dangling governed section reference")
+            if any(by_section[section_id].scope_id != scope.scope_id for section_id in governed_sections):
+                raise ValueError("governed section must reference its scope")
+            if {section.section_id for section in section_groups if section.scope_id == scope.scope_id} != governed_sections:
+                raise ValueError("scope governed section membership mismatch")
+            if not set(scope.governed_interaction_ids) <= set(interaction_options):
+                raise ValueError("scope has dangling governed interaction reference")
+            scoped_interactions = {
+                by_section[section_id].interaction.interaction_id
+                for section_id in governed_sections
+                if by_section[section_id].interaction is not None
+            }
+            if set(scope.governed_interaction_ids) != scoped_interactions:
+                raise ValueError("scope governed interaction membership mismatch")
+            for interaction_id, option_ids in scope.governed_options.items():
+                if interaction_id not in interaction_options:
+                    raise ValueError("scope has dangling governed option interaction reference")
+                if not set(option_ids) <= interaction_options[interaction_id]:
+                    raise ValueError("scope has dangling governed option reference")
         for derived in self.state.derived_references:
             if derived.requires_item not in items: raise ValueError("dangling item reference")
             for target in derived.mappings.values():
@@ -262,6 +304,11 @@ class CaseContentDefinition(BaseModel):
             raise ValueError("variant_visit accounting requires a lead budget")
         if self.state.lead_accounting != "variant_visit" and any(variant.lead_cost for lead in self.leads for variant in lead.variants):
             raise ValueError("variant lead costs require variant_visit accounting")
+        if self.state.lead_accounting == "section_once":
+            for section in section_groups:
+                expected_cost = 1 if section.texts else 0
+                if section.lead_cost != expected_cost:
+                    raise ValueError("section_once narrative sections require lead_cost 1 and navigation prompts require lead_cost 0")
         return self
 
     @property

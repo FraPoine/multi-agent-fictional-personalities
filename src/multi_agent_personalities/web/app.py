@@ -27,8 +27,8 @@ from multi_agent_personalities.web.investigation_routes import (
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
 )
-from multi_agent_personalities.case_content_catalog import default_case_content_directory, load_case_content_catalog
-from multi_agent_personalities.conclusion_catalog import default_public_conclusion_directory, load_public_conclusion_catalog
+from multi_agent_personalities.case_content_catalog import CaseContentCatalog, default_case_content_directory, load_case_content_catalog
+from multi_agent_personalities.conclusion_catalog import PublicConclusionCatalog, default_public_conclusion_directory, load_public_conclusion_catalog
 
 
 WEB_DIRECTORY = Path(__file__).resolve().parent
@@ -268,6 +268,8 @@ def create_app(
     output_root: Path | None = None,
     investigation_registry: InMemoryInvestigationRegistry | None = None,
     case_catalog: CaseCatalog | None = None,
+    case_content_catalog: CaseContentCatalog | None = None,
+    public_conclusion_catalog: PublicConclusionCatalog | None = None,
 ) -> FastAPI:
     """Create the local web application without starting a server."""
     resolved_project_root = (
@@ -282,17 +284,42 @@ def create_app(
         if case_catalog is None
         else case_catalog
     )
-    resolved_case_content_catalog = load_case_content_catalog(
-        default_case_content_directory(resolved_project_root), resolved_case_catalog
-    ) if case_catalog is None and default_case_content_directory(resolved_project_root).is_dir() else None
-    public_conclusion_catalog = load_public_conclusion_catalog(
-        default_public_conclusion_directory(resolved_project_root), resolved_case_catalog
-    ) if case_catalog is None and default_public_conclusion_directory(resolved_project_root).is_dir() else None
+    case_ids = {case.case_id for case in resolved_case_catalog.cases}
+    content_directory = default_case_content_directory(resolved_project_root)
+    public_directory = default_public_conclusion_directory(resolved_project_root)
+    discovered_content = case_content_catalog or (
+        load_case_content_catalog(content_directory)
+        if content_directory.is_dir() else CaseContentCatalog(cases=())
+    )
+    discovered_public = public_conclusion_catalog or (
+        load_public_conclusion_catalog(public_directory)
+        if public_directory.is_dir() else PublicConclusionCatalog(cases=())
+    )
+    content_ids = {case.case_id for case in discovered_content.cases}
+    public_ids = {case.case_id for case in discovered_public.cases}
+    if not content_ids & case_ids and case_catalog is not None and case_content_catalog is None:
+        discovered_content = CaseContentCatalog(cases=())
+        content_ids = set()
+    if not public_ids & case_ids and case_catalog is not None and public_conclusion_catalog is None:
+        discovered_public = PublicConclusionCatalog(cases=())
+        public_ids = set()
+    if not content_ids <= case_ids:
+        raise ValueError("case and content catalogues have incompatible case IDs")
+    if not public_ids <= case_ids or public_ids != content_ids:
+        raise ValueError("case, content, and public-conclusion catalogues have incompatible case IDs")
+    resolved_case_content_catalog = discovered_content
+    resolved_public_conclusion_catalog = discovered_public
     resolved_investigation_registry = (
-        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog, public_conclusion_catalog=public_conclusion_catalog)
+        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog, public_conclusion_catalog=resolved_public_conclusion_catalog)
         if investigation_registry is None
         else investigation_registry
     )
+    if investigation_registry is not None:
+        resolved_investigation_registry.configure_catalogues(
+            case_catalog=resolved_case_catalog,
+            case_content_catalog=resolved_case_content_catalog,
+            public_conclusion_catalog=resolved_public_conclusion_catalog,
+        )
     supported_characters = tuple(registry)
     display_root = resolved_output_root.parent
     application = FastAPI(
@@ -305,7 +332,7 @@ def create_app(
     application.state.investigation_registry = resolved_investigation_registry
     application.state.case_catalog = resolved_case_catalog
     application.state.case_content_catalog = resolved_case_content_catalog
-    application.state.public_conclusion_catalog = public_conclusion_catalog
+    application.state.public_conclusion_catalog = resolved_public_conclusion_catalog
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the fixed local assets without a worker-thread hop."""

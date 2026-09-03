@@ -337,6 +337,8 @@ def visit_lead(
 ) -> InvestigationSession:
     """Visit a new semantic lead or revisit an existing lead."""
     snapshot = _validated_snapshot(session, id_factory)
+    if snapshot.case_state is not None and snapshot.case_state.continuation_visit_id is not None:
+        raise ClosedGameplayNodeError("the current closed-lead sequence must be completed before navigation")
     if lead_id is None:
         if not isinstance(label, str) or not label.strip():
             raise ValueError("label is required when creating a new lead")
@@ -417,6 +419,9 @@ def _apply_effect(payload: dict, effect: ContentEffect, lead_key: str, lead_id: 
     elif effect.type == "close_lead_after_reveal": add("closed_lead_keys", lead_key)
     elif effect.type == "close_scope_after_reveal": add("closed_scopes", effect.scope)  # type: ignore[arg-type]
     elif effect.type == "end_case": payload["outcome"] = effect.outcome
+    if effect.type == "close_lead_after_reveal" and payload.get("continuation_visit_id") == visit_id:
+        payload["continuation_lead_key"] = None
+        payload["continuation_visit_id"] = None
 
 
 def _mode_sections(content_lead, mode: str | None) -> tuple[ContentSection, ...]:
@@ -542,6 +547,14 @@ def complete_case_interaction(
         valid = {x.option_id for x in interaction.options}
         if option_id not in valid: raise GameplayConflictError("invalid interaction choice")
         payload["choices"] = (*payload["choices"], CaseChoiceState(choice_id=interaction_id, option_id=option_id))
+    if interaction.closes_lead_on_completion:
+        lead = _lead_by_id(snapshot, _visit_by_id(snapshot, visit_id).lead_id)
+        if lead.case_lead_key is None:
+            raise GameplayConflictError("only authored case leads can close on interaction")
+        if lead.case_lead_key not in payload["closed_lead_keys"]:
+            payload["closed_lead_keys"] = (*payload["closed_lead_keys"], lead.case_lead_key)
+        payload["continuation_lead_key"] = lead.case_lead_key
+        payload["continuation_visit_id"] = visit_id
     session_payload = snapshot.model_dump(mode="python"); session_payload["case_state"] = CasePlayState.model_validate(payload)
     updated = InvestigationSession.model_validate(session_payload)
     return disclose_case_sections(updated, case_content=case_content, visit_id=visit_id, id_factory=id_factory)
@@ -557,6 +570,8 @@ def visit_playable_case_lead(
     state = session.case_state
     if state is None: raise ValueError("playable case state is not initialized")
     if state.outcome: raise ClosedGameplayNodeError("case has ended")
+    if state.continuation_visit_id is not None:
+        raise ClosedGameplayNodeError("the current closed-lead sequence must be completed before navigation")
     if definition.lead_key in state.closed_lead_keys: raise ClosedGameplayNodeError("case lead is closed")
     existing = next((x for x in session.leads if x.case_lead_key == definition.lead_key), None)
     if existing is not None: raise CurrentCaseLeadConflictError("revisit this known lead explicitly")
@@ -579,12 +594,18 @@ def revisit_playable_case_lead(
     session: InvestigationSession, *, case_content: CaseContentDefinition,
     lead_id: str, mode: str | None, id_factory: DeterministicInvestigationIdFactory,
 ) -> InvestigationSession:
-    """Create an explicit revisit and disclose information unlocked since last visit."""
+    """Create an explicit revisit and disclose information unlocked since last visit.
+
+    Persisting an authored choice across visits is a deterministic application
+    policy; the supplied source does not say whether a floor/approach may change.
+    """
     lead = _lead_by_id(session, lead_id)
     if case_content.case_id != session.case_id:
         raise GameplayConflictError("case content must match the session")
     if lead.case_lead_key is None or session.case_state is None: raise ValueError("lead is not backed by playable case content")
     if session.case_state.outcome: raise ClosedGameplayNodeError("case has ended")
+    if session.case_state.continuation_visit_id is not None:
+        raise ClosedGameplayNodeError("the current closed-lead sequence must be completed before navigation")
     if lead.case_lead_key in session.case_state.closed_lead_keys: raise ClosedGameplayNodeError("case lead is closed")
     content_lead = case_content.lead(lead.case_lead_key)
     variant = _variant_preflight(content_lead, mode, session.case_state, allow_fully_disclosed=(case_content.state.revisit_charging == "uncharged"))

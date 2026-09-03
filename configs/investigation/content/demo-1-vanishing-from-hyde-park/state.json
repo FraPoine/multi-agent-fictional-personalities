@@ -25,7 +25,12 @@
   "scopes": [
     {
       "scope_id": "nw-32-top-floor",
-      "initially_available": true
+      "initially_available": true,
+      "governed_section_ids": ["nw-32-s03", "nw-32-s04", "nw-32-s05"],
+      "governed_interaction_ids": ["choose-top-floor-approach"],
+      "governed_options": {
+        "choose-floor": ["top-floor"]
+      }
     }
   ]
 }

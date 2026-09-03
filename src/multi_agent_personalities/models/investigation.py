@@ -249,6 +249,7 @@ class OfficialScoreResult(BaseModel):
     provisional: bool
     needs_review: bool
     review_note: NonEmptyStr | None = None
+    score_band_text: NonEmptyStr | None = None
 
 
 class RevealedSolution(BaseModel):
@@ -308,10 +309,20 @@ class CasePlayState(BaseModel):
     completed_interactions: tuple[NonEmptyStr, ...] = ()
     closed_lead_keys: tuple[NonEmptyStr, ...] = ()
     closed_scopes: tuple[NonEmptyStr, ...] = ()
+    continuation_lead_key: NonEmptyStr | None = None
+    continuation_visit_id: NonEmptyStr | None = None
     applied_section_ids: tuple[NonEmptyStr, ...] = ()
     lead_budget_remaining: NonNegativeStrictInt | None = None
     outcome: NonEmptyStr | None = None
     accounting_entries: tuple[LeadAccountingEntry, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_continuation(self) -> "CasePlayState":
+        if (self.continuation_lead_key is None) != (self.continuation_visit_id is None):
+            raise ValueError("continuation lead and visit must be set together")
+        if self.continuation_lead_key is not None and self.continuation_lead_key not in self.closed_lead_keys:
+            raise ValueError("continuation lead must already be closed to future visits")
+        return self
 
     @field_validator("flags", "items", "completed_interactions", "closed_lead_keys", "closed_scopes", "applied_section_ids")
     @classmethod

@@ -6,6 +6,13 @@
   },
   "holmes_lead_count": 5,
   "printed_holmes_score": 100,
+  "holmes_route": [
+    "33 WC",
+    "68 WC",
+    "28 WC",
+    "4 SW",
+    "86 SW"
+  ],
   "answer_elements": [
     {
       "element_id": "q1-e1",

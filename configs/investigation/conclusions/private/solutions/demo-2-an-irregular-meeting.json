@@ -4,13 +4,6 @@
   "solution_texts": {
     "en": "In a lofty chamber of St Bart's Hospital, a lone figure is hunched over a\nbench, working feverishly with a set of bubbling test tubes. He turns, and in\nthe flickering blue light of the Bunsen lamps, a pair of alert eyes fix on us.\n\n\"Wiggins,\" he says. \"I have seen rooms on Baker Street I intend to take, if\nonly I can find a fellow willing to share them. With luck, you will not have to\nvisit this dim laboratory again. But now - Gilly the Ghost! I assume you went\nto her sister Lydia first, whose description of Gilly's lodging leads to the\nstable yard rooms listed in The Times. Lydia also said Gilly worked for the\nHaymarket, and they say they caught her stealing and got her sent to prison in\n'79. Aha! Perhaps Gilly wants revenge but has found it difficult because the\nHaymarket staff say they recognize her even when disguised. Today, she went to\nCovent Garden Market to collect old fruit and purchase a sailor's knife. So,\ndisguised as a staff member, she plans to enter the Colonial Institute - the\nNational Gallery would have too much security - and then cross the arch to the\ntheatre, just as Moby Dick begins. Cutting the rope ladder to the balcony, she\nwill pelt the actors with rotten fruit, carried in the bag - note she had been\nconducting target practice on a barrel in the stable yard at 68 WC. Finally,\nshe could cut the ropes on the plaster whale, letting it fall and shatter,\nputting an end to the production. However, with your particular talents, I\nimagine you may have found a way to destroy her disguise and foil her plan.\"\n\nHolmes would have solved this case in 5 leads: Lydia Niles (33 WC), Gilly\n(68 WC), Covent Garden (28 WC), the Haymarket (4 SW) and Colonial Institute\n(86 SW). He scored 100 points."
   },
-  "holmes_route": [
-    "33 WC",
-    "68 WC",
-    "28 WC",
-    "4 SW",
-    "86 SW"
-  ],
   "source": {
     "document": "Demo 2 - The Baker Street Irregulars.pdf",
     "page": 1,

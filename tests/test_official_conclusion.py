@@ -133,6 +133,8 @@ def test_demo1_scoring_preserves_140_100_discrepancy_and_invalid_awards_are_atom
     assert (result.answer_points, result.answer_element_total, result.printed_holmes_score) == (140, 140, 100)
     assert result.provisional is result.needs_review is True
     assert result.review_note == "The printed answer elements total 140 while the source says Holmes scored 100. Both are preserved without reconciliation."
+    assert unlocked.conclusion.scoring_definition.holmes_route == ("32 NW", "68 EC")
+    assert result.score_band_text is None
 
 
 def test_scoring_uses_accounting_and_demo2_excludes_revisits() -> None:
@@ -146,6 +148,33 @@ def test_scoring_uses_accounting_and_demo2_excludes_revisits() -> None:
     scored = confirm_official_score(unlocked, awarded_elements={})
     assert scored.conclusion.score_result.counted_leads == 2
     assert scored.conclusion.score_result.lead_penalty == 0
+    assert scored.conclusion.score_result.score_band_text == "At least you tried."
+    scoring = unlocked.conclusion.scoring_definition
+    assert scoring.holmes_route == ("33 WC", "68 WC", "28 WC", "4 SW", "86 SW")
+
+
+def test_private_scoring_requires_exact_question_coverage(tmp_path: Path) -> None:
+    session, _factory, public = official_session("demo-1-vanishing-from-hyde-park")
+    drafts, _ = draft_answers(session, public); locked = lock_official_answers(drafts.session)
+    data = json.loads((SCORING_DIR / f"{session.case_id}.json").read_text())
+    data["answer_elements"] = [element for element in data["answer_elements"] if element["question_id"] != "q4"]
+    (tmp_path / f"{session.case_id}.json").write_text(json.dumps(data))
+    before = locked.model_dump_json()
+    with pytest.raises(ConclusionConflictError, match="does not match"):
+        reveal_official_answer_elements(locked, repository=PrivateScoringRepository(tmp_path))
+    assert locked.model_dump_json() == before
+
+
+def test_score_bands_reject_overlap_but_preserve_printed_gaps(tmp_path: Path) -> None:
+    case_id = "demo-2-an-irregular-meeting"
+    data = json.loads((SCORING_DIR / f"{case_id}.json").read_text())
+    assert [(band.get("minimum"), band.get("maximum")) for band in data["score_bands"]] == [
+        (None, 0), (5, 30), (35, 70), (75, 100), (105, None),
+    ]
+    data["score_bands"][2]["minimum"] = 30
+    (tmp_path / f"{case_id}.json").write_text(json.dumps(data))
+    with pytest.raises(ValueError, match="ordered and non-overlapping"):
+        PrivateScoringRepository(tmp_path).load(case_id)
 
 
 def test_solution_reveal_completes_and_all_terminal_modes_remain_exclusive() -> None:
@@ -155,6 +184,11 @@ def test_solution_reveal_completes_and_all_terminal_modes_remain_exclusive() -> 
     with pytest.raises(ConclusionConflictError): reveal_official_solution(ended, repository=PrivateSolutionRepository(SOLUTION_DIR))
     payload = ended.model_dump(mode="python"); payload["final_theory"] = FinalTheory(final_theory_id="conflict", summary="Conflict")
     with pytest.raises(ValueError): InvestigationSession.model_validate(payload)
+
+
+def test_long_solution_has_no_structured_holmes_route_owner() -> None:
+    for path in SOLUTION_DIR.glob("*.json"):
+        assert "holmes_route" not in json.loads(path.read_text())
 
 
 def test_ready_for_final_freezes_gameplay_and_sessions_are_isolated() -> None:

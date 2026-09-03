@@ -6,6 +6,7 @@ from typing import Protocol
 
 from multi_agent_personalities.conclusion_catalog import (
     PrivateScoringRepository, PrivateSolutionRepository, PublicConclusionDefinition,
+    ScoreBand,
 )
 from multi_agent_personalities.models import (
     ConclusionAnswer, ConclusionMode, ConclusionPhase, GenerationMetadata,
@@ -120,7 +121,8 @@ def reveal_official_answer_elements(session: InvestigationSession, *, repository
     snapshot = _snapshot(session); conclusion = _official(snapshot, ConclusionPhase.ANSWERS_LOCKED)
     if conclusion.scoring_definition is not None: raise ConclusionConflictError("official answer elements already revealed")
     scoring = repository.load(snapshot.case_id)
-    if scoring.case_id != snapshot.case_id or not {x.question_id for x in scoring.answer_elements} <= set(conclusion.question_ids):
+    element_question_ids = {x.question_id for x in scoring.answer_elements}
+    if scoring.case_id != snapshot.case_id or element_question_ids != set(conclusion.question_ids):
         raise ConclusionConflictError("private scoring definition does not match the session")
     updated = InvestigationConclusionState.model_validate({**conclusion.model_dump(mode="python"), "answer_elements": scoring.answer_elements, "scoring_definition": scoring})
     return _replace_conclusion(snapshot, updated)
@@ -144,9 +146,18 @@ def confirm_official_score(session: InvestigationSession, *, awarded_elements: M
         counted = sum(x.amount for x in snapshot.case_state.accounting_entries if x.source_kind in ("section-cost", "first-visit") and x.amount > 0) if snapshot.case_state else 0
     penalty = max(0, counted - scoring.lead_penalty.after_lead) * scoring.lead_penalty.points_per_additional_lead
     element_total = sum(x.points for x in scoring.answer_elements)
-    result = OfficialScoreResult(awarded_element_ids=tuple(flat), answer_points=answer_points, counted_leads=counted, lead_penalty=penalty, total_score=answer_points + penalty, printed_holmes_score=scoring.printed_holmes_score, answer_element_total=element_total, provisional=scoring.needs_review, needs_review=scoring.needs_review, review_note=scoring.review_note)
+    total_score = answer_points + penalty
+    matching_bands = tuple(band for band in scoring.score_bands if _score_in_band(total_score, band))
+    if scoring.score_bands and len(matching_bands) != 1:
+        raise ConclusionConflictError("official score must match exactly one score band")
+    score_band_text = matching_bands[0].texts["en"] if matching_bands else None
+    result = OfficialScoreResult(awarded_element_ids=tuple(flat), answer_points=answer_points, counted_leads=counted, lead_penalty=penalty, total_score=total_score, printed_holmes_score=scoring.printed_holmes_score, answer_element_total=element_total, provisional=scoring.needs_review, needs_review=scoring.needs_review, review_note=scoring.review_note, score_band_text=score_band_text)
     updated = InvestigationConclusionState.model_validate({**conclusion.model_dump(mode="python"), "phase": ConclusionPhase.SCORED, "score_result": result})
     return _replace_conclusion(snapshot, updated)
+
+
+def _score_in_band(score: int, band: ScoreBand) -> bool:
+    return (band.minimum is None or score >= band.minimum) and (band.maximum is None or score <= band.maximum)
 
 
 def reveal_official_solution(session: InvestigationSession, *, repository: PrivateSolutionRepository) -> InvestigationSession:

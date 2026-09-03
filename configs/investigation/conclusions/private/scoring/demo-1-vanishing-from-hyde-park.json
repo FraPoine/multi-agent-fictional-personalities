@@ -6,6 +6,10 @@
   },
   "holmes_lead_count": 2,
   "printed_holmes_score": 100,
+  "holmes_route": [
+    "32 NW",
+    "68 EC"
+  ],
   "answer_elements": [
     {
       "element_id": "q1-e1",

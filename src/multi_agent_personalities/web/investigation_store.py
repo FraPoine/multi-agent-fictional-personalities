@@ -87,6 +87,27 @@ class InMemoryInvestigationRegistry:
     def case_content_catalog(self) -> CaseContentCatalog | None:
         return self._case_content_catalog
 
+    @property
+    def public_conclusion_catalog(self) -> PublicConclusionCatalog | None:
+        return self._public_conclusion_catalog
+
+    def configure_catalogues(
+        self,
+        *,
+        case_catalog: CaseCatalog,
+        case_content_catalog: CaseContentCatalog,
+        public_conclusion_catalog: PublicConclusionCatalog,
+    ) -> None:
+        """Complete startup injection before any session is registered."""
+        with self._creation_lock, self._registry_lock:
+            if self._records:
+                raise InvestigationRegistryInvariantError("catalogues cannot change after session creation")
+            supplied = (self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog)
+            resolved = (case_catalog, case_content_catalog, public_conclusion_catalog)
+            if any(existing is not None and existing != expected for existing, expected in zip(supplied, resolved, strict=True)):
+                raise InvestigationRegistryInvariantError("injected registry catalogues are incompatible")
+            self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog = resolved
+
     def create(
         self,
         *,

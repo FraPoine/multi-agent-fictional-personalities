@@ -78,6 +78,12 @@ class ScoreBand(BaseModel):
     maximum: int | None = Field(default=None, strict=True)
     texts: dict[Literal["en"], NonEmptyStr]
 
+    @model_validator(mode="after")
+    def validate_bounds(self) -> "ScoreBand":
+        if self.minimum is not None and self.maximum is not None and self.minimum > self.maximum:
+            raise ValueError("score band minimum cannot exceed maximum")
+        return self
+
 
 class PrivateScoringDefinition(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -86,6 +92,7 @@ class PrivateScoringDefinition(BaseModel):
     printed_rule_texts: dict[Literal["en"], NonEmptyStr]
     holmes_lead_count: int = Field(strict=True, ge=0)
     printed_holmes_score: int = Field(strict=True)
+    holmes_route: tuple[NonEmptyStr, ...]
     answer_elements: tuple[OfficialAnswerElement, ...]
     lead_penalty: LeadPenaltyRule
     score_bands: tuple[ScoreBand, ...] = ()
@@ -98,6 +105,26 @@ class PrivateScoringDefinition(BaseModel):
         ids = [x.element_id for x in self.answer_elements]
         if len(ids) != len(set(ids)): raise ValueError("duplicate answer element_id")
         if self.needs_review != (self.review_note is not None): raise ValueError("review_note must accompany needs_review")
+        if len(self.holmes_route) != self.holmes_lead_count:
+            raise ValueError("Holmes route must match Holmes lead count")
+        previous_max: int | None = None
+        for index, band in enumerate(self.score_bands):
+            if band.minimum is None and index != 0: raise ValueError("only the first score band may omit minimum")
+            if band.maximum is None and index != len(self.score_bands) - 1: raise ValueError("only the last score band may omit maximum")
+            if previous_max is not None and band.minimum is not None and band.minimum <= previous_max:
+                raise ValueError("score bands must be ordered and non-overlapping")
+            previous_max = band.maximum
+        if self.score_bands:
+            possible_points = {0}
+            for element in self.answer_elements:
+                possible_points |= {value + element.points for value in tuple(possible_points)}
+            penalty = self.lead_penalty.points_per_additional_lead
+            penalties = {0}
+            if penalty < 0:
+                penalties |= {penalty * count for count in range(1, max(possible_points) // -penalty + 2)}
+            for score in {points + deduction for points in possible_points for deduction in penalties}:
+                if sum(_score_in_band(score, band) for band in self.score_bands) != 1:
+                    raise ValueError(f"obtainable score {score} must match exactly one score band")
         return self
 
 
@@ -106,8 +133,11 @@ class PrivateSolutionDefinition(BaseModel):
     schema_version: Literal[1]
     case_id: Key
     solution_texts: dict[Literal["en"], NonEmptyStr]
-    holmes_route: tuple[NonEmptyStr, ...]
     source: PrivateSource
+
+
+def _score_in_band(score: int, band: ScoreBand) -> bool:
+    return (band.minimum is None or score >= band.minimum) and (band.maximum is None or score <= band.maximum)
 
 
 def default_public_conclusion_directory(project_root: Path) -> Path:
