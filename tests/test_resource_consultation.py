@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from multi_agent_personalities.application import (
-    ConsultationClosedError, DeterministicAnswerDraftProvider,
+    ConsultationClosedError, ConsultationConflictError, DeterministicAnswerDraftProvider,
     DeterministicInvestigationIdFactory, PlayerOnlyResourceError,
     UnknownConsultationResourceError, build_lead_discussion_context,
     build_safe_answer_context, consult_case_resource, create_session,
@@ -115,3 +115,12 @@ def test_completed_session_is_readable_but_rejects_consultation() -> None:
     with pytest.raises(ConsultationClosedError):
         consult_case_resource(completed, resource_id=DIRECTORY_ID, case_catalog=CASES, resource_text_catalog=RESOURCES)
     assert completed.model_dump_json() == before
+
+
+def test_ready_for_final_rejects_consultation_atomically() -> None:
+    current, _case, _factory = session()
+    ready = start_official_conclusion(current, public_definition=PUBLIC.get(CASE_ID))
+    before = ready.model_dump_json()
+    with pytest.raises(ConsultationConflictError):
+        consult_case_resource(ready, resource_id=DIRECTORY_ID, case_catalog=CASES, resource_text_catalog=RESOURCES)
+    assert ready.model_dump_json() == before

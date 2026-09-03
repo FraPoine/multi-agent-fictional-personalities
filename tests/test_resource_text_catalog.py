@@ -86,6 +86,13 @@ def test_missing_and_duplicate_resource_definitions_fail_loudly(tmp_path: Path) 
     (root / "demo-1-vanishing-from-hyde-park" / "directory.json").unlink()
     with pytest.raises(ValueError, match="missing"):
         load_resource_text_catalog(root, CASES, asset_root=ROOT / "configs" / "investigation")
+
+
+def test_removing_complete_r1_case_directory_fails_loudly(tmp_path: Path) -> None:
+    root = copied_catalogue(tmp_path)
+    shutil.rmtree(root / "demo-1-vanishing-from-hyde-park")
+    with pytest.raises(ValueError, match="case IDs must agree"):
+        load_resource_text_catalog(root, CASES, asset_root=ROOT / "configs" / "investigation")
     root = copied_catalogue(tmp_path / "again")
     original = root / "demo-1-vanishing-from-hyde-park" / "directory.json"
     shutil.copyfile(original, original.with_name("duplicate.json"))

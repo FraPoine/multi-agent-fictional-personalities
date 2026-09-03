@@ -154,6 +154,9 @@ def load_resource_text_catalog(directory: Path, case_catalog: CaseCatalog, *, as
         by_case: dict[str, set[str]] = {}
         for definition in definitions:
             by_case.setdefault(definition.case_id, set()).add(definition.resource_id)
+        guidance_case_ids = {case.case_id for case in guidance.cases}
+        if set(by_case) != guidance_case_ids:
+            raise ValueError("resource-definition and operational-guidance case IDs must agree")
         for case_id, defined_ids in by_case.items():
             expected_ids = {resource.resource_id for resource in case_catalog.resources_for_case(case_id)}
             if defined_ids != expected_ids:

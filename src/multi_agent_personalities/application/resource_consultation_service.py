@@ -21,6 +21,10 @@ class ConsultationClosedError(ResourceConsultationError):
     """Raised when a completed session rejects a consultation mutation."""
 
 
+class ConsultationConflictError(ResourceConsultationError):
+    """Raised when consultation is unavailable in the current lifecycle."""
+
+
 def consult_case_resource(
     session: InvestigationSession,
     *,
@@ -32,6 +36,12 @@ def consult_case_resource(
     snapshot = InvestigationSession.model_validate(session.model_dump(mode="python"))
     if snapshot.status is InvestigationStatus.COMPLETED:
         raise ConsultationClosedError("completed investigations reject resource consultation")
+    if (
+        snapshot.status is not InvestigationStatus.ACTIVE
+        or snapshot.conclusion is not None
+        or (snapshot.case_state is not None and snapshot.case_state.outcome is not None)
+    ):
+        raise ConsultationConflictError("resource consultation requires an active investigation before conclusion")
     try:
         case_resources = {resource.resource_id for resource in case_catalog.resources_for_case(snapshot.case_id)}
     except KeyError as error:
