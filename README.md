@@ -35,6 +35,15 @@ definitions and assets under `configs/investigation/`. Eligible authoritative
 sections become provenance-bearing `RevealedInformation`. London-address,
 Carlton-interior, and four-digit time-code references work offline.
 
+Case resource images remain player-visible, but image viewing alone never adds
+agent knowledge. Verified public transcriptions live under
+`configs/investigation/resources_text/` with source document, page, region,
+and local-asset provenance. A resource enters later discussion and official
+answer contexts only after an explicit immutable consultation. London maps and
+the Demo 3 floor plans are human-mediated and cannot be injected into prompts.
+Private answer elements, scoring, Holmes benchmarks, and long solutions remain
+in separately lazy conclusion repositories.
+
 The repository currently provides structured synthetic persona fixtures for
 Sherlock Holmes and Hercule Poirot, deterministic local mock responses,
 round-robin multi-agent simulation, and explicit per-run message history.
@@ -128,15 +137,15 @@ chronological `LeadVisit`. Case-specific resource references support ordered
 multiple maps, newspapers, a shared directory and informants, documents, and
 initially hidden handouts.
 
-The repository ships no copyrighted *Sherlock Holmes: Consulting Detective*
-case text, maps, newspapers, scans, or handouts. Its two investigation cases
-and all resource descriptions are synthetic local fixtures. Later user-owned
-material should be added only by creating a new validated case YAML under
-`configs/investigation/cases/`, declaring reusable local resources in
-`configs/investigation/resources.yaml`, placing owned assets beneath the local
-catalogue asset root with safe relative paths, and running the catalogue,
-resource, Lead/Visit, HTTP E2E, and full regression suites. Supplying owned
-content does not require changing the Lead/Visit domain model.
+The three integrated demo cases and their local assets derive only from the
+user-supplied provenance package. The longer commercial case is not integrated.
+Later user-owned material should be added by creating a validated case YAML,
+declaring its resource in `configs/investigation/resources.yaml`, placing the
+owned asset below the catalogue asset root with a safe relative path, and
+adding a strict same-case resource-text definition. Agent-readable definitions
+must contain verified public text and provenance; player-only images must have
+an empty payload and `agent_readable: false`. Run catalogue, consultation,
+Lead/Visit, HTTP E2E, and full regression suites afterward.
 
 ### Implemented workflows
 

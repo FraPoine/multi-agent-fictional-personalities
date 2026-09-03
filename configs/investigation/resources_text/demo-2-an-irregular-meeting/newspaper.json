@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "resource_id": "demo-2-an-irregular-meeting-newspaper",
+  "resource_type": "newspaper",
+  "source": {"document": "Demo 2 - The Baker Street Irregulars.pdf", "page": 1, "region": "embedded newspaper panel; fully visible requested blocks only"},
+  "source_asset_path": "assets/demo-2-an-irregular-meeting/newspaper.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "header", "order": 1, "texts": {"en": "The Times. Nº 29 518. London, Saturday, September 18, 1880. Price: 3d."}},
+    {"entry_id": "rooms-for-rent", "order": 2, "texts": {"en": "ROOMS for RENT from August 16th at a low price, adjoining a stable yard, 68 WC."}},
+    {"entry_id": "poison", "order": 3, "texts": {"en": "Allegro Theatre, 94 WC, presents POISON, 8 p.m. daily, September 19th to 25th."}},
+    {"entry_id": "moby-dick", "order": 4, "texts": {"en": "Haymarket Theatre - Grand Premiere of MOBY DICK 6 p.m. Saturday, then at 6 p.m. daily until 30th September."}},
+    {"entry_id": "cleaners", "order": 5, "texts": {"en": "Specialist CLEANERS, all fabrics & clothing, serving the Colonial Institute and Admiralty, 52 SW."}},
+    {"entry_id": "congratulations", "order": 6, "texts": {"en": "H. C. – Congratulations on your bachelor's degree & condolences regarding your father. All my love, R. K."}},
+    {"entry_id": "activity-at-trafalgar", "order": 7, "texts": {"en": "ACTIVITY AT TRAFALGAR\n\nThe decorated arches in Trafalgar Square, commemorating those who fought in the Second Afghan War, will be removed tomorrow. On September 4th, three days after the war ended, the wooden arches were fixed between upper storey windows of buildings in the square and along many streets leading to that place."}},
+    {"entry_id": "saldanha-diamond-sale", "order": 8, "texts": {"en": "SALDANHA DIAMOND SALE\n\nMr Eraldo Sartori, the famous Italian jeweller, arrived at the Grand Hotel yesterday. He is in London to finalize the sale of Saldanha's diamond to an anonymous buyer."}},
+    {"entry_id": "raphael-national-gallery", "order": 9, "texts": {"en": "RAPHAEL IN NATIONAL GALLERY\n\nRaphael's Ansidei Madonna will be on display in the Upper West Wing of the National Gallery, September 1st to December 10th. The Gallery is rumoured to be in discussions to purchase the painting for a sum exceeding £50,000."}}
+  ]
+}

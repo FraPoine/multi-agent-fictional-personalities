@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "resource_id": "demo-2-an-irregular-meeting-informants",
+  "resource_type": "informants",
+  "source": {"document": "Demo 2 - The Baker Street Irregulars.pdf", "page": 1, "region": "embedded Informants panel; A-B-C tracker excluded"},
+  "source_asset_path": "assets/demo-2-an-irregular-meeting/informants.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "national-archives", "order": 1, "texts": {"en": "National Archives — 17 WC — Births, deaths, marriages, land and wills records."}},
+    {"entry_id": "scotland-yard", "order": 2, "texts": {"en": "Scotland Yard — 13 SW — The Police - Information on crime and criminal investigations."}}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "resource_id": "demo-1-vanishing-from-hyde-park-newspaper",
+  "resource_type": "newspaper",
+  "source": {"document": "Demo 1 - The Thames Murders and Other Cases.pdf", "page": 1, "region": "embedded newspaper panel; fully visible requested blocks only"},
+  "source_asset_path": "assets/demo-1-vanishing-from-hyde-park/newspaper.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "header", "order": 1, "texts": {"en": "The Times. Nº 32 215. Evening edition. LONDON, WEDNESDAY, MARCH 14, 1888."}},
+    {"entry_id": "lost-black-colley", "order": 2, "texts": {"en": "LOST, BLACK COLLEY, white collar. Injured right lower lip. Name on metal plate attached to leather collar: OSCAR TEEVAN, 16 Charing Cross Road, NW. Reward any person who will bring the dog back to that address."}},
+    {"entry_id": "magic-elixir-dr-saari", "order": 3, "texts": {"en": "MAGIC ELIXIR of DR SAARI - Extraordinary remedy for many afflictions. Heals colds, coughs, and sore throats of all kinds. 2 shillings per bottle. Sold everywhere."}},
+    {"entry_id": "circus-hengler", "order": 4, "texts": {"en": "CIRCUS HENGLER. Wild fantasy. Impressive number of performing dogs. Price 2s. 6 pence - 56 Park Lane, NW."}},
+    {"entry_id": "scandal-at-the-parliament", "order": 5, "texts": {"en": "SCANDAL AT THE PARLIAMENT\n\nA new element is tainting the already weakened reputation of parliamentarian Oppenheimer. During the period January-March, the latter would have received bribes for construction sites east of London. Construction sites sponsored by Grosvenor Investments on plots 36456, 87778, and 98007. According to our sources, the illicit payments would be respectively in the amounts of £1500, £2400 and £3200, received on the 8th of each month, according to our sources. GI's manager received us in his office, on the top floor of an opulent-looking building near Grosvenor Square, and formally refuted these allegations. As for him, Oppenheimer refuses, for the time being, to give any comment. H. P."}}
+  ]
+}

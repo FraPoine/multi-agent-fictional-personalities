@@ -32,6 +32,8 @@ from multi_agent_personalities.application.investigation_tasks import (
     investigation_lead_discussion_task_name,
     investigation_lead_final_theory_task_name,
 )
+from multi_agent_personalities.application.resource_consultation_service import resolved_resource_context
+from multi_agent_personalities.resource_text_catalog import ResourceTextCatalog
 from multi_agent_personalities.agent_runtime import generate_reply
 
 from multi_agent_personalities.application.investigation_ids import (
@@ -715,7 +717,8 @@ def project_lead_conversation(
 
 
 def build_lead_discussion_context(
-    session: InvestigationSession, *, visit_id: str
+    session: InvestigationSession, *, visit_id: str,
+    resource_text_catalog: ResourceTextCatalog | None = None,
 ) -> str:
     """Render deterministic, explicit context from one validated snapshot."""
     snapshot = InvestigationSession.model_validate(
@@ -737,6 +740,7 @@ def build_lead_discussion_context(
         f"{item.speaker_name}: {item.text}"
         for item in history
     ]
+    resource_context = resolved_resource_context(snapshot, resource_text_catalog)
     return "\n\n".join(
         (
             f"Case opening:\n{snapshot.case_introduction}",
@@ -745,6 +749,7 @@ def build_lead_discussion_context(
             f"Current visit: [{visit.visit_id}] index {visit.visit_index}",
             "Globally revealed information:\n"
             + ("\n".join(information_lines) or "None."),
+            "Explicitly consulted resources:\n" + resource_context,
             "Investigation chronology:\n"
             + ("\n".join(chronology_lines) or "None."),
             "Previous conversation on this lead:\n"
@@ -782,6 +787,7 @@ def continue_lead_discussion(
     selector: SpeakerSelector | None = None,
     seed: int = 42,
     timestamp: datetime | None = None,
+    resource_text_catalog: ResourceTextCatalog | None = None,
 ) -> LeadDiscussionResult:
     """Generate and atomically attach one bounded lead discussion segment."""
     snapshot = _validated_snapshot(session, id_factory)
@@ -798,7 +804,11 @@ def continue_lead_discussion(
     bindings = _ordered_bindings(
         snapshot.participant_ids, participant_bindings
     )
-    context = build_lead_discussion_context(snapshot, visit_id=visit.visit_id)
+    context = build_lead_discussion_context(
+        snapshot,
+        visit_id=visit.visit_id,
+        resource_text_catalog=resource_text_catalog,
+    )
     segment_index = len(visit.conversation_run_ids) + 1
     run_id = id_factory.discussion_segment_id(
         visit.visit_index, segment_index

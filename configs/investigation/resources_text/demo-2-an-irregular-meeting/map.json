@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "resource_id": "demo-2-an-irregular-meeting-map",
+  "resource_type": "map",
+  "source": {"document": "Demo 2 - The Baker Street Irregulars.pdf", "page": 1, "region": "embedded Map panel"},
+  "source_asset_path": "assets/demo-2-an-irregular-meeting/map.png",
+  "transcription_kind": "player_only_image",
+  "agent_readable": false,
+  "entries": []
+}

@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-3-the-disappearance-of-a-student",
+  "resource_id": "demo-3-the-disappearance-of-a-student-floor-plans",
+  "resource_type": "map",
+  "source": {"document": "Demo 3 - Bureau of Investigation - Sherlock Holmes Consulting Detective.pdf", "page": 1, "region": "embedded floor-plan handouts"},
+  "source_asset_path": "assets/demo-3-the-disappearance-of-a-student/floor-plans.png",
+  "transcription_kind": "player_only_image",
+  "agent_readable": false,
+  "entries": []
+}

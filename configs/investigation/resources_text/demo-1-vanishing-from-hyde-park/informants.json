@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "resource_id": "demo-1-vanishing-from-hyde-park-informants",
+  "resource_type": "informants",
+  "source": {"document": "Demo 1 - The Thames Murders and Other Cases.pdf", "page": 1, "region": "embedded Informants panel"},
+  "source_asset_path": "assets/demo-1-vanishing-from-hyde-park/informants.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "scotland-yard", "order": 1, "texts": {"en": "Scotland Yard — 13 SW — Have all the reports relating to the investigation."}},
+    {"entry_id": "somerset-house", "order": 2, "texts": {"en": "Somerset House — 17 WC — Births, deaths, marriages, and wills records."}},
+    {"entry_id": "henry-ellis", "order": 3, "texts": {"en": "Henry Ellis — 30 EC — Reporter for The London Times."}},
+    {"entry_id": "porky-shinwell", "order": 4, "texts": {"en": "Porky Shinwell — 52 EC — Information source for all illegal matters."}},
+    {"entry_id": "mycroft-holmes", "order": 5, "texts": {"en": "Mycroft Holmes — 8 SW — Information pertaining to the political world."}}
+  ]
+}

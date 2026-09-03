@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "resource_id": "demo-1-vanishing-from-hyde-park-directory",
+  "resource_type": "directory",
+  "source": {"document": "Demo 1 - The Thames Murders and Other Cases.pdf", "page": 1, "region": "embedded Directory panel"},
+  "source_asset_path": "assets/demo-1-vanishing-from-hyde-park/directory.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "hennessy-patrick", "order": 1, "texts": {"en": "Hennessy, Patrick — 37 WC"}},
+    {"entry_id": "grosvenor-investments", "order": 2, "texts": {"en": "Grosvenor Investments — 32 NW"}},
+    {"entry_id": "nance-yvonne", "order": 3, "texts": {"en": "Nance, Yvonne — 32 NW"}},
+    {"entry_id": "oppenheimer-stuart", "order": 4, "texts": {"en": "Oppenheimer, Stuart — 76 WC"}},
+    {"entry_id": "parker-howard", "order": 5, "texts": {"en": "Parker, Howard — 68 EC"}},
+    {"entry_id": "parliament", "order": 6, "texts": {"en": "Parliament — 16 SW"}},
+    {"entry_id": "teevan-oscar", "order": 7, "texts": {"en": "Teevan, Oscar — 16 NW"}},
+    {"entry_id": "butcher-cannon", "order": 8, "texts": {"en": "Butchers: Cannon — 69 EC"}},
+    {"entry_id": "butcher-baker-meat", "order": 9, "texts": {"en": "Butchers: Baker Meat — 53 NW"}},
+    {"entry_id": "butcher-grosvenor", "order": 10, "texts": {"en": "Butchers: Grosvenor — 70 NW"}},
+    {"entry_id": "florist-george-flowers", "order": 11, "texts": {"en": "Florist: George Flowers — 50 NW"}},
+    {"entry_id": "restaurant-chinese-wonders", "order": 12, "texts": {"en": "Restaurant: Chinese Wonders — 57 NW"}}
+  ]
+}

@@ -553,6 +553,15 @@ class FinalTheory(BaseModel):
         return _reject_duplicate_evidence(value)
 
 
+class ResourceConsultation(BaseModel):
+    """One explicit, ordered consultation of verified public resource text."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    session_id: NonEmptyStr
+    resource_id: NonEmptyStr
+    consultation_index: NonNegativeStrictInt
+
+
 class InvestigationRound(BaseModel):
     """Deprecated round snapshot retained for original Sprint 7 imports."""
 
@@ -591,6 +600,7 @@ class InvestigationSession(BaseModel):
     leads: tuple[InvestigationLead, ...] = ()
     visits: tuple[LeadVisit, ...] = ()
     revealed_information: tuple[RevealedInformation, ...] = ()
+    resource_consultations: tuple[ResourceConsultation, ...] = ()
     conversation_runs: tuple[ConversationRun, ...] = ()
     clues: tuple[Clue, ...] = ()
     rounds: tuple[InvestigationRound, ...] = ()
@@ -835,10 +845,16 @@ class InvestigationSession(BaseModel):
             ("analysis_id", [item.analysis_id for item in self.analyses]),
             ("hypothesis_id", [item.hypothesis_id for item in self.hypotheses]),
             ("decision_id", [item.decision_id for item in self.decisions]),
+            ("consulted resource_id", [item.resource_id for item in self.resource_consultations]),
         )
         for field_name, values in collection_ids:
             if len(values) != len(set(values)):
                 raise ValueError(f"{field_name} values must be unique")
+
+        if [item.consultation_index for item in self.resource_consultations] != list(range(len(self.resource_consultations))):
+            raise ValueError("resource consultations must be ordered contiguously from zero")
+        if any(item.session_id != self.session_id for item in self.resource_consultations):
+            raise ValueError("all resource consultations must belong to the investigation session")
 
         if any(item.session_id != self.session_id for item in self.leads):
             raise ValueError("all leads must belong to the investigation session")

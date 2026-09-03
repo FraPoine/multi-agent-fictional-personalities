@@ -29,6 +29,7 @@ from multi_agent_personalities.web.investigation_store import (
 )
 from multi_agent_personalities.case_content_catalog import CaseContentCatalog, default_case_content_directory, load_case_content_catalog
 from multi_agent_personalities.conclusion_catalog import PublicConclusionCatalog, default_public_conclusion_directory, load_public_conclusion_catalog
+from multi_agent_personalities.resource_text_catalog import ResourceTextCatalog, default_resource_text_directory, load_resource_text_catalog
 
 
 WEB_DIRECTORY = Path(__file__).resolve().parent
@@ -270,6 +271,7 @@ def create_app(
     case_catalog: CaseCatalog | None = None,
     case_content_catalog: CaseContentCatalog | None = None,
     public_conclusion_catalog: PublicConclusionCatalog | None = None,
+    resource_text_catalog: ResourceTextCatalog | None = None,
 ) -> FastAPI:
     """Create the local web application without starting a server."""
     resolved_project_root = (
@@ -309,8 +311,25 @@ def create_app(
         raise ValueError("case, content, and public-conclusion catalogues have incompatible case IDs")
     resolved_case_content_catalog = discovered_content
     resolved_public_conclusion_catalog = discovered_public
+    resource_text_directory = default_resource_text_directory(resolved_project_root)
+    configured_resource_case_ids = (
+        {path.name for path in resource_text_directory.iterdir() if path.is_dir()}
+        if resource_text_directory.is_dir() else set()
+    )
+    if resource_text_catalog is not None:
+        resolved_resource_text_catalog = resource_text_catalog
+    elif case_catalog is not None and not configured_resource_case_ids & case_ids:
+        resolved_resource_text_catalog = ResourceTextCatalog(resources=())
+    else:
+        resolved_resource_text_catalog = (
+            load_resource_text_catalog(resource_text_directory, resolved_case_catalog)
+            if resource_text_directory.is_dir() else ResourceTextCatalog(resources=())
+        )
+    resource_case_ids = {resource.case_id for resource in resolved_resource_text_catalog.resources}
+    if not resource_case_ids <= case_ids:
+        raise ValueError("case and resource-text catalogues have incompatible case IDs")
     resolved_investigation_registry = (
-        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog, public_conclusion_catalog=resolved_public_conclusion_catalog)
+        InMemoryInvestigationRegistry(case_catalog=resolved_case_catalog, case_content_catalog=resolved_case_content_catalog, public_conclusion_catalog=resolved_public_conclusion_catalog, resource_text_catalog=resolved_resource_text_catalog)
         if investigation_registry is None
         else investigation_registry
     )
@@ -319,6 +338,7 @@ def create_app(
             case_catalog=resolved_case_catalog,
             case_content_catalog=resolved_case_content_catalog,
             public_conclusion_catalog=resolved_public_conclusion_catalog,
+            resource_text_catalog=resolved_resource_text_catalog,
         )
     supported_characters = tuple(registry)
     display_root = resolved_output_root.parent
@@ -333,6 +353,7 @@ def create_app(
     application.state.case_catalog = resolved_case_catalog
     application.state.case_content_catalog = resolved_case_content_catalog
     application.state.public_conclusion_catalog = resolved_public_conclusion_catalog
+    application.state.resource_text_catalog = resolved_resource_text_catalog
     @application.get("/static/{path:path}", name="static")
     async def static_asset(path: str) -> Response:
         """Serve the fixed local assets without a worker-thread hop."""

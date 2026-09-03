@@ -109,6 +109,11 @@ from multi_agent_personalities.application.official_conclusion_service import (
     reveal_official_answer_elements, reveal_official_solution,
     start_official_conclusion, update_official_answer,
 )
+from multi_agent_personalities.application.resource_consultation_service import (
+    ConsultationClosedError, PlayerOnlyResourceError, ResourceConsultationError,
+    UnknownConsultationResourceError, consult_case_resource,
+    render_consulted_resource_context, resolved_resource_context,
+)
 
 __all__ = [
     "ConversationResult", "DeterministicInvestigationIdFactory",
@@ -157,6 +162,10 @@ __all__ = [
     "generate_official_answer_drafts", "lock_official_answers",
     "reveal_official_answer_elements", "reveal_official_solution",
     "start_official_conclusion", "update_official_answer",
+    "ConsultationClosedError", "PlayerOnlyResourceError",
+    "ResourceConsultationError", "UnknownConsultationResourceError",
+    "consult_case_resource", "render_consulted_resource_context",
+    "resolved_resource_context",
 ]
 
 # These names intentionally remain module attributes until the deferred Sprint 7

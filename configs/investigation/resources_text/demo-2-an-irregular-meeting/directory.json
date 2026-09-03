@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-2-an-irregular-meeting",
+  "resource_id": "demo-2-an-irregular-meeting-directory",
+  "resource_type": "directory",
+  "source": {"document": "Demo 2 - The Baker Street Irregulars.pdf", "page": 1, "region": "embedded Directory panel"},
+  "source_asset_path": "assets/demo-2-an-irregular-meeting/directory.png",
+  "transcription_kind": "verified_transcription",
+  "agent_readable": true,
+  "entries": [
+    {"entry_id": "boddle-aloysius", "order": 1, "texts": {"en": "Boddle, Aloysius — 29 WC"}},
+    {"entry_id": "colonial-institute", "order": 2, "texts": {"en": "The Colonial Institute — 86 SW"}},
+    {"entry_id": "covent-garden-market", "order": 3, "texts": {"en": "Covent Garden Market — 28 WC"}},
+    {"entry_id": "jeal-f", "order": 4, "texts": {"en": "Jeal, F. — 85 SW"}},
+    {"entry_id": "niles-lydia", "order": 5, "texts": {"en": "Niles, Lydia — 33 WC"}},
+    {"entry_id": "rowdy-robert", "order": 6, "texts": {"en": "Inns & Public Houses: The Rowdy Robert — 91 WC"}},
+    {"entry_id": "unicorn", "order": 7, "texts": {"en": "Inns & Public Houses: The Unicorn — 19 WC"}}
+  ]
+}

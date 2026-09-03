@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "case_id": "demo-1-vanishing-from-hyde-park",
+      "entries": [
+        {"entry_id": "resources", "order": 1, "texts": {"en": "Consult the local directory, informants and newspaper explicitly when useful; the London map remains human-mediated."}},
+        {"entry_id": "references", "order": 2, "texts": {"en": "Enter London references as a number and area code."}},
+        {"entry_id": "notes", "order": 3, "texts": {"en": "Keep annotations as needed; revealed material remains available for historical rereading."}},
+        {"entry_id": "conclusion", "order": 4, "texts": {"en": "Answer the public final questions before revealing official scoring or the long solution."}},
+        {"entry_id": "nw-32-accounting", "order": 5, "texts": {"en": "At 32 NW, each disclosed narrative paragraph counts separately; navigation prompts do not count."}}
+      ]
+    },
+    {
+      "case_id": "demo-2-an-irregular-meeting",
+      "entries": [
+        {"entry_id": "resources", "order": 1, "texts": {"en": "Use the local directory, informants and newspaper as public resources; the London map remains human-mediated."}},
+        {"entry_id": "letters", "order": 2, "texts": {"en": "Record A, B or C only when a lead explicitly instructs you to do so."}},
+        {"entry_id": "rereading", "order": 3, "texts": {"en": "Historical material remains readable, and a revisitable location may be revisited after a newly required letter is obtained."}}
+      ]
+    },
+    {
+      "case_id": "demo-3-the-disappearance-of-a-student",
+      "entries": [
+        {"entry_id": "budget", "order": 1, "texts": {"en": "The initial lead budget is 10."}},
+        {"entry_id": "modes", "order": 2, "texts": {"en": "Select Interview, Investigation, or both where available; each newly selected mode costs one lead."}},
+        {"entry_id": "rereading", "order": 3, "texts": {"en": "Previously disclosed material remains available for historical rereading."}},
+        {"entry_id": "intervention", "order": 4, "texts": {"en": "After the lead budget is exhausted, select the single Intervention entry to conclude the case."}},
+        {"entry_id": "floor-plans", "order": 5, "texts": {"en": "The floor plans are for human viewing and are not automatically interpreted by agents."}}
+      ]
+    }
+  ]
+}

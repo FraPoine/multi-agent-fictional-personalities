@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "case_id": "demo-1-vanishing-from-hyde-park",
+  "resource_id": "demo-1-vanishing-from-hyde-park-map",
+  "resource_type": "map",
+  "source": {"document": "Demo 1 - The Thames Murders and Other Cases.pdf", "page": 1, "region": "embedded Map panel"},
+  "source_asset_path": "assets/demo-1-vanishing-from-hyde-park/map.png",
+  "transcription_kind": "player_only_image",
+  "agent_readable": false,
+  "entries": []
+}

@@ -9,6 +9,7 @@ from typing import Generic, TypeVar
 from multi_agent_personalities.case_catalog import CaseCatalog, CaseDefinition
 from multi_agent_personalities.case_content_catalog import CaseContentCatalog
 from multi_agent_personalities.conclusion_catalog import PublicConclusionCatalog
+from multi_agent_personalities.resource_text_catalog import ResourceTextCatalog
 from multi_agent_personalities.models import ConclusionMode
 from multi_agent_personalities.application.investigation_ids import (
     DeterministicInvestigationIdFactory,
@@ -62,7 +63,7 @@ class InvestigationSessionMutation(Generic[T]):
 class InMemoryInvestigationRegistry:
     """Own process-local investigation records with per-session serialization."""
 
-    def __init__(self, *, case_catalog: CaseCatalog | None = None, case_content_catalog: CaseContentCatalog | None = None, public_conclusion_catalog: PublicConclusionCatalog | None = None) -> None:
+    def __init__(self, *, case_catalog: CaseCatalog | None = None, case_content_catalog: CaseContentCatalog | None = None, public_conclusion_catalog: PublicConclusionCatalog | None = None, resource_text_catalog: ResourceTextCatalog | None = None) -> None:
         self._registry_lock = Lock()
         self._creation_lock = Lock()
         self._records: dict[str, InvestigationSessionRecord] = {}
@@ -71,6 +72,7 @@ class InMemoryInvestigationRegistry:
         self._case_catalog = case_catalog
         self._case_content_catalog = case_content_catalog
         self._public_conclusion_catalog = public_conclusion_catalog
+        self._resource_text_catalog = resource_text_catalog
 
     @property
     def session_ids(self) -> tuple[str, ...]:
@@ -91,22 +93,27 @@ class InMemoryInvestigationRegistry:
     def public_conclusion_catalog(self) -> PublicConclusionCatalog | None:
         return self._public_conclusion_catalog
 
+    @property
+    def resource_text_catalog(self) -> ResourceTextCatalog | None:
+        return self._resource_text_catalog
+
     def configure_catalogues(
         self,
         *,
         case_catalog: CaseCatalog,
         case_content_catalog: CaseContentCatalog,
         public_conclusion_catalog: PublicConclusionCatalog,
+        resource_text_catalog: ResourceTextCatalog,
     ) -> None:
         """Complete startup injection before any session is registered."""
         with self._creation_lock, self._registry_lock:
             if self._records:
                 raise InvestigationRegistryInvariantError("catalogues cannot change after session creation")
-            supplied = (self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog)
-            resolved = (case_catalog, case_content_catalog, public_conclusion_catalog)
+            supplied = (self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog, self._resource_text_catalog)
+            resolved = (case_catalog, case_content_catalog, public_conclusion_catalog, resource_text_catalog)
             if any(existing is not None and existing != expected for existing, expected in zip(supplied, resolved, strict=True)):
                 raise InvestigationRegistryInvariantError("injected registry catalogues are incompatible")
-            self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog = resolved
+            self._case_catalog, self._case_content_catalog, self._public_conclusion_catalog, self._resource_text_catalog = resolved
 
     def create(
         self,

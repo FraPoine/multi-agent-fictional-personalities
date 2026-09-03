@@ -13,6 +13,8 @@ from multi_agent_personalities.models import (
     GenerationResult, InvestigationConclusionState, InvestigationSession,
     InvestigationStatus, OfficialScoreResult, RevealedSolution,
 )
+from multi_agent_personalities.application.resource_consultation_service import resolved_resource_context
+from multi_agent_personalities.resource_text_catalog import ResourceTextCatalog
 
 
 class ConclusionConflictError(ValueError):
@@ -73,22 +75,22 @@ def start_official_conclusion(session: InvestigationSession, *, public_definitio
     return _replace_conclusion(snapshot, conclusion, status=InvestigationStatus.READY_FOR_FINAL)
 
 
-def build_safe_answer_context(session: InvestigationSession, *, public_definition: PublicConclusionDefinition, safe_resource_context: Sequence[str] = ()) -> str:
+def build_safe_answer_context(session: InvestigationSession, *, public_definition: PublicConclusionDefinition, resource_text_catalog: ResourceTextCatalog | None = None) -> str:
     """Render only public and legitimately retained information."""
     if public_definition.case_id != session.case_id: raise ConclusionConflictError("public conclusion case mismatch")
     information = "\n".join(f"- {x.text}" for x in session.revealed_information) or "None."
     messages = "\n".join(f"- {m.speaker_name}: {m.text}" for run in session.conversation_runs for m in run.messages) or "None."
     questions = "\n".join(f"- [{q.question_id}] {q.texts['en']}" for q in public_definition.questions)
-    resources = "\n".join(f"- {x}" for x in safe_resource_context) or "None."
+    resources = resolved_resource_context(session, resource_text_catalog)
     return f"Case opening:\n{session.case_introduction}\n\nRevealed information:\n{information}\n\nInvestigation conversations:\n{messages}\n\nPublic questions:\n{questions}\n\nConsulted resources:\n{resources}"
 
 
-def generate_official_answer_drafts(session: InvestigationSession, *, public_definition: PublicConclusionDefinition, provider: AnswerDraftProvider, safe_resource_context: Sequence[str] = ()) -> DraftGenerationResult:
+def generate_official_answer_drafts(session: InvestigationSession, *, public_definition: PublicConclusionDefinition, provider: AnswerDraftProvider, resource_text_catalog: ResourceTextCatalog | None = None) -> DraftGenerationResult:
     snapshot = _snapshot(session); conclusion = _official(snapshot, ConclusionPhase.DRAFT)
     if conclusion.answers: raise ConclusionConflictError("answer drafts already exist")
     if public_definition.case_id != snapshot.case_id or tuple(x.question_id for x in public_definition.questions) != conclusion.question_ids:
         raise ConclusionConflictError("public questions do not match the session")
-    base = build_safe_answer_context(snapshot, public_definition=public_definition, safe_resource_context=safe_resource_context)
+    base = build_safe_answer_context(snapshot, public_definition=public_definition, resource_text_catalog=resource_text_catalog)
     answers = []; prompts = []
     for question in public_definition.questions:
         prompt = f"{base}\n\nAnswer only this public question without inventing facts:\n[{question.question_id}] {question.texts['en']}"
