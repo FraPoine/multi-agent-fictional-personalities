@@ -130,6 +130,9 @@ def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) 
     lodging = next(lead for lead in registry.snapshot(session_id).leads if lead.reference == "68 WC")
     assert client.post(f"/investigations/{session_id}/leads/{lodging.lead_id}/visit").status_code == 303
     visit_id = registry.snapshot(session_id).visits[-1].visit_id
+    confirmation_page = client.get(f"/investigations/{session_id}?lead={lodging.lead_id}")
+    assert confirmation_page.text.count('value="break-in"') == 1
+    assert confirmation_page.text.index('class="thread-stream"') < confirmation_page.text.index('value="break-in"')
     assert client.post(
         f"/investigations/{session_id}/visits/{visit_id}/interaction",
         data={"interaction_id": "break-in"},
@@ -137,6 +140,11 @@ def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) 
     mid = registry.snapshot(session_id)
     assert "wc-68" in mid.case_state.closed_lead_keys
     assert mid.case_state.continuation_visit_id == visit_id
+    choice_page = client.get(f"/investigations/{session_id}?lead={lodging.lead_id}")
+    assert choice_page.text.count('value="burn-uniform"') == 1
+    assert choice_page.text.index('value="burn-uniform"') < choice_page.text.index('class="thread-stream"')
+    assert 'name="option_id" required' in choice_page.text
+    assert 'value="footman"' in choice_page.text
     assert client.post(
         f"/investigations/{session_id}/visits/{visit_id}/interaction",
         data={"interaction_id": "burn-uniform", "option_id": "footman"},
