@@ -326,6 +326,35 @@ def _lead_by_id(
     raise ValueError(f"unknown lead_id: {lead_id!r}")
 
 
+def rename_lead(
+    session: InvestigationSession,
+    *,
+    lead_id: str,
+    custom_label: str,
+) -> InvestigationSession:
+    """Replace one runtime lead's UI-only custom display label."""
+    if not isinstance(session, InvestigationSession):
+        raise ValueError("session must be a validated InvestigationSession")
+    snapshot = InvestigationSession.model_validate(
+        session.model_dump(mode="python")
+    )
+    if (
+        snapshot.status is not InvestigationStatus.ACTIVE
+        or snapshot.conclusion is not None
+    ):
+        raise ValueError("lead renaming requires an active writable session")
+    lead = _lead_by_id(snapshot, lead_id)
+    replacement = InvestigationLead.model_validate(
+        {**lead.model_dump(mode="python"), "custom_label": custom_label}
+    )
+    payload = snapshot.model_dump(mode="python")
+    payload["leads"] = tuple(
+        replacement if item.lead_id == lead_id else item
+        for item in snapshot.leads
+    )
+    return InvestigationSession.model_validate(payload)
+
+
 def visit_lead(
     session: InvestigationSession,
     *,

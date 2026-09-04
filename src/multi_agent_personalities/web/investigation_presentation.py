@@ -93,6 +93,8 @@ class InvestigationSessionPresentation:
 class InvestigationLeadPresentation:
     lead_id: str
     label: str
+    original_label: str
+    custom_label: str | None
     kind: str
     reference: str | None
     visit_count: int
@@ -127,6 +129,8 @@ class InvestigationVisitPresentation:
 class InvestigationLeadDetailPresentation:
     lead_id: str
     label: str
+    original_label: str
+    custom_label: str | None
     kind: str
     reference: str | None
     current: bool
@@ -268,7 +272,9 @@ def present_session(
     leads = tuple(
         InvestigationLeadPresentation(
             lead_id=lead.lead_id,
-            label=lead.label,
+            label=lead.custom_label or lead.label,
+            original_label=lead.label,
+            custom_label=lead.custom_label,
             kind=lead.kind,
             reference=lead.reference,
             visit_count=visit_counts[lead.lead_id],
@@ -347,7 +353,9 @@ def present_session(
         pending = pending_case_interaction(session, case_content=content, visit_id=current_visit.visit_id) if content is not None and is_current and current_visit is not None else None
         selected_detail = InvestigationLeadDetailPresentation(
             lead_id=selected_lead.lead_id,
-            label=selected_lead.label,
+            label=selected_lead.custom_label or selected_lead.label,
+            original_label=selected_lead.label,
+            custom_label=selected_lead.custom_label,
             kind=selected_lead.kind,
             reference=selected_lead.reference,
             current=is_current,

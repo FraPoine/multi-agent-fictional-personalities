@@ -9,6 +9,8 @@ from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
 )
+from multi_agent_personalities.case_catalog import default_case_catalog_directory
+from multi_agent_personalities.web.investigation_presentation import present_session
 from tests.asgi_client import ASGITestClient
 
 
@@ -45,6 +47,10 @@ def test_router_exposes_investigation_mutations(web_client) -> None:
         ("/investigations/{session_id}/leads", ("POST",)),
         (
             "/investigations/{session_id}/leads/{lead_id}/visit",
+            ("POST",),
+        ),
+        (
+            "/investigations/{session_id}/leads/{lead_id}/rename",
             ("POST",),
         ),
         (
@@ -136,6 +142,106 @@ def test_unknown_session_lead_and_visit_are_404_without_mutation(
         "/investigations/session_001/visits/session_001_visit_9999/discussion"
     ).status_code == 404
     assert registry.snapshot("session_001") == before
+
+
+def test_runtime_lead_rename_http_contract_and_archive_presentation(
+    web_client,
+) -> None:
+    client, registry, _app = web_client
+    client.post("/investigations", data=VALID_FORM)
+    client.post(
+        "/investigations/session_001/leads",
+        data={"reference": "42 NW"},
+    )
+    lead = registry.snapshot("session_001").leads[0]
+    presentation_args = {
+        "case_catalog": registry.case_catalog,
+        "resource_base_directory": default_case_catalog_directory(ROOT).parent,
+    }
+    initial = present_session(registry.get("session_001"), **presentation_args)
+    assert initial.leads[0].label == initial.leads[0].original_label == lead.label
+    assert initial.leads[0].custom_label is None
+
+    renamed_response = client.post(
+        f"/investigations/session_001/leads/{lead.lead_id}/rename",
+        data={"custom_label": "  House of Lestrade  "},
+    )
+    assert renamed_response.status_code == 303
+    assert renamed_response.headers["location"].endswith(f"?lead={lead.lead_id}")
+    renamed = registry.snapshot("session_001")
+    assert renamed.leads[0].label == lead.label
+    assert renamed.leads[0].custom_label == "House of Lestrade"
+    presented = present_session(
+        registry.get("session_001"),
+        selected_lead_id=lead.lead_id,
+        **presentation_args,
+    )
+    assert presented.leads[0].label == "House of Lestrade"
+    assert presented.leads[0].original_label == lead.label
+    assert presented.leads[0].reference == lead.reference
+    assert presented.selected_lead.label == "House of Lestrade"
+    assert presented.selected_lead.original_label == lead.label
+    assert presented.selected_lead.custom_label == "House of Lestrade"
+    assert presented.selected_lead.reference == lead.reference
+
+    before_failure = registry.snapshot("session_001").model_dump_json()
+    assert client.post(
+        f"/investigations/session_999/leads/{lead.lead_id}/rename",
+        data={"custom_label": "Unknown session"},
+    ).status_code == 404
+    assert client.post(
+        "/investigations/session_001/leads/missing/rename",
+        data={"custom_label": "Unknown"},
+    ).status_code == 404
+    assert client.post(
+        f"/investigations/session_001/leads/{lead.lead_id}/rename",
+        data={"custom_label": "   "},
+    ).status_code == 400
+    assert client.post(
+        f"/investigations/session_001/leads/{lead.lead_id}/rename",
+        data={"custom_label": "x" * 121},
+    ).status_code == 400
+    assert registry.snapshot("session_001").model_dump_json() == before_failure
+
+    visit = registry.snapshot("session_001").visits[-1]
+    for information in ("The window was open.", "The corridor was used."):
+        assert client.post(
+            f"/investigations/session_001/visits/{visit.visit_id}/information",
+            data={"information": information},
+        ).status_code == 303
+    assert client.post("/investigations/session_001/finalize").status_code == 303
+    completed_before = registry.snapshot("session_001").model_dump_json()
+    assert client.post(
+        f"/investigations/session_001/leads/{lead.lead_id}/rename",
+        data={"custom_label": "Blocked"},
+    ).status_code == 409
+    assert registry.snapshot("session_001").model_dump_json() == completed_before
+    archive = client.get(
+        f"/investigations/session_001?lead={lead.lead_id}"
+    )
+    assert archive.status_code == 200
+    assert "House of Lestrade" in archive.text
+
+    assert client.post(
+        "/investigations",
+        data={
+            "characters": ["sherlock", "poirot"],
+            "case_id": "demo-1-vanishing-from-hyde-park",
+        },
+    ).status_code == 303
+    assert client.post(
+        "/investigations/session_002/leads", data={"reference": "17 WC"}
+    ).status_code == 303
+    conclusion_lead = registry.snapshot("session_002").leads[0]
+    assert client.post(
+        "/investigations/session_002/conclusion/start"
+    ).status_code == 303
+    conclusion_before = registry.snapshot("session_002").model_dump_json()
+    assert client.post(
+        f"/investigations/session_002/leads/{conclusion_lead.lead_id}/rename",
+        data={"custom_label": "Blocked"},
+    ).status_code == 409
+    assert registry.snapshot("session_002").model_dump_json() == conclusion_before
 
 
 def test_discussion_failure_is_500_and_atomic(

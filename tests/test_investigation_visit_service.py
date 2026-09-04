@@ -13,14 +13,18 @@ from multi_agent_personalities.application import (
     continue_lead_discussion,
     create_session,
     project_lead_conversation,
+    rename_lead,
     reveal_information,
     visit_lead,
 )
 from multi_agent_personalities.models import (
+    CasePlayState,
     ConversationRun,
     GenerationMetadata,
     GenerationResult,
     Persona,
+    InvestigationStatus,
+    LeadAccountingEntry,
 )
 from multi_agent_personalities.simulation import ConversationParticipant
 
@@ -119,6 +123,96 @@ def test_unknown_or_foreign_lead_revisit_is_atomic() -> None:
         visit_lead(session, id_factory=factory, lead_id="session_002_lead_0001")
 
     assert session.model_dump_json() == original_json
+
+
+def test_runtime_lead_rename_is_immutable_repeatable_and_persists_on_revisit() -> None:
+    session, factory = new_session()
+    session = visit_lead(
+        session,
+        id_factory=factory,
+        label="Original A",
+        kind="place",
+        case_lead_key="lead-a",
+        reference="13 SW",
+    )
+    lead_a = session.leads[0]
+    visit_a = session.visits[0]
+    payload = session.model_dump(mode="python")
+    payload["case_state"] = CasePlayState(
+        flags=("known",),
+        accounting_entries=(
+            LeadAccountingEntry(
+                source_kind="first-visit",
+                source_id="lead-a",
+                lead_id=lead_a.lead_id,
+                visit_id=visit_a.visit_id,
+                amount=1,
+                uniqueness="once-per-lead",
+            ),
+        ),
+    )
+    session = type(session).model_validate(payload)
+    before = session
+
+    renamed = rename_lead(
+        session,
+        lead_id=lead_a.lead_id,
+        custom_label="House of Lestrade",
+    )
+    renamed_again = rename_lead(
+        renamed,
+        lead_id=lead_a.lead_id,
+        custom_label="Lestrade Residence",
+    )
+    updated_a = renamed_again.leads[0]
+
+    assert updated_a.model_dump(exclude={"custom_label"}) == lead_a.model_dump(
+        exclude={"custom_label"}
+    )
+    assert updated_a.label == "Original A"
+    assert updated_a.custom_label == "Lestrade Residence"
+    assert renamed.leads[0].custom_label == "House of Lestrade"
+    assert renamed_again.visits == before.visits
+    assert renamed_again.revealed_information == before.revealed_information
+    assert renamed_again.case_state == before.case_state
+    assert renamed_again.case_state.accounting_entries == before.case_state.accounting_entries
+    assert renamed_again.conclusion == before.conclusion
+
+    with_b = visit_lead(
+        renamed_again, id_factory=factory, label="B", kind="person"
+    )
+    revisited = visit_lead(
+        with_b, id_factory=factory, lead_id=lead_a.lead_id
+    )
+    assert len([lead for lead in revisited.leads if lead.lead_id == lead_a.lead_id]) == 1
+    assert len(revisited.visits) == 3
+    assert revisited.leads[0].custom_label == "Lestrade Residence"
+    context = build_lead_discussion_context(
+        revisited, visit_id=revisited.visits[-1].visit_id
+    )
+    assert "Original A (kind: place)" in context
+    assert "Lestrade Residence" not in context
+
+
+def test_runtime_lead_rename_rejects_invalid_targets_and_read_only_sessions() -> None:
+    session, factory = new_session()
+    session = visit_lead(session, id_factory=factory, label="A", kind="place")
+    frozen = session.model_dump_json()
+    with pytest.raises(ValueError, match="unknown lead_id"):
+        rename_lead(session, lead_id="missing", custom_label="Unknown")
+    with pytest.raises(ValueError, match="custom_label"):
+        rename_lead(session, lead_id=session.leads[0].lead_id, custom_label=" ")
+    assert session.model_dump_json() == frozen
+
+    payload = session.model_dump(mode="python")
+    payload["status"] = InvestigationStatus.READY_FOR_FINAL
+    read_only = type(session).model_validate(payload)
+    with pytest.raises(ValueError, match="active writable"):
+        rename_lead(
+            read_only,
+            lead_id=read_only.leads[0].lead_id,
+            custom_label="Blocked",
+        )
 
 
 def test_explicit_multiple_information_disclosure_is_global_and_atomic() -> None:

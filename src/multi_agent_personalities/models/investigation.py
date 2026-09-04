@@ -135,6 +135,7 @@ class InvestigationLead(BaseModel):
     case_lead_key: NonEmptyStr | None = None
     reference: NonEmptyStr | None = None
     label: NonEmptyStr
+    custom_label: NonEmptyStr | None = None
     kind: NonEmptyStr
 
     @model_validator(mode="after")

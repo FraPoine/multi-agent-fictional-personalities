@@ -29,6 +29,7 @@ from multi_agent_personalities.application import (
     generate_official_answer_drafts,
     investigation_mock_capabilities,
     lock_official_answers,
+    rename_lead,
     reveal_manual_information,
     reveal_official_answer_elements,
     reveal_official_solution,
@@ -67,6 +68,7 @@ from multi_agent_personalities.web.investigation_store import (
 
 
 MAX_LEAD_REFERENCE_LENGTH = 80
+MAX_LEAD_CUSTOM_LABEL_LENGTH = 120
 MAX_INFORMATION_LENGTH = 4000
 MIN_INVESTIGATORS = 2
 logger = logging.getLogger(__name__)
@@ -599,6 +601,66 @@ def create_investigation_router(
         if isinstance(result, Response):
             return result
         _record, lead_id = result
+        return RedirectResponse(
+            url=f"/investigations/{session_id}?lead={lead_id}",
+            status_code=303,
+        )
+
+    @router.post(
+        "/investigations/{session_id}/leads/{lead_id}/rename",
+        response_class=HTMLResponse,
+        name="rename_investigation_lead",
+    )
+    async def rename_investigation_lead(
+        request: Request,
+        session_id: str,
+        lead_id: str,
+        custom_label: Annotated[str | None, Form()] = None,
+    ) -> Response:
+        raw_label = custom_label or ""
+        normalized_label = raw_label.strip()
+        if (
+            not normalized_label
+            or len(raw_label) > MAX_LEAD_CUSTOM_LABEL_LENGTH
+        ):
+            return render_error(
+                request,
+                status_code=400,
+                page_title="Invalid lead name",
+                heading="Lead could not be renamed",
+                message=(
+                    "Enter a lead name up to "
+                    f"{MAX_LEAD_CUSTOM_LABEL_LENGTH} characters."
+                ),
+            )
+
+        def mutate(
+            record: InvestigationSessionRecord,
+        ) -> InvestigationSessionMutation[None]:
+            if (
+                record.session.status is not InvestigationStatus.ACTIVE
+                or record.session.conclusion is not None
+            ):
+                raise InvestigationWorkflowConflictError(
+                    "This investigation is read-only."
+                )
+            if not any(item.lead_id == lead_id for item in record.session.leads):
+                raise InvestigationResourceNotFoundError(lead_id)
+            updated = rename_lead(
+                record.session,
+                lead_id=lead_id,
+                custom_label=normalized_label,
+            )
+            return InvestigationSessionMutation(session=updated, result=None)
+
+        result = execute_mutation(
+            request,
+            session_id,
+            mutate,
+            failure_heading="Lead could not be renamed",
+        )
+        if isinstance(result, Response):
+            return result
         return RedirectResponse(
             url=f"/investigations/{session_id}?lead={lead_id}",
             status_code=303,

@@ -96,6 +96,13 @@ def test_new_domain_records_are_frozen_and_strict() -> None:
     with pytest.raises(ValidationError):
         info.text = "changed"
     assert item.label == "Lead 1"
+    assert item.custom_label is None
+    renamed = InvestigationLead.model_validate(
+        {**lead(1), "custom_label": "  House of Lestrade  "}
+    )
+    assert renamed.custom_label == "House of Lestrade"
+    with pytest.raises(ValidationError):
+        InvestigationLead.model_validate({**lead(1), "custom_label": " "})
 
 
 def test_duplicate_and_foreign_leads_are_rejected() -> None:
