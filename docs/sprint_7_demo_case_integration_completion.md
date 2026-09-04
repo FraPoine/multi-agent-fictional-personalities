@@ -18,6 +18,25 @@ modes, budget changes, item-gated entries, and terminal outcomes. Demo 3 charges
 each successful configured variant visit, including a revisit in another
 available variant; failed preflight actions create no visit and no charge.
 
-Normal loading never opens solution or scoring files. Questions are retained
-for later UI/scoring work but do not enter agent context. No network or API key
-is required.
+The later web closure exposes only the three authored demos in the normal
+lobby. Actual local assets remain player-visible and human-mediated; verified
+directory, newspaper, and informant text reaches agents only after explicit
+consultation. Case-specific operational guidance replaces generic rules.
+
+Demos 1 and 2 now implement public questions, deterministic drafts and edits,
+irreversible lock, lazy answer-element reveal, deterministic scoring, Holmes
+benchmarks, and separately lazy long-solution reveal. Demo 1 intentionally
+retains the supplied 140-point answer-element total and printed Holmes score
+of 100. Demo 3 has no official conclusion package and terminates only through
+its exact authored outcome. These statements supersede this document's earlier
+“later UI/scoring work” status; that wording was historical at initial content
+integration.
+
+Only the three supplied English demos are integrated. Raw provenance remains
+under `data/raw/investigation/`; application-owned normalized files live under
+`configs/investigation/`. `The Demise of a Teetotaller` is not integrated.
+There is no live provider, investigation database or persistence, human chat,
+or automatic map interpretation. Later lawful user-provided material must be
+added as a new validated case/content/resource/conclusion package with retained
+provenance and the complete offline regression rerun. No network or API key is
+required for the current demos.

@@ -4,8 +4,10 @@
 
 Three English demos now exercise rich static content, authoritative disclosure,
 gates, state, explicit interactions, time-code references, and local images.
-Automated question answering/scoring remains future work; spoiler files are
-outside the gameplay loader. The long owned Sherlock case remains out of scope.
+Explicit resource consultation and the complete public/private conclusion flow
+for Demos 1–2 are implemented. Spoiler files remain outside the gameplay
+loader and are opened only at their permitted phases. Demo 3 uses its authored
+terminal outcome. The long user-owned Sherlock case remains out of scope.
 
 The target for the first usable release is August 7, 2026. The final course deadline is in September; no exact date is currently documented.
 
@@ -84,6 +86,10 @@ real investigation game.
   Lead/Visit model end to end: lobby, Case Opening, semantic leads, new visits
   and revisits, information disclosure, repeatable discussions, resources,
   explicit finalization, and a completed read-only archive.
+- The normal lobby exposes only the three supplied English demos. It supports
+  authored interactions and accounting, verified resource consultation,
+  official questions/scoring/solutions for Demos 1–2, and Demo 3's exclusive
+  authored-outcome path. Synthetic cases remain explicit compatibility data.
 - Task 4 removed the original round routes, presentation helpers, dead styles,
   and obsolete HTTP tests. Private round application/model compatibility code
   remains deliberately outside the web contract.
@@ -114,9 +120,9 @@ real investigation game.
 - Task 6 closes the synthetic offline integration with cross-case, atomicity,
   startup, and full-suite verification plus documentation. See the
   [case-catalogue completion record](sprint_7_case_catalogue_completion.md).
-- The structure is ready for later user-provided owned case material. No real
-  or commercial case content is integrated, and this repository ships no
-  copyrighted Sherlock case text, maps, newspapers, or handouts.
+- The structure is ready for later lawful user-provided material. Only the
+  three supplied English demos are integrated. `The Demise of a Teetotaller`
+  is not integrated.
 
 ## Sprint 9 — Complete offline system
 

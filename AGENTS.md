@@ -40,6 +40,15 @@ effects are the sole transition authority; state files declare initial values.
 Authoritative text enters runtime knowledge only as `RevealedInformation` with
 stable source provenance.
 
+The normal lobby exposes only those three authored demos; synthetic cases are
+retained for explicit compatibility tests. Player-visible maps and floor plans
+remain human-mediated. Verified resource text becomes agent-readable only
+after explicit consultation. Demos 1 and 2 use public questions followed by
+lazy private scoring and solution reveal; Demo 1 preserves the source's
+140-point answer-element total beside its printed Holmes benchmark of 100.
+Demo 3 has only an authored terminal outcome and no official-question,
+scoring, solution, or generated-Final-Theory path.
+
 Sprints 5–7 and the six-task case-catalogue integration are complete. The
 repository provides both the existing conversation
 CLI and a local FastAPI/Jinja web interface for deterministic mock

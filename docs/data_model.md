@@ -1,5 +1,28 @@
 # Data Model
 
+## Authored investigation ownership
+
+The three supplied English demos are normalized into separate immutable
+catalogues. `CaseDefinition` owns identity, trusted opening, physical lead
+references, and resource references. `CaseContentDefinition` owns authored
+sections, modes, gates, effects, interactions, and initial state. Resource
+metadata and verified agent-readable resource text remain separate. Public
+conclusion questions are startup-safe; answer elements/scoring and long
+solutions live in distinct lazy private repositories.
+
+Creating a catalogue-backed `InvestigationSession` stores `case_id` and an
+opening snapshot, not the complete static definitions. A visible physical
+reference resolves within that case to one persistent internal `lead_id`;
+every successful visit receives a new `visit_id`. Accounting is immutable and
+case-defined: Demo 1 uses paragraph entries, Demo 2 first-visit entries, and
+Demo 3 configured variant visits and budget adjustments.
+
+`ResourceConsultation` records explicit disclosure of verified same-case
+public resource text. Viewing player-only images creates no such record.
+Terminal representations are exclusive: Demos 1–2 store an
+`OfficialConclusionState`, Demo 3 stores an authored outcome, and only legacy
+synthetic compatibility sessions may use generated `FinalTheory`.
+
 ## Playable case content
 
 `CaseContentDefinition` complements rather than enlarges `CaseDefinition`.
@@ -824,9 +847,11 @@ the provider result traverses the same structured adapter. The service owns
 `session_NNN_final_theory` identity and atomically adds the theory together
 with `completed` status. The aggregate enforces both directions: completed
 sessions require a final theory, and non-completed sessions cannot contain one.
-`ready_for_final` does not trigger generation. No official-solution scoring or
-persistence is implemented. The web finalization route delegates to this
-operation only after an explicit Game Master submission.
+`ready_for_final` does not trigger generation. This historical round pathway
+has no official-solution scoring or persistence. Its compatibility web
+finalization delegates to this operation only after an explicit Game Master
+submission; authored Demos 1–2 use the separate conclusion state described at
+the top of this document.
 
 Prompt context comes from four version-1 files under `prompts/`. Their closed
 placeholder contracts are loaded and rendered in the application layer, while

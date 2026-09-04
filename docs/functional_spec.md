@@ -9,14 +9,27 @@ can unlock gated sections, and applied effects are idempotent. Confirmation and
 single-choice interactions require an explicit player POST. Repository-local
 images are served through a path-confined endpoint and rendered in the case UI.
 
+The normal lobby lists only these three authored demos. Synthetic cases remain
+available through explicit compatibility/developer injection. The server
+resolves `case_id`; browser input never supplies an opening, internal lead ID,
+official answer, point value, Holmes benchmark, or solution.
+
+Demos 1 and 2 conclude through public questions, deterministic drafts, edits,
+irreversible answer lock, private answer-element reveal, player-selected
+awards, deterministic scoring, and separate long-solution reveal. Demo 1 shows
+the preserved 140-point element total beside the printed Holmes score of 100.
+Demo 3 concludes only through an authored terminal effect and exposes no
+questions, scoring, solution, or generated Final Theory.
+
 ## Sprint 7 Lead/Visit web redesign
 
 The catalogue-driven Lead/Visit browser flow described here is complete for
-synthetic local fixtures. See the
+the three authored local demos. Synthetic fixtures remain historical
+compatibility coverage. See the
 [case-catalogue completion record](sprint_7_case_catalogue_completion.md).
 
 The main FastAPI application now presents `GET /investigations` as a local
-game-start lobby. It renders one selectable card per synthetic local
+game-start lobby. It renders one selectable card per authored local
 `CaseDefinition`, investigator identities from the character catalogue, and
 the fixed mock-fixture limitation. `POST /investigations` accepts `case_id` and
 investigator selection only; the server resolves the trusted definition and
@@ -25,8 +38,8 @@ creates the session through `InMemoryInvestigationRegistry`.
 The canonical detail page now uses a shared three-region investigation shell.
 An empty session renders the selected Case Opening, catalogue-derived
 investigator identities, an empty Leads rail, and the compact resource toolbar.
-Rules are local guidance and case resources resolve from the session's
-`case_id`. No GET mutates the session.
+Rules are case-specific operational guidance and case resources resolve from
+the session's `case_id`. No GET mutates the session.
 
 The final route contract implements lead navigation, conversation projection,
 information revelation, revisit behavior, resources, and finalization. The
@@ -39,20 +52,24 @@ chronological visit; any other selected lead is historical and read-only until
 the user explicitly posts a revisit. A revisit appends a new `LeadVisit` while
 preserving the original `InvestigationLead` identity and all earlier visits.
 
-Game Master information disclosure and investigator discussion target only the
-latest visit. Historical writes return `409` without replacing the registry
+For authored cases, eligible case sections disclose information through the
+application service; the manual Game Master form is restricted to explicit
+legacy sessions. Investigator discussion targets only the latest visit.
+Historical writes return `409` without replacing the registry
 snapshot. Each discussion submission calls `continue_lead_discussion()` and
 attaches one bounded immutable `ConversationRun`. The UI projects all runs for
 the selected semantic lead through `project_lead_conversation()`, so an A → B
 → A chronology renders both A visits as one persistent thread with subtle visit
 separators. Fixture exhaustion is a local `500` failure, not a domain limit.
 
-Task 3 completes the remaining player-facing states. The investigation shell
+Historically, Task 3 completed the initial synthetic player-facing shell. It
 provides a small resource toolbar and responsive drawer. Case Opening and
-generic local Rules are functional and read-only. The later case-resource
+case-specific operational guidance are functional and read-only. The later
+case-resource
 foundation replaces its original hardcoded future buttons with validated
 case-specific maps, newspapers, directory, informants, and document
-placeholders. No copyrighted asset or external resource backend is included.
+assets. Supplied local images render directly and missing assets have an honest
+state; no external resource backend is included.
 A disabled composer presents human participation honestly as future work and
 has no POST route.
 
@@ -78,10 +95,11 @@ creation accepts a stable `case_id`, copies that definition's opening into the
 new session, and stores no complete case definition in runtime state. Multiple
 sessions may use the same case independently. Tasks 2–5 complete lead-code
 input, case resources, catalogue selection, and the Figma-aligned presentation.
-Only synthetic case content is included.
+That statement described the initial catalogue milestone. The active normal
+lobby now includes only the three supplied English authored demos; synthetic
+definitions remain explicit compatibility fixtures.
 
-The repository ships no copyrighted Sherlock case text, maps, newspapers, or
-handouts. Later user-owned material is configuration work: add a validated
+Later lawful user-provided material is configuration work: add a validated
 case file, declare explicit resources and safe local asset paths, preserve
 availability flags, then rerun the offline catalogue/Lead/Visit/resource/E2E
 regressions. It is not integrated until the user supplies that material.

@@ -28,8 +28,9 @@ reproducibility components. The final study has not been completed.
 
 ## Current implementation status
 
-The investigation lobby now includes three validated English demo cases in
-addition to retained synthetic fixtures. User-supplied provenance stays under
+The normal investigation lobby exposes exactly three validated English demo
+cases. Retained synthetic fixtures are available only through explicit test or
+developer injection paths. User-supplied provenance stays under
 `data/raw/investigation/`; normal runtime loading uses spoiler-free derived
 definitions and assets under `configs/investigation/`. Eligible authoritative
 sections become provenance-bearing `RevealedInformation`. London-address,
@@ -138,7 +139,8 @@ multiple maps, newspapers, a shared directory and informants, documents, and
 initially hidden handouts.
 
 The three integrated demo cases and their local assets derive only from the
-user-supplied provenance package. The longer commercial case is not integrated.
+user-supplied provenance package. The longer case, *The Demise of a
+Teetotaller*, is not integrated.
 Later user-owned material should be added by creating a validated case YAML,
 declaring its resource in `configs/investigation/resources.yaml`, placing the
 owned asset below the catalogue asset root with a safe relative path, and
@@ -153,9 +155,9 @@ Lead/Visit, HTTP E2E, and full regression suites afterward.
 - deterministic multi-agent conversations through application, CLI, and web;
 - atomic persistence for conversation runs;
 - technical evaluation-pilot preparation, rating, and analysis tooling; and
-- deterministic Lead/Visit investigation orchestration with explicit
-  information disclosure, revisits, repeatable discussions, resources, and
-  finalization through the main local web application.
+- deterministic Lead/Visit investigation orchestration with authored
+  disclosure, revisits, repeatable discussions, explicit resource
+  consultation, and case-specific terminal flows through the local web app.
 
 ## Technical blind-evaluation pilot
 
@@ -218,14 +220,24 @@ below.
 The investigation browser flow is:
 
 ```text
-select local synthetic case + investigators
+select one of the three authored demos + both supported investigators
 → opening loaded from CaseDefinition
-→ enter a London-address or Carlton-interior lead reference
-→ reveal information and run bounded mock discussion
+→ enter a case-aware physical reference and, for Demo 3, select a mode
+→ authored sections disclose information and bounded mock discussion remains optional
 → select historical leads or revisit explicitly
-→ inspect case-aware local resources
-→ present Final Theory and retain a read-only process-local archive
+→ view human-mediated images and explicitly consult verified readable resources
+→ answer, lock, score, and reveal the official solution for Demos 1–2
+  or reach Demo 3's authored terminal outcome
+→ retain a read-only process-local archive
 ```
+
+The browser never accepts official answers, points, benchmarks, or solutions
+from form fields. Public questions may load with the case, whereas private
+answer elements and long solutions are opened lazily after answer lock and
+explicit solution reveal respectively. Demo 1 deliberately preserves the
+source discrepancy between 140 available answer-element points and the printed
+Holmes score of 100. Demo 3 has no official-question or generated-Final-Theory
+path; its authored terminal text is the terminal artifact.
 
 ## Local web interface
 
@@ -367,10 +379,11 @@ critical-path tests reject attempted network access.
   history browser.
 - Normal application scheduling uses deterministic round-robin. There is no
   dynamic conversation manager or content-dependent speaker priority.
-- Investigation has no persistence, CLI, live provider, automatic clue
-  generation, automatic lead execution, automatic finalization, official-case
-  scoring, or recognizability evaluation. Its implemented web UI is local,
-  deterministic, mock-only, and process-local.
+- Investigation has no database or persistence, CLI, live provider, human
+  chat, automatic map interpretation, automatic clue generation, automatic
+  lead execution, scoring beyond the supplied Demo 1–2 definitions, or
+  recognizability evaluation. Its implemented web UI is local, deterministic,
+  mock-only, and process-local.
 - Real token usage, latency, request IDs, retries, and monetary costs are not
   collected.
 

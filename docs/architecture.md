@@ -13,6 +13,24 @@ Authored operations preflight modes, gates, closures, and budget before a visit
 exists. Authored terminal effects complete the session without generating a
 `FinalTheory`; those terminal representations are mutually exclusive.
 
+`CaseDefinition` is the trusted source for selectable identity, opening, lead
+references, and resource references. Session creation resolves the submitted
+`case_id` server-side and snapshots the opening into `InvestigationSession`.
+Players navigate with physical references; the service assigns the persistent
+semantic `lead_id` and chronological `visit_id`. Demo 1 accounts narrative
+paragraphs, Demo 2 accounts first visits, and Demo 3 accounts configured
+variant visits plus authored budget adjustments.
+
+## Resource consultation boundary
+
+`configs/investigation/resources.yaml` owns visible resource metadata and safe
+asset paths. `ResourceTextCatalog` separately owns verified public text and
+provenance. Image GETs never mutate knowledge. Maps and floor plans are
+player-only; agent-readable directory, newspaper, and informant text enters
+later discussion or draft context only after `consult_case_resource()` records
+an immutable same-case consultation. Consultation is allowed only during
+active gameplay before any conclusion or authored outcome.
+
 ## Official conclusion spoiler firewall
 
 Public definitions in `configs/investigation/conclusions/public/` may load at
@@ -25,6 +43,9 @@ Official conclusions use `READY_FOR_FINAL` through draft, lock, and
 player-confirmed deterministic scoring, which freezes gameplay. Explicit
 solution reveal transitions to `COMPLETED`. Official conclusion, authored
 outcome, and generated `FinalTheory` are mutually exclusive terminal paths.
+Demo 1 retains the supplied 140-point answer-element total and printed Holmes
+score of 100 with an explicit review note. Demo 3 supplies no conclusion data;
+its exact revealed authored ending is the only terminal artifact.
 
 ## Lead/Visit web presentation
 
@@ -510,7 +531,9 @@ with the stable provider-neutral `investigation.final_theory` task, parses the
 result through the shared structured adapter, validates nonempty hypothesis and
 evidence references, and assigns the service-owned deterministic final-theory
 ID. The theory and completed status are inserted in one aggregate rebuild.
-There is no automatic finalization, official-solution scoring, or persistence.
+This historical round operation has no automatic finalization or official
+scoring, and investigation sessions are not persisted. The active authored
+Lead/Visit path has a separate official-conclusion service for Demos 1–2.
 The main web application exposes this operation only through an explicit
 finalization POST when the configured mock scenario is exhausted.
 
