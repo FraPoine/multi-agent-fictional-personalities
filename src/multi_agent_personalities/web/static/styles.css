@@ -931,7 +931,7 @@ body {
 
 .app-nav a {
     position: relative;
-    padding: 21px 0 19px;
+    padding: 21px 10px 19px;
     color: var(--color-header-muted);
     font-size: 0.8125rem;
     font-weight: 700;
@@ -1093,7 +1093,7 @@ body {
     }
 
     .app-nav a {
-        padding: 7px 0 9px;
+        padding: 7px 10px 9px;
     }
 
     .app-nav a[aria-current="page"]::after {
@@ -1311,8 +1311,9 @@ body {
 .visit-separator em { color: var(--color-accent); font-style: normal; }
 .revealed-information { margin: var(--spacing-md) 0; color: var(--color-text); font-size: .92rem; line-height: 1.65; white-space: pre-wrap; }
 .thread-message { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; width: 100%; margin: 0; padding: 14px 0; border-bottom: 1px solid var(--border-soft); background: transparent; }
-.thread-message .investigator-avatar { width: 32px; height: 32px; font-size: .68rem; }
+.thread-message .investigator-avatar { width: 32px; height: 32px; background: var(--participant-color); font-size: .68rem; }
 .message-identity { color: var(--color-muted); font: 700 .66rem/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+.thread-message .message-identity { color: var(--participant-dark); }
 .thread-message p { margin-top: 4px; font-size: .84375rem; line-height: 1.7; white-space: pre-wrap; }
 .visit-empty { padding: var(--spacing-xl); color: var(--color-muted); text-align: center; }
 .lead-choice-interaction { padding: var(--spacing-xl); border-bottom: 1px solid var(--border-default); background: var(--surface-panel); }
@@ -1321,6 +1322,7 @@ body {
 .lead-choice-interaction p { color: var(--color-text); line-height: 1.6; }
 .lead-choice-interaction label { color: var(--color-muted); font-size: .72rem; font-weight: 700; text-transform: uppercase; }
 .lead-choice-interaction select { width: 100%; min-height: 40px; padding: 8px 34px 8px 10px; border: 1px solid var(--border-default); border-radius: var(--radius-small); background: var(--surface-panel); color: var(--color-ink); cursor: pointer; }
+.lead-choice-interaction .primary-action { width: auto; }
 .lead-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--spacing-lg); align-items: end; padding: var(--spacing-xl); border-top: 1px solid var(--border-default); }
 .information-form { display: grid; gap: var(--spacing-sm); }
 .information-form textarea { width: 100%; resize: vertical; }

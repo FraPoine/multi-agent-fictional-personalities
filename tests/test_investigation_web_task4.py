@@ -133,6 +133,7 @@ def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) 
     confirmation_page = client.get(f"/investigations/{session_id}?lead={lodging.lead_id}")
     assert confirmation_page.text.count('value="break-in"') == 1
     assert confirmation_page.text.index('class="thread-stream"') < confirmation_page.text.index('value="break-in"')
+    assert 'disabled>Continue discussion</button>' not in confirmation_page.text
     assert client.post(
         f"/investigations/{session_id}/visits/{visit_id}/interaction",
         data={"interaction_id": "break-in"},
@@ -145,12 +146,16 @@ def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) 
     assert choice_page.text.index('value="burn-uniform"') < choice_page.text.index('class="thread-stream"')
     assert 'name="option_id" required' in choice_page.text
     assert 'value="footman"' in choice_page.text
+    assert '<button class="primary-action" type="submit">Confirm action</button>' in choice_page.text
+    assert 'disabled>Continue discussion</button>' in choice_page.text
     assert client.post(
         f"/investigations/{session_id}/visits/{visit_id}/interaction",
         data={"interaction_id": "burn-uniform", "option_id": "footman"},
     ).status_code == 303
     completed_visit = registry.snapshot(session_id)
     assert completed_visit.case_state.continuation_visit_id is None
+    resolved_page = client.get(f"/investigations/{session_id}?lead={lodging.lead_id}")
+    assert 'disabled>Continue discussion</button>' not in resolved_page.text
     assert len([entry for entry in completed_visit.case_state.accounting_entries if entry.source_kind == "first-visit"]) == 3
     assert client.post(f"/investigations/{session_id}/leads/{lodging.lead_id}/visit").status_code == 409
     assert client.post(f"/investigations/{session_id}/conclusion/start").status_code == 303
