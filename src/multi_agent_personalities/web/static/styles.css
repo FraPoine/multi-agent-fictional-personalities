@@ -1228,8 +1228,7 @@ body {
 
 .game-page { min-height: 100vh; }
 .game-shell { min-height: calc(100vh - 63px); display: grid; grid-template-columns: 240px minmax(0, 1fr) 52px; background: var(--surface-page); }
-.lead-rail { padding: 20px 16px; background: var(--surface-panel); }
-.lead-rail { display: flex; flex-direction: column; border-right: 1px solid var(--border-default); }
+.lead-rail { position: sticky; top: 63px; align-self: start; height: calc(100vh - 63px); min-height: 0; padding: 20px 16px; border-right: 1px solid var(--border-default); background: var(--surface-panel); display: flex; flex-direction: column; }
 .resource-rail { position: sticky; top: 83px; align-self: start; width: 44px; margin: 20px 8px 0 0; padding: 6px; border: 1px solid var(--border-default); border-radius: 7px; background: var(--surface-panel); display: flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 4px 14px rgb(23 42 58 / 7%); }
 .lead-rail h2 { font-family: var(--font-serif); }
 .lead-rail-heading { display: flex; justify-content: space-between; align-items: center; }
@@ -1281,7 +1280,8 @@ body {
     .investigation-lobby-page .app-footer { align-items: center; text-align: center; }
 }
 
-.lead-list { display: grid; gap: 2px; margin: 16px -8px; }
+.lead-list { min-height: 0; display: grid; align-content: start; gap: 2px; margin: 16px -8px; overflow-y: auto; }
+.lead-rail .lead-list { flex: 1 1 auto; }
 .lead-link { position: relative; display: grid; grid-template-columns: 8px minmax(0, 1fr); align-items: center; gap: 8px; padding: 8px 10px; border-left: 2px solid transparent; border-radius: 3px; color: var(--color-text); text-decoration: none; }
 .lead-link:hover, .lead-link.is-selected { border-left-color: var(--color-accent); background: var(--surface-success); }
 .lead-link strong, .lead-link small, .lead-link-copy > span { display: block; }
@@ -1347,6 +1347,8 @@ body {
 .resource-placeholder { margin-top: var(--spacing-md); color: var(--color-muted); font-style: italic; }
 .resource-status { margin-top: var(--spacing-md); color: var(--color-accent); }
 .conclusion-panel { margin: var(--spacing-xl); padding: var(--spacing-xl); border: 1px solid var(--border-default); border-radius: var(--radius-medium); background: var(--surface-panel); }
+.conclusion-panel--start { position: fixed; right: 4.5rem; bottom: 1rem; z-index: 15; width: auto; max-width: calc(100vw - 5.5rem); margin: 0; padding: 4px; border-color: var(--border-soft); background: rgb(255 255 255 / 92%); box-shadow: 0 4px 14px rgb(23 42 58 / 8%); }
+.conclusion-panel--start .primary-action { width: auto; max-width: 100%; white-space: normal; }
 .conclusion-question { margin-top: var(--spacing-lg); padding-top: var(--spacing-lg); border-top: 1px solid var(--border-default); }
 .conclusion-question textarea { width: 100%; min-height: 7rem; margin: var(--spacing-sm) 0; }
 .score-element { display: block; margin: var(--spacing-sm) 0; }
@@ -1365,6 +1367,7 @@ body {
     .game-shell { display: grid; grid-template-columns: minmax(0, 1fr) 52px; }
     .game-shell .lead-rail { display: none; }
     .show-mobile-leads .game-shell .lead-rail { display: flex; position: fixed; z-index: 23; inset: 63px auto 0 0; width: min(86vw, 280px); overflow-y: auto; box-shadow: 12px 0 32px rgb(23 42 58 / 18%); }
+    .show-mobile-leads .lead-list { flex: none; overflow-y: visible; }
     .show-mobile-leads .lead-backdrop { display: block; position: fixed; z-index: 22; inset: 63px 0 0; background: rgb(23 42 58 / 35%); }
     .lead-panel-close { display: inline-grid; place-items: center; }
     .mobile-panel-toggle { display: inline-block; }
@@ -1380,6 +1383,3 @@ body {
     .opening-investigators ul { grid-template-columns: 1fr; }
     .conclusion-action { align-items: stretch; flex-direction: column; }
 }
-.case-resource-gallery { position: fixed; right: 4.5rem; bottom: 1rem; z-index: 15; max-width: min(32rem, 70vw); }
-.case-resource-gallery details { background: var(--surface, #fff); border: 1px solid #d7d0c4; border-radius: .5rem; padding: .5rem; box-shadow: 0 8px 24px rgb(0 0 0 / 15%); }
-.case-resource-gallery img { display: block; max-width: 100%; max-height: 65vh; object-fit: contain; margin-top: .5rem; }

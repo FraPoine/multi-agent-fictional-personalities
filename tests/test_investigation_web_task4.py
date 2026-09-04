@@ -41,6 +41,11 @@ def test_normal_lobby_lists_authored_cases_not_compatibility_fixtures(authored_w
 def test_resource_get_and_consultation_http_contract(authored_web) -> None:
     client, registry = authored_web
     session_id = create_demo(client)
+    page = client.get(f"/investigations/{session_id}")
+    assert '<aside class="resource-rail" aria-label="Investigation resources">' in page.text
+    assert "case-resource-gallery" not in page.text
+    assert "conclusion-panel--start" in page.text
+    assert "Answer final questions" in page.text
     before = registry.snapshot(session_id).model_dump_json()
     image = client.get(f"/case-assets/assets/{DEMO1}/directory.png")
     assert image.status_code == 200 and image.headers["content-type"] == "image/png"
