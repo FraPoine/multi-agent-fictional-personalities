@@ -134,6 +134,7 @@ def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) 
     assert confirmation_page.text.count('value="break-in"') == 1
     assert confirmation_page.text.index('class="thread-stream"') < confirmation_page.text.index('value="break-in"')
     assert 'disabled>Continue discussion</button>' not in confirmation_page.text
+    assert confirmation_page.text.index('>Continue discussion</button>') < confirmation_page.text.index('Generate one bounded investigator exchange')
     assert client.post(
         f"/investigations/{session_id}/visits/{visit_id}/interaction",
         data={"interaction_id": "break-in"},

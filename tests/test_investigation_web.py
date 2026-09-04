@@ -159,6 +159,14 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
         data={"reference": "42 NW"},
     )
     lead = registry.snapshot("session_001").leads[0]
+    active_page = client.get(f"/investigations/session_001?lead={lead.lead_id}")
+    assert (
+        f'/investigations/session_001/leads/{lead.lead_id}/rename"'
+        in active_page.text
+    )
+    assert 'name="custom_label"' in active_page.text
+    assert 'maxlength="120"' in active_page.text
+    assert f'value="{lead.label}"' in active_page.text
     presentation_args = {
         "case_catalog": registry.case_catalog,
         "resource_base_directory": default_case_catalog_directory(ROOT).parent,
@@ -226,6 +234,7 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
     )
     assert archive.status_code == 200
     assert "House of Lestrade" in archive.text
+    assert "lead-rename-control" not in archive.text
 
     assert client.post(
         "/investigations",
