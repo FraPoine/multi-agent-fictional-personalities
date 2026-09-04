@@ -163,7 +163,7 @@ def test_complete_a_b_a_workflow_through_real_http(http_workflow) -> None:
     assert "Archive Gazette" in a_thread.text
     assert "London Directory" in a_thread.text
     assert "Observatory Journal" not in a_thread.text
-    assert "No local asset is included for this placeholder." in a_thread.text
+    assert "Local asset unavailable." in a_thread.text
 
     finalization = client.post(f"/investigations/{session_id}/finalize")
     assert finalization.status_code == 303

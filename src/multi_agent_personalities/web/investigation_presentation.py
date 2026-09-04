@@ -12,6 +12,8 @@ from multi_agent_personalities.application.investigation_visit_service import (
 )
 from multi_agent_personalities.case_content_catalog import CaseContentCatalog
 from multi_agent_personalities.models import InvestigationStatus, Message
+from multi_agent_personalities.models import ConclusionMode, ConclusionPhase
+from multi_agent_personalities.resource_text_catalog import ResourceTextCatalog
 from multi_agent_personalities.web.investigation_store import InvestigationSessionRecord
 
 def _initials(display_name: str) -> str:
@@ -42,6 +44,9 @@ class InvestigationResourcePresentation:
     date: str | None
     asset_available: bool
     asset_url: str | None
+    agent_readable: bool
+    consulted: bool
+    can_consult: bool
 
 
 @dataclass(frozen=True)
@@ -78,6 +83,10 @@ class InvestigationSessionPresentation:
     final_theory: "InvestigationFinalTheoryPresentation | None"
     modes: tuple[str, ...]
     lead_budget_remaining: int | None
+    operational_guidance: tuple[str, ...]
+    conclusion: "InvestigationConclusionPresentation"
+    authored_outcome: str | None
+    authored: bool
 
 
 @dataclass(frozen=True)
@@ -140,6 +149,41 @@ class InvestigationFinalTheoryPresentation:
     hypotheses: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class InvestigationQuestionPresentation:
+    question_id: str
+    text: str
+    answer: str | None
+    locked: bool
+
+
+@dataclass(frozen=True)
+class InvestigationAnswerElementPresentation:
+    element_id: str
+    question_id: str
+    text: str
+    points: int
+
+
+@dataclass(frozen=True)
+class InvestigationConclusionPresentation:
+    mode: str
+    phase: str | None
+    questions: tuple[InvestigationQuestionPresentation, ...]
+    elements: tuple[InvestigationAnswerElementPresentation, ...]
+    score_result: object | None
+    holmes_route: tuple[str, ...]
+    holmes_lead_count: int | None
+    solution: str | None
+    can_start: bool
+    can_generate: bool
+    can_edit: bool
+    can_lock: bool
+    can_reveal_answers: bool
+    can_score: bool
+    can_reveal_solution: bool
+
+
 def catalogue_participants(
     catalogue: Mapping[str, CharacterConfig],
     *,
@@ -188,6 +232,8 @@ def present_session(
     resource_base_directory: Path,
     selected_lead_id: str | None = None,
     case_content_catalog: CaseContentCatalog | None = None,
+    resource_text_catalog: ResourceTextCatalog | None = None,
+    public_conclusion_catalog=None,
 ) -> InvestigationSessionPresentation:
     """Project an immutable Lead/Visit snapshot for the web shell."""
     participants = tuple(
@@ -339,6 +385,49 @@ def present_session(
         if session.final_theory is not None
         else None
     )
+    public = public_conclusion_catalog.get(session.case_id) if public_conclusion_catalog else None
+    answer_by_question = {answer.question_id: answer for answer in session.conclusion.answers} if session.conclusion else {}
+    questions = tuple(
+        InvestigationQuestionPresentation(
+            question_id=question.question_id,
+            text=question.texts["en"],
+            answer=(answer_by_question[question.question_id].text if question.question_id in answer_by_question else None),
+            locked=(answer_by_question[question.question_id].locked if question.question_id in answer_by_question else False),
+        )
+        for question in (public.questions if public else ())
+    )
+    conclusion_state = session.conclusion
+    scoring = conclusion_state.scoring_definition if conclusion_state else None
+    conclusion = InvestigationConclusionPresentation(
+        mode=session.conclusion_mode.value,
+        phase=(conclusion_state.phase.value if conclusion_state else None),
+        questions=questions,
+        elements=tuple(
+            InvestigationAnswerElementPresentation(
+                element_id=element.element_id,
+                question_id=element.question_id,
+                text=element.answer_texts["en"],
+                points=element.points,
+            )
+            for element in (conclusion_state.answer_elements if conclusion_state else ())
+        ),
+        score_result=(conclusion_state.score_result if conclusion_state else None),
+        holmes_route=(scoring.holmes_route if scoring else ()),
+        holmes_lead_count=(scoring.holmes_lead_count if scoring else None),
+        solution=(conclusion_state.revealed_solution.text if conclusion_state and conclusion_state.revealed_solution else None),
+        can_start=(
+            session.status is InvestigationStatus.ACTIVE
+            and session.conclusion_mode is ConclusionMode.OFFICIAL_QUESTIONS
+            and conclusion_state is None
+        ),
+        can_generate=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.DRAFT and not conclusion_state.answers),
+        can_edit=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.DRAFT),
+        can_lock=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.DRAFT and len(conclusion_state.answers) == len(conclusion_state.question_ids)),
+        can_reveal_answers=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.ANSWERS_LOCKED and conclusion_state.scoring_definition is None),
+        can_score=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.ANSWERS_LOCKED and conclusion_state.scoring_definition is not None),
+        can_reveal_solution=bool(conclusion_state and conclusion_state.phase is ConclusionPhase.SCORED),
+    )
+    guidance = next((item for item in resource_text_catalog.guidance if item.case_id == session.case_id), None) if resource_text_catalog else None
     return InvestigationSessionPresentation(
         session_id=session.session_id,
         case_title=case_definition.title,
@@ -353,6 +442,9 @@ def present_session(
             case_catalog,
             case_id=session.case_id,
             resource_base_directory=resource_base_directory,
+            resource_text_catalog=resource_text_catalog,
+            consulted_ids={item.resource_id for item in session.resource_consultations},
+            can_mutate=session.status is InvestigationStatus.ACTIVE and session.conclusion is None,
         ),
         leads=leads,
         selected_lead=selected_detail,
@@ -362,10 +454,15 @@ def present_session(
             and bool(session.visits)
             and bool(session.revealed_information)
             and session.final_theory is None
+            and session.conclusion_mode is ConclusionMode.GENERATED_FINAL_THEORY
         ),
         final_theory=final_theory,
         modes=(case_content_catalog.get(session.case_id).state.modes if case_content_catalog and case_content_catalog.get(session.case_id) else ()),
         lead_budget_remaining=(session.case_state.lead_budget_remaining if session.case_state else None),
+        operational_guidance=tuple(entry.texts["en"] for entry in guidance.entries) if guidance else (),
+        conclusion=conclusion,
+        authored_outcome=(session.revealed_information[-1].text if completed and session.conclusion_mode is ConclusionMode.AUTHORED_OUTCOME and session.revealed_information else None),
+        authored=case_content_catalog is not None and case_content_catalog.get(session.case_id) is not None,
     )
 
 
@@ -374,6 +471,9 @@ def _resource_groups(
     *,
     case_id: str,
     resource_base_directory: Path,
+    resource_text_catalog: ResourceTextCatalog | None,
+    consulted_ids: set[str],
+    can_mutate: bool,
 ) -> tuple[InvestigationResourceGroupPresentation, ...]:
     labels = {
         CaseResourceType.MAP: "Maps",
@@ -391,8 +491,17 @@ def _resource_groups(
     ordered_types = tuple(dict.fromkeys(resource.type for resource in visible))
     groups = []
     for resource_type in ordered_types:
-        resources = tuple(
-            InvestigationResourcePresentation(
+        presented_resources = []
+        for resource in visible:
+            if resource.type is not resource_type:
+                continue
+            text_definition = None
+            if resource_text_catalog is not None:
+                try:
+                    text_definition = resource_text_catalog.get(case_id, resource.resource_id)
+                except (LookupError, ValueError):
+                    pass
+            presented_resources.append(InvestigationResourcePresentation(
                 resource_id=resource.resource_id,
                 type=resource.type.value,
                 title=resource.title,
@@ -408,10 +517,11 @@ def _resource_groups(
                     ).is_file()
                 ),
                 asset_url=(f"/case-assets/{resource.asset_path.as_posix()}" if resource.asset_path is not None else None),
-            )
-            for resource in visible
-            if resource.type is resource_type
-        )
+                agent_readable=bool(text_definition and text_definition.agent_readable),
+                consulted=resource.resource_id in consulted_ids,
+                can_consult=(can_mutate and bool(text_definition and text_definition.agent_readable) and resource.resource_id not in consulted_ids),
+            ))
+        resources = tuple(presented_resources)
         groups.append(
             InvestigationResourceGroupPresentation(
                 key=f"resources-{resource_type.value}",

@@ -31,7 +31,7 @@ def web_client(tmp_path: Path):
         yield client, registry, app
 
 
-def test_router_exposes_only_lead_visit_mutations(web_client) -> None:
+def test_router_exposes_investigation_mutations(web_client) -> None:
     _client, _registry, app = web_client
     investigation_routes = {
         (path, tuple(sorted(method.upper() for method in operations)))
@@ -59,6 +59,14 @@ def test_router_exposes_only_lead_visit_mutations(web_client) -> None:
                 ("POST",),
             ),
         ("/investigations/{session_id}/finalize", ("POST",)),
+        ("/investigations/{session_id}/resources/{resource_id}/consult", ("POST",)),
+        ("/investigations/{session_id}/conclusion/start", ("POST",)),
+        ("/investigations/{session_id}/conclusion/drafts", ("POST",)),
+        ("/investigations/{session_id}/conclusion/answers/{question_id}", ("POST",)),
+        ("/investigations/{session_id}/conclusion/lock", ("POST",)),
+        ("/investigations/{session_id}/conclusion/answer-elements", ("POST",)),
+        ("/investigations/{session_id}/conclusion/score", ("POST",)),
+        ("/investigations/{session_id}/conclusion/solution", ("POST",)),
     }
     paths = {item[0] for item in investigation_routes}
     for suffix in ("clues", "analyses", "discussion", "decision"):

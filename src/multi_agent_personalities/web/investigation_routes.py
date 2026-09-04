@@ -12,26 +12,45 @@ from fastapi.templating import Jinja2Templates
 
 from multi_agent_personalities.application import (
     CurrentCaseLeadConflictError,
+    ConclusionConflictError,
+    DeterministicAnswerDraftProvider,
+    GameplayConflictError,
     InvalidCaseLeadReferenceError,
     InvestigationMockCapabilities,
+    ResourceConsultationError,
     UnknownCaseLeadReferenceError,
-    continue_lead_discussion,
-    finalize_lead_investigation,
-    investigation_mock_capabilities,
-    reveal_information,
-    visit_case_lead,
-    visit_playable_case_lead,
-    disclose_case_sections,
+    UnknownConsultationResourceError,
     complete_case_interaction,
-    revisit_playable_case_lead,
+    confirm_official_score,
+    consult_case_resource,
+    continue_lead_discussion,
+    disclose_case_sections,
+    finalize_lead_investigation,
+    generate_official_answer_drafts,
+    investigation_mock_capabilities,
+    lock_official_answers,
     reveal_manual_information,
+    reveal_official_answer_elements,
+    reveal_official_solution,
+    reveal_information,
+    revisit_playable_case_lead,
+    start_official_conclusion,
+    update_official_answer,
+    visit_case_lead,
     visit_lead,
+    visit_playable_case_lead,
 )
 from multi_agent_personalities.case_catalog import (
     CaseCatalog,
     default_case_catalog_directory,
 )
 from multi_agent_personalities.models import InvestigationStatus, validate_run_id
+from multi_agent_personalities.conclusion_catalog import (
+    PrivateScoringRepository,
+    PrivateSolutionRepository,
+    default_private_scoring_directory,
+    default_private_solution_directory,
+)
 from multi_agent_personalities.pipeline import CharacterConfig
 from multi_agent_personalities.web.investigation_presentation import (
     catalogue_participants,
@@ -129,6 +148,7 @@ def _index_context(
     selected_case_id: str | None = None,
     field_errors: Mapping[str, str] | None = None,
     error_message: str | None = None,
+    include_compatibility_cases: bool = False,
 ) -> dict[str, object]:
     selected = (
         {item.slug for item in supported_configs}
@@ -141,6 +161,11 @@ def _index_context(
         else selected_case_id
     )
     required_investigators = {item.slug for item in supported_configs}
+    authored_cases = case_catalog.cases if include_compatibility_cases else tuple(
+        case for case in case_catalog.cases
+        if registry.case_content_catalog is None or not registry.case_content_catalog.cases
+        or registry.case_content_catalog.get(case.case_id) is not None
+    )
     return {
         "page_title": "Multi-Agent Fictional Personalities",
         "provider_name": "mock",
@@ -156,16 +181,16 @@ def _index_context(
             supported_character_ids=capabilities.participant_ids,
             selected_slugs=selected,
         ),
-        "cases": case_catalog.cases,
+        "cases": authored_cases,
         "selected_case_id": resolved_case_id,
         "case_titles": {
-            case.case_id: case.title for case in case_catalog.cases
+            case.case_id: case.title for case in authored_cases
         },
         "capabilities": capabilities,
         "minimum_investigators": MIN_INVESTIGATORS,
         "required_investigator_count": len(required_investigators),
         "creation_ready": (
-            resolved_case_id in {case.case_id for case in case_catalog.cases}
+            resolved_case_id in {case.case_id for case in authored_cases}
             and selected == required_investigators
             and len(selected) >= MIN_INVESTIGATORS
         ),
@@ -184,6 +209,7 @@ def create_investigation_router(
     catalogue: Mapping[str, CharacterConfig],
     case_catalog: CaseCatalog,
     templates: Jinja2Templates,
+    include_compatibility_cases: bool = False,
 ) -> APIRouter:
     """Create the authoritative Lead/Visit browser router."""
     router = APIRouter()
@@ -191,6 +217,8 @@ def create_investigation_router(
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
     supported_slugs = tuple(config.slug for config in supported_configs)
+    scoring_repository = PrivateScoringRepository(default_private_scoring_directory(project_root))
+    solution_repository = PrivateSolutionRepository(default_private_solution_directory(project_root))
 
     def render_error(
         request: Request,
@@ -233,6 +261,8 @@ def create_investigation_router(
                     ),
                     selected_lead_id=selected_lead_id,
                     case_content_catalog=registry.case_content_catalog,
+                    resource_text_catalog=registry.resource_text_catalog,
+                    public_conclusion_catalog=registry.public_conclusion_catalog,
                 ),
             },
             status_code=status_code,
@@ -253,6 +283,7 @@ def create_investigation_router(
                 supported_configs=supported_configs,
                 capabilities=capabilities,
                 case_catalog=case_catalog,
+                include_compatibility_cases=include_compatibility_cases,
                 **context,
             ),
             status_code=status_code,
@@ -316,13 +347,6 @@ def create_investigation_router(
                 heading="Investigation resource not found",
                 message="The requested session resource is not available.",
             )
-        except InvestigationWorkflowConflictError as error:
-            return resource_error(
-                request,
-                status_code=409,
-                heading=failure_heading,
-                message=str(error),
-            )
         except InvalidCaseLeadReferenceError as error:
             return render_error(
                 request,
@@ -339,6 +363,25 @@ def create_investigation_router(
                 message=str(error),
             )
         except CurrentCaseLeadConflictError as error:
+            return resource_error(
+                request,
+                status_code=409,
+                heading=failure_heading,
+                message=str(error),
+            )
+        except (UnknownConsultationResourceError, KeyError):
+            return resource_error(
+                request,
+                status_code=404,
+                heading=failure_heading,
+                message="The requested case resource is not available.",
+            )
+        except (
+            InvestigationWorkflowConflictError,
+            GameplayConflictError,
+            ResourceConsultationError,
+            ConclusionConflictError,
+        ) as error:
             return resource_error(
                 request,
                 status_code=409,
@@ -678,6 +721,7 @@ def create_investigation_router(
                 participant_bindings=record.runtime.participants,
                 id_factory=record.runtime.id_factory,
                 turn_count=record.runtime.capabilities.discussion_turns,
+                resource_text_catalog=registry.resource_text_catalog,
             )
             return InvestigationSessionMutation(session=result.session, result=None)
 
@@ -739,5 +783,99 @@ def create_investigation_router(
             url=f"/investigations/{session_id}",
             status_code=303,
         )
+
+    @router.post(
+        "/investigations/{session_id}/resources/{resource_id}/consult",
+        response_class=HTMLResponse,
+        name="consult_investigation_resource",
+    )
+    async def consult_investigation_resource(request: Request, session_id: str, resource_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            if registry.resource_text_catalog is None:
+                raise InvestigationWorkflowConflictError("Verified resource text is unavailable.")
+            updated = consult_case_resource(
+                record.session, resource_id=resource_id, case_catalog=case_catalog,
+                resource_text_catalog=registry.resource_text_catalog,
+            )
+            return InvestigationSessionMutation(session=updated, result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Resource could not be consulted")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/start", response_class=HTMLResponse, name="start_investigation_conclusion")
+    async def start_investigation_conclusion(request: Request, session_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            public = registry.public_conclusion_catalog.get(record.session.case_id) if registry.public_conclusion_catalog else None
+            if public is None: raise InvestigationWorkflowConflictError("This case has no official-question conclusion.")
+            return InvestigationSessionMutation(session=start_official_conclusion(record.session, public_definition=public), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Conclusion could not be started")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/drafts", response_class=HTMLResponse, name="generate_investigation_conclusion_drafts")
+    async def generate_investigation_conclusion_drafts(request: Request, session_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            public = registry.public_conclusion_catalog.get(record.session.case_id) if registry.public_conclusion_catalog else None
+            if public is None: raise InvestigationWorkflowConflictError("Public questions are unavailable.")
+            provider = DeterministicAnswerDraftProvider({question.question_id: f"Investigator draft for {question.question_id}." for question in public.questions})
+            result = generate_official_answer_drafts(
+                record.session, public_definition=public, provider=provider,
+                resource_text_catalog=registry.resource_text_catalog,
+            )
+            return InvestigationSessionMutation(session=result.session, result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Answer drafts could not be generated")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/answers/{question_id}", response_class=HTMLResponse, name="edit_investigation_conclusion_answer")
+    async def edit_investigation_conclusion_answer(request: Request, session_id: str, question_id: str, answer: Annotated[str | None, Form()] = None) -> Response:
+        if answer is None or not answer.strip() or len(answer) > MAX_INFORMATION_LENGTH:
+            return render_error(request, status_code=400, page_title="Invalid answer", heading="Answer could not be saved", message="Enter a non-empty answer within the displayed limit.")
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            return InvestigationSessionMutation(session=update_official_answer(record.session, question_id=question_id, text=answer.strip()), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Answer could not be saved")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/lock", response_class=HTMLResponse, name="lock_investigation_conclusion_answers")
+    async def lock_investigation_conclusion_answers(request: Request, session_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            return InvestigationSessionMutation(session=lock_official_answers(record.session), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Answers could not be locked")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/answer-elements", response_class=HTMLResponse, name="reveal_investigation_answer_elements")
+    async def reveal_investigation_answer_elements(request: Request, session_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            return InvestigationSessionMutation(session=reveal_official_answer_elements(record.session, repository=scoring_repository), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Official answer elements could not be revealed")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/score", response_class=HTMLResponse, name="score_investigation_conclusion")
+    async def score_investigation_conclusion(request: Request, session_id: str, awarded_element: Annotated[list[str] | None, Form()] = None) -> Response:
+        selected = tuple(awarded_element or ())
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            conclusion = record.session.conclusion
+            if conclusion is None: raise ConclusionConflictError("Official conclusion is not active.")
+            by_id = {element.element_id: element for element in conclusion.answer_elements}
+            if any(element_id not in by_id for element_id in selected):
+                raise ConclusionConflictError("Unknown official answer element.")
+            awards: dict[str, list[str]] = {}
+            for element_id in selected:
+                awards.setdefault(by_id[element_id].question_id, []).append(element_id)
+            return InvestigationSessionMutation(session=confirm_official_score(record.session, awarded_elements=awards), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Score could not be confirmed")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
+
+    @router.post("/investigations/{session_id}/conclusion/solution", response_class=HTMLResponse, name="reveal_investigation_solution")
+    async def reveal_investigation_solution(request: Request, session_id: str) -> Response:
+        def mutate(record: InvestigationSessionRecord) -> InvestigationSessionMutation[None]:
+            return InvestigationSessionMutation(session=reveal_official_solution(record.session, repository=solution_repository), result=None)
+        result = execute_mutation(request, session_id, mutate, failure_heading="Official solution could not be revealed")
+        if isinstance(result, Response): return result
+        return RedirectResponse(url=f"/investigations/{session_id}", status_code=303)
 
     return router

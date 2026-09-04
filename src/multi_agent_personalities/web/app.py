@@ -508,6 +508,7 @@ def create_app(
             catalogue=registry,
             case_catalog=resolved_case_catalog,
             templates=templates,
+            include_compatibility_cases=investigation_registry is not None,
         )
     )
 

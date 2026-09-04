@@ -86,7 +86,7 @@ def test_resource_drawer_is_honest_and_human_composer_is_disabled(
         "Newspapers",
     ):
         assert resource in page.text
-    assert "No local asset is included for this placeholder." in page.text
+    assert "Local asset unavailable." in page.text
     assert "Sealed Synthetic Handout" not in page.text
     assert 'data-map-select="london-overview"' in page.text
     assert 'data-map-select="archive-district"' in page.text
