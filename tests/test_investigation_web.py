@@ -117,6 +117,11 @@ def test_explicit_compatibility_mode_keeps_synthetic_creation(web_client) -> Non
     response = client.post("/investigations", data=VALID_FORM)
     assert response.status_code == 303
     assert registry.snapshot("session_001").case_id == "archive-absence"
+    detail = client.get(response.headers["location"])
+    assert 'data-mutation-error-dialog role="alertdialog"' in detail.text
+    assert 'data-mutation-error-title' in detail.text
+    assert 'data-mutation-error-message' in detail.text
+    assert 'data-mutation-error-close' in detail.text
 
 
 def test_unknown_session_lead_and_visit_are_404_without_mutation(

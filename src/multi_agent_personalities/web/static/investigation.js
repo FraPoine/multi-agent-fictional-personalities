@@ -2,6 +2,9 @@
 
 const mutationForms = document.querySelectorAll(".investigation-mutation-form");
 const lobbyForm = document.querySelector("[data-investigation-lobby-form]");
+const investigationDetail = document.querySelector(".game-shell");
+const mutationErrorDialog = document.querySelector("[data-mutation-error-dialog]");
+let mutationErrorReturnFocus = null;
 
 function lobbySelectionIsValid() {
     if (!(lobbyForm instanceof HTMLFormElement)) return true;
@@ -31,16 +34,57 @@ function updateLobbyStartButton() {
 function resetMutationForm(form) {
     form.removeAttribute("aria-busy");
     for (const button of form.querySelectorAll('button[type="submit"]')) {
-        button.disabled = false;
+        button.disabled = button.dataset.originalDisabled === "true";
         if (button.dataset.originalLabel) {
             button.textContent = button.dataset.originalLabel;
         }
     }
 }
 
+function showMutationError(heading, message, returnFocus) {
+    if (!(mutationErrorDialog instanceof HTMLDialogElement)) return;
+    const title = mutationErrorDialog.querySelector("[data-mutation-error-title]");
+    const copy = mutationErrorDialog.querySelector("[data-mutation-error-message]");
+    if (title instanceof HTMLElement) {
+        title.textContent = heading || "Action could not be completed";
+    }
+    if (copy instanceof HTMLElement) {
+        copy.textContent = message || "The action could not be completed.";
+    }
+    mutationErrorReturnFocus = returnFocus;
+    mutationErrorDialog.showModal();
+}
+
+async function submitInvestigationMutation(form, returnFocus) {
+    try {
+        const response = await fetch(form.action, {
+            method: form.method,
+            body: new FormData(form),
+            credentials: "same-origin",
+        });
+        if (response.ok) {
+            window.location.assign(response.url || form.action);
+            return;
+        }
+        const errorDocument = new DOMParser().parseFromString(
+            await response.text(),
+            "text/html"
+        );
+        const error = errorDocument.querySelector(".transcript-error");
+        const heading = error?.querySelector("h1, h2, h3")?.textContent?.trim();
+        const message = error?.querySelector("p")?.textContent?.trim();
+        resetMutationForm(form);
+        showMutationError(heading, message, returnFocus);
+    } catch (_error) {
+        resetMutationForm(form);
+        showMutationError(null, null, returnFocus);
+    }
+}
+
 for (const form of mutationForms) {
     for (const button of form.querySelectorAll('button[type="submit"]')) {
         button.dataset.originalLabel = button.textContent;
+        button.dataset.originalDisabled = String(button.disabled);
     }
 
     form.addEventListener("submit", (event) => {
@@ -58,12 +102,34 @@ for (const form of mutationForms) {
             return;
         }
 
+        if (investigationDetail instanceof HTMLElement) {
+            event.preventDefault();
+        }
+
         form.setAttribute("aria-busy", "true");
         const loadingLabel = form.dataset.loadingLabel || "Working…";
         for (const button of form.querySelectorAll('button[type="submit"]')) {
             button.disabled = true;
             button.textContent = loadingLabel;
         }
+        if (investigationDetail instanceof HTMLElement) {
+            const returnFocus = event.submitter instanceof HTMLElement
+                ? event.submitter
+                : form;
+            void submitInvestigationMutation(form, returnFocus);
+        }
+    });
+}
+
+if (mutationErrorDialog instanceof HTMLDialogElement) {
+    for (const trigger of mutationErrorDialog.querySelectorAll("[data-mutation-error-close]")) {
+        trigger.addEventListener("click", () => mutationErrorDialog.close());
+    }
+    mutationErrorDialog.addEventListener("close", () => {
+        if (mutationErrorReturnFocus instanceof HTMLElement) {
+            mutationErrorReturnFocus.focus();
+        }
+        mutationErrorReturnFocus = null;
     });
 }
 

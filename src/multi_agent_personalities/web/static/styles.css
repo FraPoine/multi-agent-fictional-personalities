@@ -934,13 +934,17 @@ body {
     padding: 21px 10px 19px;
     color: var(--color-header-muted);
     font-size: 0.8125rem;
-    font-weight: 700;
+    font-weight: 500;
+    opacity: .72;
     text-decoration: none;
 }
 
 .app-nav a:hover,
+.app-nav a:focus-visible,
 .app-nav a[aria-current="page"] {
     color: var(--surface-page);
+    font-weight: 700;
+    opacity: 1;
 }
 
 .app-nav a[aria-current="page"]::after {
@@ -1272,6 +1276,12 @@ body {
 .rules-dialog-body { padding: var(--spacing-xl); }
 .rules-dialog-body li + li { margin-top: var(--spacing-sm); }
 .rules-dialog-body p { margin-top: var(--spacing-lg); color: var(--color-muted); }
+.mutation-error-dialog { width: min(92vw, 420px); padding: 0; border: 1px solid var(--color-failure); border-radius: var(--radius-panel); background: var(--surface-failure); color: var(--color-failure-dark); box-shadow: 0 20px 70px rgb(23 42 58 / 25%); }
+.mutation-error-dialog::backdrop { background: rgb(23 42 58 / 45%); }
+.mutation-error-dialog-body { display: grid; justify-items: center; gap: var(--spacing-md); padding: var(--spacing-xl); text-align: center; }
+.mutation-error-dialog h2 { font-family: var(--font-serif); font-size: 1.25rem; }
+.mutation-error-dialog p { line-height: 1.6; }
+.mutation-error-dialog .secondary-button { margin-top: var(--spacing-xs); }
 .icon-button { padding: 4px 11px; font-size: 1.35rem; }
 
 @media (max-width: 700px) {
