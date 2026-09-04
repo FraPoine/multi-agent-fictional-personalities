@@ -547,9 +547,9 @@ again pauses after its decision and completes only when the caller invokes
 finalization. Committed mock fixtures drive every provider boundary with no
 network or secrets. The service-level test verifies deterministic
 orchestration, temporal clue visibility, metadata propagation, and aggregate
-serialization. Separate HTTP E2E tests verify browser delivery; neither layer
-provides persistence, live-provider support, scoring, or compatibility with
-any commercial case.
+serialization. This historical synthetic workflow provides neither persistence
+nor live-provider support. The active authored HTTP path and its official
+conclusion services are documented separately above.
 
 Participant declarations provide the expected provider and optional configured
 model; generation metadata provides the reported values. Agent runtime resolves
@@ -663,14 +663,15 @@ drawer selector. Missing optional assets produce an honest local placeholder.
 Case Opening and Rules remain application-level resources. No network access,
 asset ingestion, or automatic unlock engine is involved.
 
-The shipped catalogue is deliberately content-neutral: it contains only
-synthetic openings, lead labels, and placeholder resource metadata. The
-repository includes no copyrighted Sherlock case text, maps, newspapers, or
-handouts. User-provided owned material can be integrated later by adding a
-validated case YAML, declaring explicit shared resource IDs, and placing any
-owned files under the catalogue's local asset root. Safe relative-path
-validation and `initially_available` remain the boundaries; content ingestion,
-OCR, and unlock automation are separate future work.
+The shipped runtime catalogue integrates the three user-supplied English demo
+cases. Normalized case definitions, authored lead content, resource metadata,
+verified resource text, conclusion definitions, and local assets live under
+`configs/investigation/`; their retained source/provenance package lives under
+`data/raw/investigation/`. No additional long case is integrated, and *The
+Demise of a Teetotaller* remains deferred. Later case material must be supplied
+or otherwise lawfully available, preserve source provenance, pass the strict
+same-case loaders, and use path-confined local assets. OCR and automatic map
+interpretation remain outside the runtime.
 
 The FastAPI application loads one immutable `CaseCatalog` during
 `create_app()`. That same object configures the default process-local registry

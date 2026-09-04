@@ -69,12 +69,15 @@ does not provide scientifically interpretable results. The redesigned Sprint 6
 application uses persistent leads, chronological visits, explicit globally
 retained information, repeatable bounded conversations, optional reasoning,
 and explicit finalization. Its deterministic mock path is fixture-backed and
-offline. The main web application selects a local synthetic `CaseDefinition`,
+offline. The normal main web application selects one of the three authored
+local `CaseDefinition` records (while explicit compatibility callers may use
+the retained synthetic fixtures),
 resolves the trusted opening from `case_id`, accepts physical lead references,
 preserves persistent Lead/Visit chronology, presents case-aware resources with
 multiple-map support, and retains completed sessions as read-only process-local
 archives. There is no investigation persistence, investigation CLI, live
-provider, commercial game content, or final human/LLM study.
+provider, additional long case, or final human/LLM study. *The Demise of a
+Teetotaller* remains deferred.
 
 ## Sprint 5 foundation
 

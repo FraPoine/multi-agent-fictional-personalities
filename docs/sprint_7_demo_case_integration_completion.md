@@ -40,3 +40,30 @@ or automatic map interpretation. Later lawful user-provided material must be
 added as a new validated case/content/resource/conclusion package with retained
 provenance and the complete offline regression rerun. No network or API key is
 required for the current demos.
+
+## Targeted correction verification — 2026-09-04
+
+The authoritative normalized runtime paths are
+`configs/investigation/cases/`, `configs/investigation/content/`,
+`configs/investigation/resources.yaml`,
+`configs/investigation/resources_text/`, and
+`configs/investigation/conclusions/`; retained provenance remains under
+`data/raw/investigation/`. Demos 1 and 2 use the official public-question,
+private-scoring, and private-solution lifecycle. Demo 3 is
+`authored_outcome` and has no questions, private scoring, or private solution.
+
+The case-creation correction is commit `eedad92` (`fix(web): enforce authored
+case creation boundary`). Verification was rerun after that correction:
+
+- `PYTHONPATH=src .venv/bin/python -m pytest tests/test_investigation_web.py tests/test_investigation_web_e2e.py -q`
+  — 10 passed in 1.53s.
+- `env -u OPENAI_API_KEY -u OPENAI_ORG_ID PYTHONPATH=src .venv/bin/python -m pytest -q`
+  — 984 passed in 9.46s.
+- `PYTHONPATH=src .venv/bin/python -m compileall -q src tests` — passed.
+- `git diff --check` — passed.
+
+The tested mock path is offline and API-key-free; the full suite includes the
+configured startup coverage. No repository-configured lint, type, or format
+command was found, so none was invented or installed. `scripts/smoke_test.sh`
+is absent. Interactive browser and screenshot verification remains pending
+because no such facility was available in this execution.
