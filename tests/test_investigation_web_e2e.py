@@ -45,6 +45,7 @@ def http_workflow(
         project_root=ROOT,
         output_root=output_root,
         investigation_registry=registry,
+        include_compatibility_cases=True,
     )
     with ASGITestClient(app) as client:
         yield client, registry, output_root
@@ -300,6 +301,7 @@ def test_same_reference_resolves_per_case_through_http(tmp_path: Path) -> None:
         output_root=tmp_path / "outputs",
         investigation_registry=registry,
         case_catalog=catalogue,
+        include_compatibility_cases=True,
     )
 
     with ASGITestClient(app) as client:

@@ -26,6 +26,7 @@ def web_client(tmp_path: Path):
         project_root=ROOT,
         output_root=tmp_path / "outputs",
         investigation_registry=registry,
+        include_compatibility_cases=True,
     )
     with ASGITestClient(app) as client:
         yield client, registry, app
@@ -85,6 +86,31 @@ def test_invalid_creation_preserves_submitted_values_and_registry(web_client) ->
     assert 'value="archive-absence" checked' in response.text
     assert 'value="sherlock" checked' in response.text
     assert "Select all supported investigators" in response.text
+
+
+def test_default_app_rejects_forged_compatibility_case_without_creation(
+    tmp_path: Path,
+) -> None:
+    app = create_app(project_root=ROOT, output_root=tmp_path / "outputs")
+    registry = app.state.investigation_registry
+    before = registry.session_ids
+    with ASGITestClient(app) as client:
+        response = client.post(
+            "/investigations",
+            data={
+                "characters": ["sherlock", "poirot"],
+                "case_id": "archive-absence",
+            },
+        )
+    assert response.status_code == 404
+    assert registry.session_ids == before
+
+
+def test_explicit_compatibility_mode_keeps_synthetic_creation(web_client) -> None:
+    client, registry, _app = web_client
+    response = client.post("/investigations", data=VALID_FORM)
+    assert response.status_code == 303
+    assert registry.snapshot("session_001").case_id == "archive-absence"
 
 
 def test_unknown_session_lead_and_visit_are_404_without_mutation(

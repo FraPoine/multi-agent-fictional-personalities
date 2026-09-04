@@ -29,6 +29,7 @@ def task3_client(tmp_path: Path):
         project_root=ROOT,
         output_root=tmp_path / "outputs",
         investigation_registry=registry,
+        include_compatibility_cases=True,
     )
     with ASGITestClient(app) as client:
         client.post(

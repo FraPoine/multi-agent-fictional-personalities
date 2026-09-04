@@ -137,6 +137,24 @@ def _validate_investigation_creation_form(
     return selected, errors
 
 
+def _selectable_cases(
+    *,
+    registry: InMemoryInvestigationRegistry,
+    case_catalog: CaseCatalog,
+    include_compatibility_cases: bool,
+):
+    """Return the single authoritative web case-creation policy."""
+    if include_compatibility_cases:
+        return case_catalog.cases
+    return tuple(
+        case
+        for case in case_catalog.cases
+        if registry.case_content_catalog is None
+        or not registry.case_content_catalog.cases
+        or registry.case_content_catalog.get(case.case_id) is not None
+    )
+
+
 def _index_context(
     *,
     registry: InMemoryInvestigationRegistry,
@@ -161,10 +179,10 @@ def _index_context(
         else selected_case_id
     )
     required_investigators = {item.slug for item in supported_configs}
-    authored_cases = case_catalog.cases if include_compatibility_cases else tuple(
-        case for case in case_catalog.cases
-        if registry.case_content_catalog is None or not registry.case_content_catalog.cases
-        or registry.case_content_catalog.get(case.case_id) is not None
+    selectable_cases = _selectable_cases(
+        registry=registry,
+        case_catalog=case_catalog,
+        include_compatibility_cases=include_compatibility_cases,
     )
     return {
         "page_title": "Multi-Agent Fictional Personalities",
@@ -181,16 +199,16 @@ def _index_context(
             supported_character_ids=capabilities.participant_ids,
             selected_slugs=selected,
         ),
-        "cases": authored_cases,
+        "cases": selectable_cases,
         "selected_case_id": resolved_case_id,
         "case_titles": {
-            case.case_id: case.title for case in authored_cases
+            case.case_id: case.title for case in selectable_cases
         },
         "capabilities": capabilities,
         "minimum_investigators": MIN_INVESTIGATORS,
         "required_investigator_count": len(required_investigators),
         "creation_ready": (
-            resolved_case_id in {case.case_id for case in authored_cases}
+            resolved_case_id in {case.case_id for case in selectable_cases}
             and selected == required_investigators
             and len(selected) >= MIN_INVESTIGATORS
         ),
@@ -217,6 +235,12 @@ def create_investigation_router(
     supported_configs = _supported_configs(catalogue, capabilities)
     known_slugs = tuple(catalogue)
     supported_slugs = tuple(config.slug for config in supported_configs)
+    selectable_cases = _selectable_cases(
+        registry=registry,
+        case_catalog=case_catalog,
+        include_compatibility_cases=include_compatibility_cases,
+    )
+    selectable_cases_by_id = {case.case_id: case for case in selectable_cases}
     scoring_repository = PrivateScoringRepository(default_private_scoring_directory(project_root))
     solution_repository = PrivateSolutionRepository(default_private_solution_directory(project_root))
 
@@ -418,7 +442,7 @@ def create_investigation_router(
     ) -> Response:
         if case_id is not None:
             try:
-                selected_case = case_catalog.get(case_id)
+                selected_case = selectable_cases_by_id[case_id]
             except KeyError:
                 return render_error(
                     request,
