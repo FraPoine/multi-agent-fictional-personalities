@@ -60,6 +60,7 @@ from multi_agent_personalities.web.investigation_presentation import (
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
     InvestigationRegistryInvariantError,
+    InvestigationSessionDeletionForbiddenError,
     InvestigationSessionCollisionError,
     InvestigationSessionMutation,
     InvestigationSessionNotFoundError,
@@ -546,6 +547,33 @@ def create_investigation_router(
                 message="The selected lead does not belong to this investigation.",
             )
         return render_detail(request, record, selected_lead_id=lead)
+
+    @router.post(
+        "/investigations/{session_id}/delete",
+        response_class=HTMLResponse,
+        name="delete_investigation",
+    )
+    async def delete_investigation(
+        request: Request,
+        session_id: str,
+    ) -> Response:
+        try:
+            registry.delete(session_id)
+        except InvestigationSessionNotFoundError:
+            return resource_error(
+                request,
+                status_code=404,
+                heading="Investigation not found",
+                message="The requested investigation is not available.",
+            )
+        except InvestigationSessionDeletionForbiddenError as error:
+            return resource_error(
+                request,
+                status_code=409,
+                heading="Investigation could not be deleted",
+                message=str(error),
+            )
+        return RedirectResponse(url="/investigations", status_code=303)
 
     @router.post(
         "/investigations/{session_id}/leads",

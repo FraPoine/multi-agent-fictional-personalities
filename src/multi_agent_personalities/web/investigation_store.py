@@ -21,7 +21,7 @@ from multi_agent_personalities.application.investigation_mock_runtime import (
 from multi_agent_personalities.application.investigation_visit_service import (
     create_session,
 )
-from multi_agent_personalities.models import InvestigationSession
+from multi_agent_personalities.models import InvestigationSession, InvestigationStatus
 
 
 T = TypeVar("T")
@@ -33,6 +33,10 @@ class InvestigationSessionNotFoundError(KeyError):
 
 class InvestigationSessionCollisionError(ValueError):
     """Raised when registration would overwrite an existing session."""
+
+
+class InvestigationSessionDeletionForbiddenError(ValueError):
+    """Raised when deletion targets a non-active investigation session."""
 
 
 class InvestigationRegistryInvariantError(ValueError):
@@ -205,7 +209,7 @@ class InMemoryInvestigationRegistry:
         session_lock = self._get_session_lock(session_id)
         with session_lock:
             with self._registry_lock:
-                return self._records[session_id]
+                return self._get_record_locked(session_id)
 
     def snapshot(self, session_id: str) -> InvestigationSession:
         """Return the latest immutable investigation aggregate."""
@@ -225,7 +229,7 @@ class InMemoryInvestigationRegistry:
         session_lock = self._get_session_lock(session_id)
         with session_lock:
             with self._registry_lock:
-                current = self._records[session_id]
+                current = self._get_record_locked(session_id)
             mutation = operation(current)
             if not isinstance(mutation, InvestigationSessionMutation):
                 raise InvestigationRegistryInvariantError(
@@ -241,12 +245,32 @@ class InMemoryInvestigationRegistry:
                 self._records[session_id] = updated
             return updated, mutation.result
 
+    def delete(self, session_id: str) -> InvestigationSessionRecord:
+        """Remove one active record through its session serialization lock."""
+        session_lock = self._get_session_lock(session_id)
+        with session_lock:
+            with self._registry_lock:
+                current = self._get_record_locked(session_id)
+                if current.session.status is not InvestigationStatus.ACTIVE:
+                    raise InvestigationSessionDeletionForbiddenError(
+                        "only active investigation sessions can be deleted"
+                    )
+                del self._records[session_id]
+                del self._session_locks[session_id]
+                return current
+
     def _get_session_lock(self, session_id: str) -> Lock:
         with self._registry_lock:
             try:
                 return self._session_locks[session_id]
             except KeyError as error:
                 raise InvestigationSessionNotFoundError(session_id) from error
+
+    def _get_record_locked(self, session_id: str) -> InvestigationSessionRecord:
+        try:
+            return self._records[session_id]
+        except KeyError as error:
+            raise InvestigationSessionNotFoundError(session_id) from error
 
     @staticmethod
     def _validate_record(record: InvestigationSessionRecord) -> None:

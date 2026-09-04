@@ -17,10 +17,12 @@ from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
     InvestigationRegistryInvariantError,
     InvestigationSessionCollisionError,
+    InvestigationSessionDeletionForbiddenError,
     InvestigationSessionMutation,
     InvestigationSessionNotFoundError,
     InvestigationSessionRecord,
 )
+from multi_agent_personalities.models import InvestigationSession, InvestigationStatus
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -128,6 +130,66 @@ def test_unknown_session_raises_dedicated_error(action: str) -> None:
                     result=None,
                 ),
             )
+
+
+def test_delete_missing_session_preserves_registry() -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.delete("session_999")
+
+    assert registry.session_ids == (created.session_id,)
+    assert registry.get(created.session_id) is created
+
+
+def test_delete_removes_only_the_target_active_record_and_lock() -> None:
+    registry = InMemoryInvestigationRegistry()
+    first = create_record(registry)
+    second = create_record(registry)
+
+    deleted = registry.delete(first.session_id)
+
+    assert deleted is first
+    assert registry.session_ids == (second.session_id,)
+    assert first.session_id not in registry._session_locks
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.get(first.session_id)
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.snapshot(first.session_id)
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.mutate(
+            first.session_id,
+            lambda record: InvestigationSessionMutation(
+                session=record.session,
+                result=None,
+            ),
+        )
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.delete(first.session_id)
+    assert registry.get(second.session_id) is second
+
+
+def test_delete_rejects_non_active_session_without_changing_record_or_lock() -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    payload = created.session.model_dump(mode="python")
+    payload["status"] = InvestigationStatus.READY_FOR_FINAL
+    ready_session = InvestigationSession.model_validate(payload)
+    ready, _ = registry.mutate(
+        created.session_id,
+        lambda _record: InvestigationSessionMutation(
+            session=ready_session,
+            result=None,
+        ),
+    )
+    session_lock = registry._session_locks[created.session_id]
+
+    with pytest.raises(InvestigationSessionDeletionForbiddenError):
+        registry.delete(created.session_id)
+
+    assert registry.get(created.session_id) is ready
+    assert registry._session_locks[created.session_id] is session_lock
 
 
 def test_sessions_remain_isolated_across_independent_mutations() -> None:
@@ -334,6 +396,55 @@ def test_same_session_mutations_are_serialized_across_callbacks() -> None:
     assert len(errors) == 1
     assert isinstance(errors[0], ValueError)
     assert len(registry.snapshot(created.session_id).rounds) == 1
+
+
+def test_same_session_mutation_and_delete_share_serialization_lock() -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    mutation_entered = Event()
+    release_mutation = Event()
+    deletion_started = Event()
+    deletion_completed = Event()
+    deleted_records: list[InvestigationSessionRecord] = []
+    errors: list[BaseException] = []
+
+    def hold_mutation(record: InvestigationSessionRecord):
+        mutation_entered.set()
+        if not release_mutation.wait(timeout=5):
+            raise AssertionError("mutation was not released")
+        return InvestigationSessionMutation(session=reveal(record), result=None)
+
+    def run_mutation() -> None:
+        try:
+            registry.mutate(created.session_id, hold_mutation)
+        except BaseException as error:  # pragma: no cover - assertion transport
+            errors.append(error)
+
+    def run_delete() -> None:
+        deletion_started.set()
+        try:
+            deleted_records.append(registry.delete(created.session_id))
+            deletion_completed.set()
+        except BaseException as error:  # pragma: no cover - assertion transport
+            errors.append(error)
+
+    mutation_thread = Thread(target=run_mutation)
+    deletion_thread = Thread(target=run_delete)
+    mutation_thread.start()
+    assert mutation_entered.wait(timeout=5)
+    deletion_thread.start()
+    assert deletion_started.wait(timeout=5)
+    assert not deletion_completed.is_set()
+    release_mutation.set()
+    mutation_thread.join(timeout=5)
+    deletion_thread.join(timeout=5)
+
+    assert not mutation_thread.is_alive()
+    assert not deletion_thread.is_alive()
+    assert errors == []
+    assert len(deleted_records) == 1
+    assert len(deleted_records[0].session.rounds) == 1
+    assert created.session_id not in registry.session_ids
 
 
 def test_different_session_mutations_do_not_share_operation_lock() -> None:

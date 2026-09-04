@@ -44,6 +44,7 @@ def test_router_exposes_investigation_mutations(web_client) -> None:
     assert investigation_routes == {
         ("/investigations", ("GET", "POST")),
         ("/investigations/{session_id}", ("GET",)),
+        ("/investigations/{session_id}/delete", ("POST",)),
         ("/investigations/{session_id}/leads", ("POST",)),
         (
             "/investigations/{session_id}/leads/{lead_id}/visit",
@@ -122,6 +123,19 @@ def test_explicit_compatibility_mode_keeps_synthetic_creation(web_client) -> Non
     assert 'data-mutation-error-title' in detail.text
     assert 'data-mutation-error-message' in detail.text
     assert 'data-mutation-error-close' in detail.text
+
+
+def test_active_investigation_can_be_deleted_through_http(web_client) -> None:
+    client, registry, _app = web_client
+    client.post("/investigations", data=VALID_FORM)
+
+    response = client.post("/investigations/session_001/delete")
+
+    assert response.status_code == 303
+    assert response.headers["location"].endswith("/investigations")
+    assert registry.session_ids == ()
+    assert client.get("/investigations/session_001").status_code == 404
+    assert client.post("/investigations/session_001/delete").status_code == 404
 
 
 def test_unknown_session_lead_and_visit_are_404_without_mutation(
@@ -224,6 +238,8 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
         ).status_code == 303
     assert client.post("/investigations/session_001/finalize").status_code == 303
     completed_before = registry.snapshot("session_001").model_dump_json()
+    assert client.post("/investigations/session_001/delete").status_code == 409
+    assert registry.snapshot("session_001").model_dump_json() == completed_before
     assert client.post(
         f"/investigations/session_001/leads/{lead.lead_id}/rename",
         data={"custom_label": "Blocked"},
