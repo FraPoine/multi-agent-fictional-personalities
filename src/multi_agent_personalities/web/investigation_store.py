@@ -25,6 +25,7 @@ from multi_agent_personalities.models import InvestigationSession, Investigation
 
 
 T = TypeVar("T")
+MAX_INVESTIGATION_NOTES_LENGTH = 20_000
 
 
 class InvestigationSessionNotFoundError(KeyError):
@@ -39,6 +40,10 @@ class InvestigationSessionDeletionForbiddenError(ValueError):
     """Raised when deletion targets a non-active investigation session."""
 
 
+class InvestigationSessionNotesForbiddenError(ValueError):
+    """Raised when a notes update targets a non-active session."""
+
+
 class InvestigationRegistryInvariantError(ValueError):
     """Raised when record, runtime, and session identities disagree."""
 
@@ -50,6 +55,7 @@ class InvestigationSessionRecord:
     session_sequence: int
     session: InvestigationSession
     runtime: InvestigationMockRuntime
+    notes_markdown: str = ""
 
     @property
     def session_id(self) -> str:
@@ -244,6 +250,28 @@ class InMemoryInvestigationRegistry:
             with self._registry_lock:
                 self._records[session_id] = updated
             return updated, mutation.result
+
+    def update_notes(
+        self, session_id: str, markdown: str,
+    ) -> InvestigationSessionRecord:
+        """Replace raw user-authored notes outside the gameplay aggregate."""
+        session_lock = self._get_session_lock(session_id)
+        with session_lock:
+            with self._registry_lock:
+                current = self._get_record_locked(session_id)
+                if current.session.status is not InvestigationStatus.ACTIVE:
+                    raise InvestigationSessionNotesForbiddenError(
+                        "only active investigation sessions can edit notes"
+                    )
+                if not isinstance(markdown, str):
+                    raise ValueError("notes must be a string")
+                if len(markdown) > MAX_INVESTIGATION_NOTES_LENGTH:
+                    raise ValueError(
+                        f"notes must not exceed {MAX_INVESTIGATION_NOTES_LENGTH} characters"
+                    )
+                updated = replace(current, notes_markdown=markdown)
+                self._records[session_id] = updated
+                return updated
 
     def delete(self, session_id: str) -> InvestigationSessionRecord:
         """Remove one active record through its session serialization lock."""

@@ -80,6 +80,8 @@ class InvestigationSessionPresentation:
     selected_lead: "InvestigationLeadDetailPresentation | None"
     completed: bool
     can_delete: bool
+    notes_markdown: str
+    notes_editable: bool
     can_finalize: bool
     final_theory: "InvestigationFinalTheoryPresentation | None"
     modes: tuple[str, ...]
@@ -459,6 +461,8 @@ def present_session(
         selected_lead=selected_detail,
         completed=completed,
         can_delete=session.status is InvestigationStatus.ACTIVE,
+        notes_markdown=record.notes_markdown,
+        notes_editable=session.status is InvestigationStatus.ACTIVE,
         can_finalize=(
             session.status is InvestigationStatus.ACTIVE
             and bool(session.visits)

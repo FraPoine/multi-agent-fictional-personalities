@@ -9,6 +9,11 @@ import multi_agent_personalities.web.investigation_routes as routes
 from multi_agent_personalities.web.app import create_app
 from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
+    MAX_INVESTIGATION_NOTES_LENGTH,
+    InvestigationSessionNotesForbiddenError,
+)
+from multi_agent_personalities.application.investigation_visit_service import (
+    build_lead_discussion_context,
 )
 from multi_agent_personalities.case_catalog import default_case_catalog_directory
 from multi_agent_personalities.web.investigation_presentation import present_session
@@ -46,6 +51,7 @@ def test_router_exposes_investigation_mutations(web_client) -> None:
         ("/investigations", ("GET", "POST")),
         ("/investigations/{session_id}", ("GET",)),
         ("/investigations/{session_id}/delete", ("POST",)),
+        ("/investigations/{session_id}/notes", ("POST",)),
         ("/investigations/{session_id}/leads", ("POST",)),
         (
             "/investigations/{session_id}/leads/{lead_id}/visit",
@@ -349,3 +355,66 @@ def test_finalization_failure_is_500_active_and_atomic(
     assert response.status_code == 500
     assert registry.snapshot("session_001") == before
     assert registry.snapshot("session_001").final_theory is None
+
+
+def test_session_notes_http_presentation_navigation_and_archive(web_client) -> None:
+    client, registry, _app = web_client
+    client.post("/investigations", data=VALID_FORM)
+    path = "/investigations/session_001"
+    raw = " \r\n# Suspects\n\nPLAYER_PRIVATE_NOTE_SENTINEL  \n"
+    original = registry.get("session_001")
+    presentation_args = {
+        "case_catalog": registry.case_catalog,
+        "resource_base_directory": default_case_catalog_directory(ROOT).parent,
+    }
+    response = client.post(path + "/notes", data={"notes": raw})
+    assert response.status_code == 303
+    assert response.headers["location"] == path
+    noted = registry.get("session_001")
+    assert noted.notes_markdown == raw
+    assert noted.session is original.session
+    assert noted.runtime is original.runtime
+    presented = present_session(noted, **presentation_args)
+    assert presented.notes_markdown == raw
+    assert presented.notes_editable is True
+
+    assert client.post(path + "/notes", data={"notes": ""}).status_code == 303
+    assert registry.get("session_001").notes_markdown == ""
+    assert client.post(path + "/notes", data={"notes": raw}).status_code == 303
+    before = registry.get("session_001")
+    assert client.post(
+        path + "/notes", data={"notes": "x" * (MAX_INVESTIGATION_NOTES_LENGTH + 1)},
+    ).status_code == 400
+    assert registry.get("session_001") is before
+    assert client.post(
+        "/investigations/missing/notes", data={"notes": raw},
+    ).status_code == 404
+    assert registry.get("session_001") is before
+
+    assert client.post(path + "/leads", data={"reference": "42 NW"}).status_code == 303
+    record = registry.get("session_001")
+    lead = record.session.leads[0]
+    assert client.get(path + f"?lead={lead.lead_id}").status_code == 200
+    record = registry.get("session_001")
+    assert record.notes_markdown == raw
+    visit = record.session.visits[-1]
+    context = build_lead_discussion_context(record.session, visit_id=visit.visit_id)
+    assert record.session.case_introduction in context
+    assert "PLAYER_PRIVATE_NOTE_SENTINEL" not in context
+
+    for information in ("The window was open.", "The corridor was used."):
+        assert client.post(
+            path + f"/visits/{visit.visit_id}/information",
+            data={"information": information},
+        ).status_code == 303
+    assert client.post(path + "/finalize").status_code == 303
+    archived = registry.get("session_001")
+    assert archived.notes_markdown == raw
+    presented = present_session(archived, **presentation_args)
+    assert presented.notes_markdown == raw
+    assert presented.notes_editable is False
+    with pytest.raises(InvestigationSessionNotesForbiddenError):
+        registry.update_notes("session_001", "Blocked")
+    assert registry.get("session_001") is archived
+    assert client.post(path + "/notes", data={"notes": ""}).status_code == 409
+    assert registry.get("session_001") is archived

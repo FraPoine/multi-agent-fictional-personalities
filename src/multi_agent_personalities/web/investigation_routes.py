@@ -64,6 +64,7 @@ from multi_agent_personalities.web.investigation_store import (
     InvestigationSessionCollisionError,
     InvestigationSessionMutation,
     InvestigationSessionNotFoundError,
+    InvestigationSessionNotesForbiddenError,
     InvestigationSessionRecord,
 )
 
@@ -547,6 +548,43 @@ def create_investigation_router(
                 message="The selected lead does not belong to this investigation.",
             )
         return render_detail(request, record, selected_lead_id=lead)
+
+    @router.post(
+        "/investigations/{session_id}/notes",
+        response_class=HTMLResponse,
+        name="update_investigation_notes",
+    )
+    async def update_investigation_notes(
+        request: Request,
+        session_id: str,
+        notes: Annotated[str, Form()] = "",
+    ) -> Response:
+        try:
+            registry.update_notes(session_id, notes)
+        except InvestigationSessionNotFoundError:
+            return resource_error(
+                request,
+                status_code=404,
+                heading="Investigation not found",
+                message="The requested investigation is not available.",
+            )
+        except InvestigationSessionNotesForbiddenError as error:
+            return resource_error(
+                request,
+                status_code=409,
+                heading="Notes could not be updated",
+                message=str(error),
+            )
+        except ValueError as error:
+            return resource_error(
+                request,
+                status_code=400,
+                heading="Notes could not be updated",
+                message=str(error),
+            )
+        return RedirectResponse(
+            url=f"/investigations/{session_id}", status_code=303,
+        )
 
     @router.post(
         "/investigations/{session_id}/delete",

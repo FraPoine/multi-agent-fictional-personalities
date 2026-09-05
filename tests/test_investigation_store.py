@@ -14,6 +14,7 @@ from multi_agent_personalities.application import (
     run_independent_analyses,
 )
 from multi_agent_personalities.web.investigation_store import (
+    MAX_INVESTIGATION_NOTES_LENGTH,
     InMemoryInvestigationRegistry,
     InvestigationRegistryInvariantError,
     InvestigationSessionCollisionError,
@@ -554,3 +555,108 @@ def test_registry_creates_no_files_and_remains_api_key_independent(
     )
 
     assert tuple(tmp_path.iterdir()) == before
+
+
+def test_notes_replace_exact_text_without_changing_gameplay_or_other_sessions() -> None:
+    registry = InMemoryInvestigationRegistry()
+    first = create_record(registry)
+    second = create_record(registry)
+    raw = " \r\n# Suspects\n\n- Revisit 13 SW  \n<script>raw</script>\n"
+    before = first.session.model_dump_json()
+
+    for markdown in (raw, "A", "B", "", "x" * MAX_INVESTIGATION_NOTES_LENGTH):
+        updated = registry.update_notes(first.session_id, markdown)
+        assert updated.notes_markdown == markdown
+        assert updated.session is first.session
+        assert updated.runtime is first.runtime
+        assert updated.session_sequence == first.session_sequence
+        assert updated.session_id == first.session_id
+        assert updated.session.model_dump_json() == before
+        assert registry.get(first.session_id) is updated
+        assert registry.get(second.session_id) is second
+        assert second.notes_markdown == ""
+    registry.update_notes(second.session_id, "Independent notes")
+    assert registry.get(first.session_id) is updated
+    assert registry.get(second.session_id).notes_markdown == "Independent notes"
+    assert first.notes_markdown == ""
+
+
+@pytest.mark.parametrize("markdown", [None, 42, b"notes", [], "x" * (20_000 + 1)])
+def test_invalid_notes_preserve_exact_record(markdown) -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    before = registry.update_notes(created.session_id, "Retained")
+    with pytest.raises(ValueError):
+        registry.update_notes(created.session_id, markdown)
+    assert registry.get(created.session_id) is before
+
+
+def test_notes_are_removed_with_deleted_session() -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    noted = registry.update_notes(created.session_id, "Session working memory")
+    assert registry.delete(created.session_id) is noted
+    assert registry.session_ids == ()
+    assert registry._records == {}
+    for operation in (registry.get, registry.snapshot):
+        with pytest.raises(InvestigationSessionNotFoundError):
+            operation(created.session_id)
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.update_notes(created.session_id, "Cannot recreate a deleted session")
+
+
+def test_notes_recheck_existence_after_resolving_session_lock(monkeypatch) -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    original_get_lock = registry._get_session_lock
+    stale_lock = original_get_lock(created.session_id)
+    registry.delete(created.session_id)
+    # Model an updater that resolved its lock just before deletion committed.
+    monkeypatch.setattr(registry, "_get_session_lock", lambda _session_id: stale_lock)
+    with pytest.raises(InvestigationSessionNotFoundError):
+        registry.update_notes(created.session_id, "Must not resurrect the record")
+    assert registry._records == {}
+
+
+def test_notes_serialize_with_gameplay_mutation(monkeypatch) -> None:
+    registry = InMemoryInvestigationRegistry()
+    created = create_record(registry)
+    attempted = Event()
+    errors = []
+    original_get_lock = registry._get_session_lock
+    session_lock = original_get_lock(created.session_id)
+
+    def resolve_lock(session_id):
+        lock = original_get_lock(session_id)
+        attempted.set()
+        return lock
+
+    monkeypatch.setattr(registry, "_get_session_lock", resolve_lock)
+
+    def update():
+        try:
+            registry.update_notes(created.session_id, "Concurrent notes")
+        except BaseException as error:
+            errors.append(error)
+
+    def mutation(record):
+        worker.start()
+        assert attempted.wait(timeout=5)
+        assert registry._records[created.session_id] is created
+        assert worker.is_alive()
+        return InvestigationSessionMutation(session=reveal(record), result=None)
+
+    worker = Thread(target=update)
+    # Clear the notification from mutate's own lock resolution before starting notes.
+    def start_mutation(record):
+        attempted.clear()
+        return mutation(record)
+
+    registry.mutate(created.session_id, start_mutation)
+    worker.join(timeout=5)
+    assert not worker.is_alive()
+    assert errors == []
+    updated = registry.get(created.session_id)
+    assert updated.notes_markdown == "Concurrent notes"
+    assert updated.session.clues[0].text == CLUE_ONE
+    assert registry._session_locks[created.session_id] is session_lock
