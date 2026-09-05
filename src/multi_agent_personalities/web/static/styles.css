@@ -1246,6 +1246,8 @@ body {
 .lead-empty > span { display: block; font-size: 2rem; color: var(--color-secondary); }
 .lead-empty small { display: block; margin-top: var(--spacing-xs); }
 .rail-session { display: grid; gap: var(--spacing-xs); padding-top: var(--spacing-md); border-top: 1px solid var(--border-soft); font-size: .75rem; }
+.session-delete-trigger { justify-self: start; margin-top: var(--spacing-xs); padding: 0; border: 0; background: transparent; color: var(--color-failure-dark); cursor: pointer; font-size: .72rem; font-weight: 600; }
+.session-delete-trigger:hover, .session-delete-trigger:focus-visible { color: var(--color-failure); text-decoration: underline; }
 .game-stage { min-width: 0; padding: 28px 32px; }
 .case-bar { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-lg); margin-bottom: var(--spacing-xl); }
 .case-tools { display: flex; gap: var(--spacing-sm); }
@@ -1282,6 +1284,14 @@ body {
 .mutation-error-dialog h2 { font-family: var(--font-serif); font-size: 1.25rem; }
 .mutation-error-dialog p { line-height: 1.6; }
 .mutation-error-dialog .secondary-button { margin-top: var(--spacing-xs); }
+.session-delete-dialog { width: min(92vw, 420px); padding: 0; border: 1px solid var(--border-default); border-radius: var(--radius-panel); background: var(--surface-panel); color: var(--color-text); box-shadow: 0 20px 70px rgb(23 42 58 / 25%); }
+.session-delete-dialog::backdrop { background: rgb(23 42 58 / 45%); }
+.session-delete-dialog-body { display: grid; gap: var(--spacing-md); padding: var(--spacing-xl); }
+.session-delete-dialog h2 { color: var(--color-failure-dark); font-family: var(--font-serif); font-size: 1.25rem; }
+.session-delete-dialog p { line-height: 1.6; }
+.session-delete-actions { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin-top: var(--spacing-xs); }
+.destructive-button { padding: 10px 16px; border: 1px solid var(--color-failure); border-radius: var(--radius-small); background: var(--color-failure); color: white; cursor: pointer; font-weight: 600; }
+.destructive-button:hover, .destructive-button:focus-visible { border-color: var(--color-failure-dark); background: var(--color-failure-dark); }
 .icon-button { padding: 4px 11px; font-size: 1.35rem; }
 
 @media (max-width: 700px) {

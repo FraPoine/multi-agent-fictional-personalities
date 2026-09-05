@@ -133,6 +133,34 @@ if (mutationErrorDialog instanceof HTMLDialogElement) {
     });
 }
 
+const sessionDeleteDialog = document.querySelector("[data-session-delete-dialog]");
+let sessionDeleteReturnFocus = null;
+
+if (sessionDeleteDialog instanceof HTMLDialogElement) {
+    for (const trigger of document.querySelectorAll("[data-session-delete-open]")) {
+        trigger.addEventListener("click", () => {
+            sessionDeleteReturnFocus = trigger;
+            sessionDeleteDialog.showModal();
+        });
+    }
+    for (const trigger of sessionDeleteDialog.querySelectorAll("[data-session-delete-close]")) {
+        trigger.addEventListener("click", () => sessionDeleteDialog.close());
+    }
+    sessionDeleteDialog.addEventListener("keydown", (event) => {
+        // Keep the sidebar trigger visible while native Escape dismisses the dialog.
+        if (event.key === "Escape") event.stopPropagation();
+    });
+    sessionDeleteDialog.addEventListener("click", (event) => {
+        if (event.target === sessionDeleteDialog) sessionDeleteDialog.close();
+    });
+    sessionDeleteDialog.addEventListener("close", () => {
+        if (sessionDeleteReturnFocus instanceof HTMLElement) {
+            sessionDeleteReturnFocus.focus();
+        }
+        sessionDeleteReturnFocus = null;
+    });
+}
+
 window.addEventListener("pageshow", () => {
     for (const form of mutationForms) {
         resetMutationForm(form);

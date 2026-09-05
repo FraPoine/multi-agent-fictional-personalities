@@ -1,6 +1,7 @@
 """Final Lead/Visit investigation HTTP contract tests."""
 
 from pathlib import Path
+import re
 
 import pytest
 
@@ -127,7 +128,21 @@ def test_explicit_compatibility_mode_keeps_synthetic_creation(web_client) -> Non
 
 def test_active_investigation_can_be_deleted_through_http(web_client) -> None:
     client, registry, _app = web_client
-    client.post("/investigations", data=VALID_FORM)
+    created = client.post("/investigations", data=VALID_FORM)
+    detail = client.get(created.headers["location"])
+    assert "data-session-delete-open" in detail.text
+    assert "data-session-delete-dialog" in detail.text
+    trigger = detail.text.split('data-session-delete-open', 1)[0].rsplit('<button', 1)[1]
+    assert 'type="button"' in trigger
+    dialog = detail.text.split('<dialog class="session-delete-dialog"', 1)[1].split('</dialog>', 1)[0]
+    assert '<h2 id="session-delete-title">Delete investigation?</h2>' in dialog
+    assert '<button type="button" class="secondary-button" data-session-delete-close>Cancel</button>' in dialog
+    assert '<form method="post"' in dialog
+    assert 'class="investigation-mutation-form"' in dialog
+    assert '<button type="submit" class="destructive-button">Delete session</button>' in dialog
+    assert 'action="http://testserver/investigations/session_001/delete"' in detail.text
+    assert 'class="investigation-mutation-form"' in detail.text
+    assert "This investigation and its current progress will be removed. This cannot be undone." in detail.text
 
     response = client.post("/investigations/session_001/delete")
 
@@ -238,7 +253,10 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
         ).status_code == 303
     assert client.post("/investigations/session_001/finalize").status_code == 303
     completed_before = registry.snapshot("session_001").model_dump_json()
-    assert client.post("/investigations/session_001/delete").status_code == 409
+    refused_deletion = client.post("/investigations/session_001/delete")
+    assert refused_deletion.status_code == 409
+    assert re.search(r'class="[^"]*\btranscript-error\b[^"]*"', refused_deletion.text)
+    assert "Investigation could not be deleted" in refused_deletion.text
     assert registry.snapshot("session_001").model_dump_json() == completed_before
     assert client.post(
         f"/investigations/session_001/leads/{lead.lead_id}/rename",
@@ -251,6 +269,8 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
     assert archive.status_code == 200
     assert "House of Lestrade" in archive.text
     assert "lead-rename-control" not in archive.text
+    assert "data-session-delete-open" not in archive.text
+    assert "data-session-delete-dialog" not in archive.text
 
     assert client.post(
         "/investigations",
@@ -266,6 +286,9 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
     assert client.post(
         "/investigations/session_002/conclusion/start"
     ).status_code == 303
+    ready_page = client.get("/investigations/session_002")
+    assert "data-session-delete-open" not in ready_page.text
+    assert "data-session-delete-dialog" not in ready_page.text
     conclusion_before = registry.snapshot("session_002").model_dump_json()
     assert client.post(
         f"/investigations/session_002/leads/{conclusion_lead.lead_id}/rename",

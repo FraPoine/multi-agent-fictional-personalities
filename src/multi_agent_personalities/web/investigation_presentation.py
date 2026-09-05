@@ -79,6 +79,7 @@ class InvestigationSessionPresentation:
     leads: tuple["InvestigationLeadPresentation", ...]
     selected_lead: "InvestigationLeadDetailPresentation | None"
     completed: bool
+    can_delete: bool
     can_finalize: bool
     final_theory: "InvestigationFinalTheoryPresentation | None"
     modes: tuple[str, ...]
@@ -457,6 +458,7 @@ def present_session(
         leads=leads,
         selected_lead=selected_detail,
         completed=completed,
+        can_delete=session.status is InvestigationStatus.ACTIVE,
         can_finalize=(
             session.status is InvestigationStatus.ACTIVE
             and bool(session.visits)
