@@ -1233,7 +1233,17 @@ body {
 .lobby-actions button { width: auto; min-height: 38px; padding: 8px 18px; border-radius: 5px; white-space: nowrap; }
 .recent-cases { margin-top: 28px; }
 .recent-cases ul { list-style: none; padding: 0; display: grid; gap: var(--spacing-sm); }
-.recent-cases a { display: flex; justify-content: space-between; padding: var(--spacing-md); border-bottom: 1px solid var(--border-default); color: var(--color-ink); text-decoration: none; }
+.recent-cases li { display: flex; align-items: center; border-bottom: 1px solid var(--border-default); }
+.recent-cases a { flex: 1; min-width: 0; display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-md); color: var(--color-ink); text-decoration: none; }
+.recent-cases a strong { min-width: 0; overflow-wrap: anywhere; }
+.recent-cases a > span { flex-shrink: 0; font-size: .75rem; }
+.session-delete-icon { flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; padding: var(--spacing-sm); border: 0; border-radius: var(--radius-small); background: transparent; color: var(--color-ink); cursor: pointer; }
+.session-delete-icon svg { display: block; width: 16px; height: 16px; }
+.session-delete-icon:hover, .session-delete-icon:focus-visible { color: var(--color-failure); }
+.session-delete-icon:focus-visible { outline: 2px solid var(--color-failure); outline-offset: 2px; }
+@media (max-width: 480px) {
+    .recent-cases a { flex-wrap: wrap; }
+}
 .investigation-lobby-page .app-footer { width: min(100% - 32px, 900px); justify-content: center; padding: 4px 0 18px; font-size: .625rem; }
 
 .game-page { min-height: 100vh; }

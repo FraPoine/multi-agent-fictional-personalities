@@ -18,12 +18,11 @@ from multi_agent_personalities.web.investigation_store import (
     InMemoryInvestigationRegistry,
     InvestigationRegistryInvariantError,
     InvestigationSessionCollisionError,
-    InvestigationSessionDeletionForbiddenError,
     InvestigationSessionMutation,
     InvestigationSessionNotFoundError,
     InvestigationSessionRecord,
 )
-from multi_agent_personalities.models import InvestigationSession, InvestigationStatus
+from multi_agent_personalities.models import InvestigationStatus
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -171,26 +170,25 @@ def test_delete_removes_only_the_target_active_record_and_lock() -> None:
     assert registry.get(second.session_id) is second
 
 
-def test_delete_rejects_non_active_session_without_changing_record_or_lock() -> None:
+@pytest.mark.parametrize("status", list(InvestigationStatus))
+def test_delete_any_status_removes_record_notes_and_lock(status) -> None:
     registry = InMemoryInvestigationRegistry()
     created = create_record(registry)
-    payload = created.session.model_dump(mode="python")
-    payload["status"] = InvestigationStatus.READY_FOR_FINAL
-    ready_session = InvestigationSession.model_validate(payload)
-    ready, _ = registry.mutate(
+    other = create_record(registry)
+    registry.update_notes(created.session_id, "Owned by deleted session")
+    # Deletion treats the aggregate as opaque; valid lifecycle paths are tested via HTTP.
+    snapshot = created.session.model_copy(update={"status": status})
+    target, _ = registry.mutate(
         created.session_id,
-        lambda _record: InvestigationSessionMutation(
-            session=ready_session,
-            result=None,
-        ),
+        lambda record: InvestigationSessionMutation(session=snapshot, result=None),
     )
-    session_lock = registry._session_locks[created.session_id]
-
-    with pytest.raises(InvestigationSessionDeletionForbiddenError):
-        registry.delete(created.session_id)
-
-    assert registry.get(created.session_id) is ready
-    assert registry._session_locks[created.session_id] is session_lock
+    assert registry.delete(created.session_id) is target
+    assert created.session_id not in registry._records
+    assert created.session_id not in registry._session_locks
+    assert registry.get(other.session_id) is other
+    for operation in (registry.get, registry.snapshot, registry.delete):
+        with pytest.raises(InvestigationSessionNotFoundError):
+            operation(created.session_id)
 
 
 def test_sessions_remain_isolated_across_independent_mutations() -> None:

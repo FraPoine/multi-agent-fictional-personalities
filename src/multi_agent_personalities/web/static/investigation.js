@@ -102,7 +102,7 @@ for (const form of mutationForms) {
             return;
         }
 
-        if (investigationDetail instanceof HTMLElement) {
+        if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
             event.preventDefault();
         }
 
@@ -112,7 +112,7 @@ for (const form of mutationForms) {
             button.disabled = true;
             button.textContent = loadingLabel;
         }
-        if (investigationDetail instanceof HTMLElement) {
+        if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
             const returnFocus = event.submitter instanceof HTMLElement
                 ? event.submitter
                 : form;
@@ -139,6 +139,9 @@ let sessionDeleteReturnFocus = null;
 if (sessionDeleteDialog instanceof HTMLDialogElement) {
     for (const trigger of document.querySelectorAll("[data-session-delete-open]")) {
         trigger.addEventListener("click", () => {
+            const form = sessionDeleteDialog.querySelector("[data-session-delete-form]");
+            if (form.getAttribute("aria-busy") === "true") return;
+            if (trigger.dataset.sessionDeleteUrl) form.action = trigger.dataset.sessionDeleteUrl;
             sessionDeleteReturnFocus = trigger;
             sessionDeleteDialog.showModal();
         });

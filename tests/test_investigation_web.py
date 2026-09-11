@@ -1,7 +1,6 @@
 """Final Lead/Visit investigation HTTP contract tests."""
 
 from pathlib import Path
-import re
 
 import pytest
 
@@ -259,11 +258,6 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
         ).status_code == 303
     assert client.post("/investigations/session_001/finalize").status_code == 303
     completed_before = registry.snapshot("session_001").model_dump_json()
-    refused_deletion = client.post("/investigations/session_001/delete")
-    assert refused_deletion.status_code == 409
-    assert re.search(r'class="[^"]*\btranscript-error\b[^"]*"', refused_deletion.text)
-    assert "Investigation could not be deleted" in refused_deletion.text
-    assert registry.snapshot("session_001").model_dump_json() == completed_before
     assert client.post(
         f"/investigations/session_001/leads/{lead.lead_id}/rename",
         data={"custom_label": "Blocked"},
@@ -275,8 +269,8 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
     assert archive.status_code == 200
     assert "House of Lestrade" in archive.text
     assert "lead-rename-control" not in archive.text
-    assert "data-session-delete-open" not in archive.text
-    assert "data-session-delete-dialog" not in archive.text
+    assert "data-session-delete-open" in archive.text
+    assert "data-session-delete-dialog" in archive.text
 
     assert client.post(
         "/investigations",
@@ -293,14 +287,35 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
         "/investigations/session_002/conclusion/start"
     ).status_code == 303
     ready_page = client.get("/investigations/session_002")
-    assert "data-session-delete-open" not in ready_page.text
-    assert "data-session-delete-dialog" not in ready_page.text
+    assert "data-session-delete-open" in ready_page.text
+    assert "data-session-delete-dialog" in ready_page.text
     conclusion_before = registry.snapshot("session_002").model_dump_json()
     assert client.post(
         f"/investigations/session_002/leads/{conclusion_lead.lead_id}/rename",
         data={"custom_label": "Blocked"},
     ).status_code == 409
     assert registry.snapshot("session_002").model_dump_json() == conclusion_before
+
+    # Lifecycle deletion is independent of the gameplay read-only checks above.
+    assert client.post("/investigations", data=VALID_FORM).status_code == 303
+    remaining = registry.get("session_003")
+    lobby = client.get("/investigations")
+    assert lobby.text.count('aria-label="Delete session"') == 3
+    assert lobby.text.count('data-session-delete-dialog') == 1
+    assert lobby.text.count('lucide-trash-2') == 3
+    for session_id in ("session_001", "session_002", "session_003"):
+        assert f'data-session-delete-url="http://testserver/investigations/{session_id}/delete"' in lobby.text
+    for session_id in ("session_001", "session_002"):
+        result = client.post(f"/investigations/{session_id}/delete")
+        assert result.status_code == 303
+        assert result.headers["location"] == "/investigations"
+        assert client.get(f"/investigations/{session_id}").status_code == 404
+        assert client.post(f"/investigations/{session_id}/delete").status_code == 404
+        assert registry.get("session_003") is remaining
+    lobby = client.get("/investigations")
+    assert lobby.text.count('aria-label="Delete session"') == 1
+    assert 'session_001' not in lobby.text
+    assert 'session_002' not in lobby.text
 
 
 def test_discussion_failure_is_500_and_atomic(

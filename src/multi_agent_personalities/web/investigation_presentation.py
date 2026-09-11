@@ -460,7 +460,7 @@ def present_session(
         leads=leads,
         selected_lead=selected_detail,
         completed=completed,
-        can_delete=session.status is InvestigationStatus.ACTIVE,
+        can_delete=True,
         notes_markdown=record.notes_markdown,
         notes_editable=session.status is InvestigationStatus.ACTIVE,
         can_finalize=(

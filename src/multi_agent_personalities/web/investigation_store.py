@@ -36,10 +36,6 @@ class InvestigationSessionCollisionError(ValueError):
     """Raised when registration would overwrite an existing session."""
 
 
-class InvestigationSessionDeletionForbiddenError(ValueError):
-    """Raised when deletion targets a non-active investigation session."""
-
-
 class InvestigationSessionNotesForbiddenError(ValueError):
     """Raised when a notes update targets a non-active session."""
 
@@ -274,15 +270,11 @@ class InMemoryInvestigationRegistry:
                 return updated
 
     def delete(self, session_id: str) -> InvestigationSessionRecord:
-        """Remove one active record through its session serialization lock."""
+        """Remove one record of any status through its session serialization lock."""
         session_lock = self._get_session_lock(session_id)
         with session_lock:
             with self._registry_lock:
                 current = self._get_record_locked(session_id)
-                if current.session.status is not InvestigationStatus.ACTIVE:
-                    raise InvestigationSessionDeletionForbiddenError(
-                        "only active investigation sessions can be deleted"
-                    )
                 del self._records[session_id]
                 del self._session_locks[session_id]
                 return current
