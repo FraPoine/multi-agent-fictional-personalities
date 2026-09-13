@@ -296,6 +296,29 @@ def test_runtime_lead_rename_http_contract_and_archive_presentation(
     ).status_code == 409
     assert registry.snapshot("session_002").model_dump_json() == conclusion_before
 
+    # Presentation selection remains available in both read-only lifecycle states.
+    for session_id in ("session_001", "session_002"):
+        before = registry.get(session_id)
+        lead_id = before.session.leads[0].lead_id
+        for query, selection in (("?view=opening", {"show_case_opening": True}),
+                                 (f"?lead={lead_id}", {"selected_lead_id": lead_id})):
+            response = client.get(f"/investigations/{session_id}{query}")
+            assert response.status_code == 200
+            assert "data-begin-investigating" not in response.text
+            presentation = present_session(before, **presentation_args, **selection)
+            assert len(presentation.navigation_items) == 2
+            assert presentation.is_case_opening == (query == "?view=opening")
+            assert presentation.navigation_index == (0 if presentation.is_case_opening else 1)
+            if presentation.is_case_opening:
+                assert presentation.next_navigation.lead_id == lead_id
+                assert presentation.previous_navigation is None
+                assert presentation.selected_lead is None
+                assert 'class="case-file-card"' in response.text
+            else:
+                assert presentation.previous_navigation.kind == "case_opening"
+                assert presentation.next_navigation is None
+            assert registry.get(session_id) is before
+
     # Lifecycle deletion is independent of the gameplay read-only checks above.
     assert client.post("/investigations", data=VALID_FORM).status_code == 303
     remaining = registry.get("session_003")

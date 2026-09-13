@@ -65,6 +65,15 @@ class InvestigationResourceGroupPresentation:
 
 
 @dataclass(frozen=True)
+class InvestigationNavigationItemPresentation:
+    kind: str
+    lead_id: str | None
+    label: str
+    reference: str | None
+    selected: bool
+
+
+@dataclass(frozen=True)
 class InvestigationSessionPresentation:
     session_id: str
     case_title: str
@@ -75,6 +84,10 @@ class InvestigationSessionPresentation:
     lead_count: int
     visit_count: int
     is_case_opening: bool
+    navigation_items: tuple[InvestigationNavigationItemPresentation, ...]
+    navigation_index: int
+    previous_navigation: InvestigationNavigationItemPresentation | None
+    next_navigation: InvestigationNavigationItemPresentation | None
     resource_groups: tuple[InvestigationResourceGroupPresentation, ...]
     leads: tuple["InvestigationLeadPresentation", ...]
     selected_lead: "InvestigationLeadDetailPresentation | None"
@@ -238,6 +251,7 @@ def present_session(
     case_catalog: CaseCatalog,
     resource_base_directory: Path,
     selected_lead_id: str | None = None,
+    show_case_opening: bool = False,
     case_content_catalog: CaseContentCatalog | None = None,
     resource_text_catalog: ResourceTextCatalog | None = None,
     public_conclusion_catalog=None,
@@ -261,7 +275,9 @@ def present_session(
     completed = session.status is InvestigationStatus.COMPLETED or bool(session.case_state and session.case_state.outcome)
     lead_by_id = {lead.lead_id: lead for lead in session.leads}
     current_visit = session.visits[-1] if session.visits else None
-    resolved_lead_id = (
+    if show_case_opening and selected_lead_id is not None:
+        raise ValueError("opening and lead selections are mutually exclusive")
+    resolved_lead_id = None if show_case_opening else (
         selected_lead_id
         if selected_lead_id is not None
         else (current_visit.lead_id if current_visit is not None else None)
@@ -289,6 +305,19 @@ def present_session(
             revisited=visit_counts[lead.lead_id] > 1,
         )
         for lead in session.leads
+    )
+    navigation_items = (
+        InvestigationNavigationItemPresentation(
+            kind="case_opening", lead_id=None, label="Case Opening",
+            reference=None, selected=resolved_lead_id is None,
+        ),
+        *(InvestigationNavigationItemPresentation(
+            kind="lead", lead_id=lead.lead_id, label=lead.label,
+            reference=lead.reference, selected=lead.selected,
+        ) for lead in leads),
+    )
+    navigation_index = next(
+        index for index, item in enumerate(navigation_items) if item.selected
     )
     selected_detail = None
     if resolved_lead_id is not None:
@@ -448,7 +477,11 @@ def present_session(
         participants=participants,
         lead_count=len(session.leads),
         visit_count=len(session.visits),
-        is_case_opening=not session.visits,
+        is_case_opening=navigation_items[navigation_index].kind == "case_opening",
+        navigation_items=navigation_items,
+        navigation_index=navigation_index,
+        previous_navigation=(navigation_items[navigation_index - 1] if navigation_index > 0 else None),
+        next_navigation=(navigation_items[navigation_index + 1] if navigation_index + 1 < len(navigation_items) else None),
         resource_groups=_resource_groups(
             case_catalog,
             case_id=session.case_id,

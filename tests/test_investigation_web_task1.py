@@ -186,3 +186,85 @@ def test_case_opening_shell_is_side_effect_free(task1_client) -> None:
         "Round status",
     ):
         assert legacy not in response.text
+
+
+def test_chronological_presentation_navigation(task1_client) -> None:
+    from multi_agent_personalities.application.investigation_visit_service import visit_lead, rename_lead
+    from multi_agent_personalities.web.investigation_store import InvestigationSessionMutation
+    from multi_agent_personalities.web.investigation_presentation import present_session
+
+    client, registry = task1_client
+    client.post("/investigations", data=VALID_FORM)
+    path = "/investigations/session_001"
+
+    def present(**selection):
+        return present_session(
+            registry.get("session_001"), case_catalog=registry.case_catalog,
+            resource_base_directory=default_case_catalog_directory(ROOT).parent,
+            **selection,
+        )
+
+    def check(index, **selection):
+        before = registry.get("session_001")
+        result = present(**selection)
+        items = result.navigation_items
+        assert [item.lead_id for item in items] == [None, *(lead.lead_id for lead in before.session.leads)]
+        assert result.navigation_index == index
+        assert [item.selected for item in items] == [i == index for i in range(len(items))]
+        assert result.previous_navigation == (items[index - 1] if index else None)
+        assert result.next_navigation == (items[index + 1] if index + 1 < len(items) else None)
+        assert result.is_case_opening == (index == 0)
+        assert [item.reference for item in items[1:]] == [lead.reference for lead in result.leads]
+        if before.session.visits:
+            assert [lead.lead_id for lead in result.leads if lead.current] == [before.session.visits[-1].lead_id]
+        if index == 0:
+            assert result.selected_lead is None
+        else:
+            assert result.selected_lead.lead_id == items[index].lead_id
+        assert registry.get("session_001") is before
+        return result
+
+    initial = check(0)
+    opening = initial.navigation_items[0]
+    assert (opening.kind, opening.label, opening.reference) == ("case_opening", "Case Opening", None)
+    assert len(initial.navigation_items) == 1
+    for number, label in enumerate(("Zulu", "Alpha", "Middle"), 1):
+        registry.mutate("session_001", lambda record: InvestigationSessionMutation(
+            session=visit_lead(record.session, id_factory=record.runtime.id_factory,
+                               label=label, kind="location", case_lead_key=f"test-lead-{number}", reference=f"{number} NW"), result=None,
+        ))
+        check(0, show_case_opening=True)
+        check(number)
+        if number == 2:
+            first_id = registry.snapshot("session_001").leads[0].lead_id
+            registry.mutate("session_001", lambda record: InvestigationSessionMutation(
+                session=visit_lead(record.session, id_factory=record.runtime.id_factory, lead_id=first_id), result=None,
+            ))
+            assert len(check(1).navigation_items) == 3
+            current_record = registry.get("session_001")
+            response = client.get(path)
+            assert response.status_code == 200
+            assert '<h2 id="lead-thread-title">Zulu</h2>' in response.text
+            assert registry.get("session_001") is current_record
+    session = registry.snapshot("session_001")
+    registry.mutate("session_001", lambda record: InvestigationSessionMutation(
+        session=rename_lead(record.session, lead_id=session.leads[1].lead_id, custom_label="Renamed"), result=None,
+    ))
+    middle = check(2, selected_lead_id=session.leads[1].lead_id)
+    assert middle.navigation_items[2].label == middle.leads[1].label == "Renamed"
+    assert [lead.current for lead in middle.leads] == [False, False, True]
+    before = registry.get("session_001")
+    for query in ("?view=opening", f"?lead={session.leads[0].lead_id}"):
+        response = client.get(path + query)
+        assert response.status_code == 200
+        assert 'data-begin-investigating' not in response.text
+        if query == "?view=opening":
+            assert 'class="case-file-card"' in response.text
+        else:
+            assert '<h2 id="lead-thread-title">Zulu</h2>' in response.text
+            assert 'Revisit lead' in response.text
+        assert registry.get("session_001") is before
+    for query, status in (("?lead=unknown", 404), ("?view=invalid", 400), ("?view=", 400),
+                          (f"?view=opening&lead={session.leads[0].lead_id}", 400)):
+        assert client.get(path + query).status_code == status
+        assert registry.get("session_001") is before

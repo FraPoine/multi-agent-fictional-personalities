@@ -272,6 +272,7 @@ def create_investigation_router(
         record: InvestigationSessionRecord,
         *,
         selected_lead_id: str | None = None,
+        show_case_opening: bool = False,
         status_code: int = 200,
     ) -> HTMLResponse:
         return templates.TemplateResponse(
@@ -287,6 +288,7 @@ def create_investigation_router(
                         default_case_catalog_directory(project_root).parent
                     ),
                     selected_lead_id=selected_lead_id,
+                    show_case_opening=show_case_opening,
                     case_content_catalog=registry.case_content_catalog,
                     resource_text_catalog=registry.resource_text_catalog,
                     public_conclusion_catalog=registry.public_conclusion_catalog,
@@ -522,6 +524,7 @@ def create_investigation_router(
         request: Request,
         session_id: str,
         lead: str | None = None,
+        view: str | None = None,
     ) -> HTMLResponse:
         try:
             validate_run_id(session_id)
@@ -537,6 +540,11 @@ def create_investigation_router(
                     "local process."
                 ),
             )
+        if view is not None and (view != "opening" or lead is not None):
+            return resource_error(
+                request, status_code=400, heading="Invalid investigation view",
+                message="Use view=opening or select a lead, but not both.",
+            )
         if lead is not None and not any(
             item.lead_id == lead for item in record.session.leads
         ):
@@ -546,7 +554,9 @@ def create_investigation_router(
                 heading="Lead not found",
                 message="The selected lead does not belong to this investigation.",
             )
-        return render_detail(request, record, selected_lead_id=lead)
+        return render_detail(
+            request, record, selected_lead_id=lead, show_case_opening=view == "opening",
+        )
 
     @router.post(
         "/investigations/{session_id}/notes",
