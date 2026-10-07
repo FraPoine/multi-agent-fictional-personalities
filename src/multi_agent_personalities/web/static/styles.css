@@ -1472,3 +1472,18 @@ html.investigation-review-page { min-width: 0; }
     .game-stage { padding-left: 8px; padding-right: 8px; }
     .review-content .thread-header, .review-content .lead-actions, .review-content .thread-stream { padding-left: var(--spacing-sm); padding-right: var(--spacing-sm); }
 }
+
+/* Keep the answer DOM alongside independently scrollable, server-rendered review. */
+.conclusion-review-workspace { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: var(--spacing-lg); align-items: start; }
+.conclusion-review-workspace > .conclusion-panel { min-width: 0; margin: 0; }
+.conclusion-review-workspace > .investigation-review-pane { min-width: 0; position: sticky; top: calc(var(--review-header-height, 63px) + var(--spacing-md)); max-height: calc(100dvh - var(--review-header-height, 63px) - 2 * var(--spacing-md)); overflow: auto; scrollbar-gutter: stable; overflow-anchor: none; }
+.conclusion-review-workspace .review-arrow { top: var(--spacing-sm); }
+.conclusion-review-workspace .review-navigation { --review-arrow-size: 32px; grid-template-columns: 32px minmax(0, 1fr) 32px; gap: var(--spacing-xs); }
+.conclusion-review-workspace .review-arrow { width: 32px; height: 32px; }
+.conclusion-review-workspace .thread-header { align-items: stretch; flex-direction: column; }
+.conclusion-review-workspace .thread-header-actions { align-items: flex-start; }
+.investigation-review-pane[aria-busy="true"] { cursor: progress; }
+@media (max-width: 1200px) {
+    .conclusion-review-workspace { grid-template-columns: minmax(0, 1fr); }
+    .conclusion-review-workspace > .investigation-review-pane { position: relative; top: auto; }
+}

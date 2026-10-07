@@ -1,6 +1,5 @@
 "use strict";
 
-const mutationForms = document.querySelectorAll(".investigation-mutation-form");
 const lobbyForm = document.querySelector("[data-investigation-lobby-form]");
 const investigationDetail = document.querySelector(".game-shell");
 const mutationErrorDialog = document.querySelector("[data-mutation-error-dialog]");
@@ -81,45 +80,48 @@ async function submitInvestigationMutation(form, returnFocus) {
     }
 }
 
-for (const form of mutationForms) {
-    for (const button of form.querySelectorAll('button[type="submit"]')) {
-        button.dataset.originalLabel = button.textContent;
-        button.dataset.originalDisabled = String(button.disabled);
-    }
-
-    form.addEventListener("submit", (event) => {
-        if (form === lobbyForm && !lobbySelectionIsValid()) {
-            event.preventDefault();
-            updateLobbyStartButton();
-            return;
-        }
-        if (!form.checkValidity()) {
-            return;
-        }
-
-        if (form.getAttribute("aria-busy") === "true") {
-            event.preventDefault();
-            return;
-        }
-
-        if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
-            event.preventDefault();
-        }
-
-        form.setAttribute("aria-busy", "true");
-        const loadingLabel = form.dataset.loadingLabel || "Working…";
+function initializeMutationForms(root) {
+    for (const form of root.querySelectorAll(".investigation-mutation-form")) {
         for (const button of form.querySelectorAll('button[type="submit"]')) {
-            button.disabled = true;
-            button.textContent = loadingLabel;
+            button.dataset.originalLabel = button.textContent;
+            button.dataset.originalDisabled = String(button.disabled);
         }
-        if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
-            const returnFocus = event.submitter instanceof HTMLElement
-                ? event.submitter
-                : form;
-            void submitInvestigationMutation(form, returnFocus);
-        }
-    });
+
+        form.addEventListener("submit", (event) => {
+            if (form === lobbyForm && !lobbySelectionIsValid()) {
+                event.preventDefault();
+                updateLobbyStartButton();
+                return;
+            }
+            if (!form.checkValidity()) {
+                return;
+            }
+
+            if (form.getAttribute("aria-busy") === "true") {
+                event.preventDefault();
+                return;
+            }
+
+            if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
+                event.preventDefault();
+            }
+
+            form.setAttribute("aria-busy", "true");
+            const loadingLabel = form.dataset.loadingLabel || "Working…";
+            for (const button of form.querySelectorAll('button[type="submit"]')) {
+                button.disabled = true;
+                button.textContent = loadingLabel;
+            }
+            if (investigationDetail instanceof HTMLElement || form.matches("[data-session-delete-form]")) {
+                const returnFocus = event.submitter instanceof HTMLElement
+                    ? event.submitter
+                    : form;
+                void submitInvestigationMutation(form, returnFocus);
+            }
+        });
+    }
 }
+initializeMutationForms(document);
 
 if (mutationErrorDialog instanceof HTMLDialogElement) {
     for (const trigger of mutationErrorDialog.querySelectorAll("[data-mutation-error-close]")) {
@@ -165,7 +167,7 @@ if (sessionDeleteDialog instanceof HTMLDialogElement) {
 }
 
 window.addEventListener("pageshow", () => {
-    for (const form of mutationForms) {
+    for (const form of document.querySelectorAll(".investigation-mutation-form")) {
         resetMutationForm(form);
     }
     updateLobbyStartButton();
@@ -287,4 +289,74 @@ if (reviewHeader instanceof HTMLElement) {
         );
     });
     reviewHeaderObserver.observe(reviewHeader);
+}
+
+// Enhance only the official conclusion workspace. The server owns all review
+// selection and chronology; the answer column is never replaced or serialized.
+const conclusionWorkspace = document.querySelector("[data-conclusion-review-workspace]");
+if (conclusionWorkspace instanceof HTMLElement) {
+    history.scrollRestoration = "manual";
+    let reviewRequest = null;
+    let renderedReviewURL = window.location.href;
+
+    async function loadReview(url, pushHistory, returnFocus) {
+        reviewRequest?.abort();
+        const controller = new AbortController();
+        reviewRequest = controller;
+        const currentPane = conclusionWorkspace.querySelector("[data-investigation-review-pane]");
+        currentPane.setAttribute("aria-busy", "true");
+        try {
+            const response = await fetch(url, {
+                credentials: "same-origin", signal: controller.signal,
+            });
+            if (!response.ok) throw new Error("Review request failed");
+            const fetched = new DOMParser().parseFromString(await response.text(), "text/html");
+            const newPane = fetched.querySelector("[data-conclusion-review-workspace] [data-investigation-review-pane]");
+            const newLeads = fetched.querySelector(".lead-list");
+            if (!newPane || !newLeads) throw new Error("Review content unavailable");
+            if (controller.signal.aborted) return;
+            const pageX = window.scrollX;
+            const pageY = window.scrollY;
+            const leadList = document.querySelector(".lead-list");
+            const leadScroll = leadList.scrollTop;
+            currentPane.replaceWith(newPane);
+            leadList.replaceChildren(...newLeads.childNodes);
+            leadList.scrollTop = leadScroll;
+            initializeMutationForms(newPane);
+            newPane.scrollTop = 0;
+            if (pushHistory) history.pushState(null, "", url);
+            renderedReviewURL = url;
+            setLeadPanelOpen(false);
+            newPane.focus({ preventScroll: true });
+            window.scrollTo(pageX, pageY);
+        } catch (error) {
+            if (controller.signal.aborted) return;
+            // Back/Forward already changed the URL; keep it consistent with the
+            // retained pane on failure, without navigating away from draft text.
+            if (!pushHistory) history.replaceState(history.state, "", renderedReviewURL);
+            showMutationError(
+                "Lead could not be loaded",
+                "The investigation review could not be loaded. Your unsaved answers are unchanged. Please try again.",
+                returnFocus,
+            );
+        } finally {
+            if (reviewRequest === controller) {
+                conclusionWorkspace.querySelector("[data-investigation-review-pane]").removeAttribute("aria-busy");
+                reviewRequest = null;
+            }
+        }
+    }
+
+    document.addEventListener("click", (event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const link = event.target instanceof Element ? event.target.closest("a[data-review-navigation-link]") : null;
+        if (!link || link.hasAttribute("download") || (link.target && link.target !== "_self")) return;
+        const url = new URL(link.href, window.location.href);
+        if (url.origin !== location.origin || url.pathname !== location.pathname) return;
+        event.preventDefault();
+        void loadReview(url.href, true, link);
+    });
+    window.addEventListener("popstate", () => {
+        void loadReview(window.location.href, false, document.activeElement);
+    });
 }

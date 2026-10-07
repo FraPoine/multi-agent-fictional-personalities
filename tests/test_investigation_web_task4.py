@@ -98,9 +98,25 @@ def test_demo1_web_conclusion_preserves_reviewed_140_100_and_archive(authored_we
     lead = client.post(f"/investigations/{session_id}/leads", data={"reference": "17 WC"})
     assert lead.status_code == 303
     visit_id = registry.snapshot(session_id).visits[-1].visit_id
+    normal = client.get(f"/investigations/{session_id}").text
+    assert 'data-conclusion-review-workspace' not in normal
+    assert 'data-review-navigation-link href=' in normal
+    assert 'data-investigation-review-pane' in normal
     assert client.post(f"/investigations/{session_id}/visits/{visit_id}/information", data={"information": "forbidden"}).status_code == 409
     assert client.post(f"/investigations/{session_id}/conclusion/start").status_code == 303
     assert client.post(f"/investigations/{session_id}/conclusion/drafts").status_code == 303
+    before_review = registry.get(session_id)
+    lead_id = before_review.session.leads[0].lead_id
+    for query in ("?view=opening", f"?lead={lead_id}"):
+        review = client.get(f"/investigations/{session_id}{query}")
+        assert review.status_code == 200
+        assert review.text.count('data-conclusion-review-workspace') == 1
+        assert review.text.count('data-conclusion-pane') == 1
+        assert review.text.count('data-investigation-review-pane') == 1
+        assert review.text.index('data-conclusion-pane') < review.text.index('data-investigation-review-pane')
+        assert 'name="answer"' in review.text
+        assert 'data-review-navigation-link href=' in review.text
+        assert registry.get(session_id) is before_review
     assert client.post(f"/investigations/{session_id}/conclusion/answers/q1", data={"answer": "Edited investigator answer"}).status_code == 303
     assert client.post(f"/investigations/{session_id}/conclusion/lock").status_code == 303
     assert client.post(f"/investigations/{session_id}/conclusion/answer-elements").status_code == 303
@@ -117,7 +133,10 @@ def test_demo1_web_conclusion_preserves_reviewed_140_100_and_archive(authored_we
     assert client.post(f"/investigations/{session_id}/conclusion/solution").status_code == 409
     assert client.post(f"/investigations/{session_id}/resources/{DEMO1}-directory/consult").status_code == 409
     assert registry.snapshot(session_id).model_dump_json() == before
-    assert "Official solution" in client.get(f"/investigations/{session_id}").text
+    archive = client.get(f"/investigations/{session_id}").text
+    assert "Official solution" in archive
+    assert 'data-conclusion-review-workspace' in archive
+    assert 'data-investigation-review-pane' in archive
 
 
 def test_demo2_gates_break_in_closure_and_score_band_through_http(authored_web) -> None:
