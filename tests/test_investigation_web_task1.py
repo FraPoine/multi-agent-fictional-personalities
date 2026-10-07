@@ -221,6 +221,16 @@ def test_chronological_presentation_navigation(task1_client) -> None:
             assert result.selected_lead is None
         else:
             assert result.selected_lead.lead_id == items[index].lead_id
+        query = "?view=opening" if selection.get("show_case_opening") else (f"?lead={selection['selected_lead_id']}" if selection.get("selected_lead_id") else "")
+        html = client.get(path + query).text
+        sidebar = html.split('aria-label="Investigation leads">', 1)[1].split('</nav>', 1)[0]
+        assert sidebar.count('class="lead-link') == len(items) * 2  # link and copy span
+        assert sidebar.index('?view=opening') < sidebar.index('Case Opening')
+        for direction, target in (("Previous", result.previous_navigation), ("Next", result.next_navigation)):
+            assert (f'aria-label="{direction} lead"' in html) == (target is not None)
+            if target:
+                suffix = '?view=opening' if target.kind == 'case_opening' else f'?lead={target.lead_id}'
+                assert f'{suffix}" aria-label="{direction} lead"' in html
         assert registry.get("session_001") is before
         return result
 

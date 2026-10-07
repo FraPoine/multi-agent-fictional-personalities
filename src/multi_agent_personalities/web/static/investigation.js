@@ -276,3 +276,15 @@ for (const trigger of document.querySelectorAll("[data-leads-close]")) {
 document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") setLeadPanelOpen(false);
 });
+
+// The header can wrap on narrow screens. Size observation keeps CSS sticky
+// review links below it without scroll handlers or changing navigation.
+const reviewHeader = document.querySelector(".game-page > .app-header");
+if (reviewHeader instanceof HTMLElement) {
+    const reviewHeaderObserver = new ResizeObserver(() => {
+        document.documentElement.style.setProperty(
+            "--review-header-height", `${reviewHeader.offsetHeight}px`
+        );
+    });
+    reviewHeaderObserver.observe(reviewHeader);
+}

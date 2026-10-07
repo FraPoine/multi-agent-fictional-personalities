@@ -132,6 +132,8 @@ def test_resource_toolbar_uses_local_icons_and_preserves_targets(
     assert "lucide-users" in toolbar
     assert 'data-resource-open="rules"' in toolbar
     assert "lucide-circle-help" in toolbar
+    assert "lucide-notebook-pen" in toolbar
+    assert toolbar.index('data-resource-open="notes"') < toolbar.index('data-resource-open="rules"')
     assert 'src="http://' not in toolbar
     assert 'src="https://' not in toolbar
     assert 'href="http://' not in toolbar
@@ -155,6 +157,9 @@ def test_resource_toolbar_uses_local_icons_and_preserves_targets(
         "file.svg",
         "paperclip.svg",
         "circle-help.svg",
+        "notebook-pen.svg",
+        "chevron-left.svg",
+        "chevron-right.svg",
     ):
         contents = (asset_directory / asset).read_text(encoding="utf-8")
         assert "<!-- @license lucide-static v1.39.0 - ISC -->" in contents

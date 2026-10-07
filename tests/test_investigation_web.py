@@ -415,6 +415,12 @@ def test_session_notes_http_presentation_navigation_and_archive(web_client) -> N
     presented = present_session(noted, **presentation_args)
     assert presented.notes_markdown == raw
     assert presented.notes_editable is True
+    from html import escape
+    html = client.get(path).text
+    panel = html.split('data-resource-panel="notes"', 1)[1].split('</section>', 1)[0]
+    assert 'name="notes"' in panel and 'Save notes' in panel
+    assert escape(raw) in panel
+    assert html.index('data-resource-open="notes"') < html.index('data-resource-open="rules"')
 
     assert client.post(path + "/notes", data={"notes": ""}).status_code == 303
     assert registry.get("session_001").notes_markdown == ""
@@ -451,6 +457,10 @@ def test_session_notes_http_presentation_navigation_and_archive(web_client) -> N
     presented = present_session(archived, **presentation_args)
     assert presented.notes_markdown == raw
     assert presented.notes_editable is False
+    html = client.get(path).text
+    panel = html.split('data-resource-panel="notes"', 1)[1].split('</section>', 1)[0]
+    assert '<pre class="notes-readonly">' in panel and escape(raw) in panel
+    assert '<textarea' not in panel and 'Save notes' not in panel
     with pytest.raises(InvestigationSessionNotesForbiddenError):
         registry.update_notes("session_001", "Blocked")
     assert registry.get("session_001") is archived
