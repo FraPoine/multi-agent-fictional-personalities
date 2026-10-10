@@ -466,3 +466,50 @@ def test_session_notes_http_presentation_navigation_and_archive(web_client) -> N
     assert registry.get("session_001") is archived
     assert client.post(path + "/notes", data={"notes": ""}).status_code == 409
     assert registry.get("session_001") is archived
+
+
+@pytest.mark.parametrize("include_deferred_cases", [False, True])
+def test_authored_launch_boundary(tmp_path: Path, include_deferred_cases: bool) -> None:
+    import re
+
+    app = create_app(
+        project_root=ROOT, output_root=tmp_path / "outputs",
+        include_deferred_cases=include_deferred_cases,
+    )
+    registry = app.state.investigation_registry
+    demo1 = "demo-1-vanishing-from-hyde-park"
+    deferred = (
+        "demo-2-an-irregular-meeting",
+        "demo-3-the-disappearance-of-a-student",
+    )
+    with ASGITestClient(app) as client:
+        page = client.get("/investigations")
+        for title in ("Vanishing from Hyde Park", "An Irregular Meeting", "The Disappearance of a Student"):
+            assert title in page.text
+        controls = {
+            case_id: re.search(r'<input[^>]*value="' + case_id + r'"[^>]*>', page.text).group()
+            for case_id in (demo1, *deferred)
+        }
+        assert "checked" in controls[demo1] and "disabled" not in controls[demo1]
+        for case_id in deferred:
+            assert ("disabled" in controls[case_id]) is (not include_deferred_cases)
+            assert "checked" not in controls[case_id]
+        start = re.search(r'<button[^>]*data-investigation-start[^>]*>', page.text).group()
+        assert "disabled" not in start
+        assert page.text.count(">Start Investigation</button>") == 1
+        response = client.post("/investigations", data={"characters": ["sherlock", "poirot"], "case_id": demo1})
+        assert response.status_code == 303
+        assert registry.snapshot("session_001").case_id == demo1
+        before = {sid: registry.get(sid) for sid in registry.session_ids}
+        for case_id in deferred:
+            response = client.post("/investigations", data={"characters": ["sherlock", "poirot"], "case_id": case_id})
+            assert response.status_code == (303 if include_deferred_cases else 409)
+            if not include_deferred_cases:
+                assert "integrated but is not currently available to start" in response.text
+                assert registry.session_ids == tuple(before)
+                assert all(registry.get(sid) is record for sid, record in before.items())
+        for case_id in ("archive-absence", "observatory-signal", "missing-case"):
+            ids = registry.session_ids
+            response = client.post("/investigations", data={"characters": ["sherlock", "poirot"], "case_id": case_id})
+            assert response.status_code == 404
+            assert registry.session_ids == ids

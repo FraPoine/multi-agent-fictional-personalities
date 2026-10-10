@@ -80,13 +80,17 @@ real investigation game.
 - Isolated remaining round implementation as private historical compatibility
   code. See the [redesign completion record](sprint_6_redesign_completion.md).
 
-## Sprint 7 — Investigation web UI
+## Sprint 7 — Investigation web UI (closed)
 
 - The catalogue-backed deterministic mock UI now uses the authoritative
   Lead/Visit model end to end: lobby, Case Opening, semantic leads, new visits
   and revisits, information disclosure, repeatable discussions, resources,
   explicit finalization, and a completed read-only archive.
-- The normal lobby exposes only the three supplied English demos. It supports
+- All three supplied English demos remain integrated and visible. Only Demo 1
+  is launchable in the normal UI. Demo 2/3 are intentionally deferred for
+  refinement after the real agents work; explicit `include_deferred_cases=True`
+  enables development/test launches independently of compatibility fixtures.
+  The integrated architecture supports
   authored interactions and accounting, verified resource consultation,
   official questions/scoring/solutions for Demos 1–2, and Demo 3's exclusive
   authored-outcome path. Synthetic cases remain explicit compatibility data.
@@ -99,9 +103,16 @@ real investigation game.
   [original verification record](sprint_7_completion.md) and final
   [redesign completion record](sprint_7_redesign_completion.md).
 
-## Sprint 8 — Generic recognizability evaluation
+## Sprint 8 — Live Sherlock and Poirot agents
 
-- Generalize the evaluation design after the runtime character set expands.
+- Activate Sherlock Holmes and Hercule Poirot with a real LLM provider,
+  using Demo 1 as the first integration target.
+- Refine deferred Demo 2/3 after the live two-agent runtime works.
+- Recognizability evaluation remains a later required project goal: generalize
+  the evaluation design after the runtime exists and the character set expands.
+
+Sprint 7's final scope decision is recorded in the short
+[closure note](../notes/sprint-7-francesco.md).
 
 ## Case catalogue integration
 

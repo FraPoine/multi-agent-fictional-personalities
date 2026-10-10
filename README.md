@@ -29,7 +29,10 @@ reproducibility components. The final study has not been completed.
 ## Current implementation status
 
 The normal investigation lobby exposes exactly three validated English demo
-cases. Retained synthetic fixtures are available only through explicit test or
+cases, with only Demo 1 currently launchable. Demo 2 and Demo 3 remain fully
+integrated but are disabled pending refinement after the real agents work.
+Development/tests can opt in with `create_app(include_deferred_cases=True)`;
+this does not enable synthetic compatibility cases. Retained synthetic fixtures are available only through explicit test or
 developer injection paths. User-supplied provenance stays under
 `data/raw/investigation/`; normal runtime loading uses spoiler-free derived
 definitions and assets under `configs/investigation/`. Eligible authoritative
@@ -220,7 +223,7 @@ below.
 The investigation browser flow is:
 
 ```text
-select one of the three authored demos + both supported investigators
+select Demo 1 (Demo 2/3 require explicit development opt-in) + both supported investigators
 → opening loaded from CaseDefinition
 → enter a case-aware physical reference and, for Demo 3, select a mode
 → authored sections disclose information and bounded mock discussion remains optional
@@ -391,10 +394,11 @@ critical-path tests reject attempted network access.
 
 Sprint 6's offline mock investigation workflow and Sprint 7's final Lead/Visit
 browser redesign are implemented and covered by offline HTTP verification.
-Sprint 8 generalizes the recognizability evaluation, and Sprint 9 completes
-the offline system. Live-
-provider integration, real observability, characters three and four,
-pre-registration, and real experimental data remain later work.
+Sprint 7 investigation architecture is closed; see the short
+[closure note](notes/sprint-7-francesco.md). Sprint 8 focuses on activating
+Sherlock Holmes and Hercule Poirot with a real LLM provider, using Demo 1 first.
+Recognizability evaluation remains a later required scientific goal, alongside
+characters three and four, pre-registration, and real experimental data.
 
 ## Repository structure
 

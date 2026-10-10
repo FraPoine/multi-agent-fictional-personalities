@@ -1487,3 +1487,5 @@ html.investigation-review-page { min-width: 0; }
     .conclusion-review-workspace { grid-template-columns: minmax(0, 1fr); }
     .conclusion-review-workspace > .investigation-review-pane { position: relative; top: auto; }
 }
+
+.case-card input:disabled + label { opacity: .65; cursor: default; }

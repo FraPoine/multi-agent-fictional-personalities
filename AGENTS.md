@@ -40,8 +40,13 @@ effects are the sole transition authority; state files declare initial values.
 Authoritative text enters runtime knowledge only as `RevealedInformation` with
 stable source provenance.
 
-The normal lobby exposes only those three authored demos; synthetic cases are
-retained for explicit compatibility tests. Player-visible maps and floor plans
+The normal lobby displays all three authored demos, but only Demo 1 is
+launchable. Demo 2 and Demo 3 remain integrated and are intentionally deferred
+for refinement after the real agents work. `create_app(include_deferred_cases=True)`
+enables them for development/tests independently of synthetic compatibility cases.
+Sprint 7 investigation architecture is closed; Sprint 8 activates Sherlock Holmes
+and Hercule Poirot with a real LLM provider. Recognizability evaluation remains
+required afterward. Synthetic cases are retained for explicit compatibility tests. Player-visible maps and floor plans
 remain human-mediated. Verified resource text becomes agent-readable only
 after explicit consultation. Demos 1 and 2 use public questions followed by
 lazy private scoring and solution reveal; Demo 1 preserves the source's
@@ -69,7 +74,7 @@ does not provide scientifically interpretable results. The redesigned Sprint 6
 application uses persistent leads, chronological visits, explicit globally
 retained information, repeatable bounded conversations, optional reasoning,
 and explicit finalization. Its deterministic mock path is fixture-backed and
-offline. The normal main web application selects one of the three authored
+offline. The normal main web application launches Demo 1 from the three authored
 local `CaseDefinition` records (while explicit compatibility callers may use
 the retained synthetic fixtures),
 resolves the trusted opening from `case_id`, accepts physical lead references,
@@ -123,7 +128,7 @@ The system has six main stages:
    - Analyze accuracy, confidence intervals, and per-character confusion.
 
 6. **Investigation (offline application workflow implemented)**
-   - Let the project user select a local synthetic case and investigators,
+   - Let the project user select a local authored case and investigators,
      enter case-defined physical references, revisit semantic leads, and
      disclose information explicitly.
    - Resolve `CaseDefinition` by server-owned `case_id`, snapshot its opening,

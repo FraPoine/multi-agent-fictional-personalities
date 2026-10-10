@@ -140,13 +140,29 @@ def _validate_investigation_creation_form(
     return selected, errors
 
 
+# Product launch state belongs to the web boundary, not authored case data.
+_DEFAULT_AUTHORED_CASE_ID = "demo-1-vanishing-from-hyde-park"
+_DEFERRED_AUTHORED_CASE_IDS = frozenset({
+    "demo-2-an-irregular-meeting",
+    "demo-3-the-disappearance-of-a-student",
+})
+
+
+def _launchable_case_ids(cases, *, include_deferred_cases: bool) -> frozenset[str]:
+    """Preserve compatibility/custom cases while explicitly deferring demos 2/3."""
+    return frozenset(
+        case.case_id for case in cases
+        if include_deferred_cases or case.case_id not in _DEFERRED_AUTHORED_CASE_IDS
+    )
+
+
 def _selectable_cases(
     *,
     registry: InMemoryInvestigationRegistry,
     case_catalog: CaseCatalog,
     include_compatibility_cases: bool,
 ):
-    """Return the single authoritative web case-creation policy."""
+    """Return visible cases under the independent compatibility policy."""
     if include_compatibility_cases:
         return case_catalog.cases
     return tuple(
@@ -170,16 +186,12 @@ def _index_context(
     field_errors: Mapping[str, str] | None = None,
     error_message: str | None = None,
     include_compatibility_cases: bool = False,
+    include_deferred_cases: bool = False,
 ) -> dict[str, object]:
     selected = (
         {item.slug for item in supported_configs}
         if selected_slugs is None
         else set(selected_slugs)
-    )
-    resolved_case_id = (
-        case_catalog.cases[0].case_id
-        if selected_case_id is None
-        else selected_case_id
     )
     required_investigators = {item.slug for item in supported_configs}
     selectable_cases = _selectable_cases(
@@ -187,7 +199,19 @@ def _index_context(
         case_catalog=case_catalog,
         include_compatibility_cases=include_compatibility_cases,
     )
+    launchable_case_ids = _launchable_case_ids(
+        selectable_cases, include_deferred_cases=include_deferred_cases,
+    )
+    resolved_case_id = selected_case_id
+    if resolved_case_id is None:
+        resolved_case_id = (
+            _DEFAULT_AUTHORED_CASE_ID
+            if _DEFAULT_AUTHORED_CASE_ID in launchable_case_ids
+            else next((case.case_id for case in selectable_cases
+                       if case.case_id in launchable_case_ids), None)
+        )
     return {
+        "launchable_case_ids": launchable_case_ids,
         "page_title": "Multi-Agent Fictional Personalities",
         "provider_name": "mock",
         "supported_characters": tuple(
@@ -211,7 +235,7 @@ def _index_context(
         "minimum_investigators": MIN_INVESTIGATORS,
         "required_investigator_count": len(required_investigators),
         "creation_ready": (
-            resolved_case_id in {case.case_id for case in selectable_cases}
+            resolved_case_id in launchable_case_ids
             and selected == required_investigators
             and len(selected) >= MIN_INVESTIGATORS
         ),
@@ -231,6 +255,7 @@ def create_investigation_router(
     case_catalog: CaseCatalog,
     templates: Jinja2Templates,
     include_compatibility_cases: bool = False,
+    include_deferred_cases: bool = False,
 ) -> APIRouter:
     """Create the authoritative Lead/Visit browser router."""
     router = APIRouter()
@@ -244,6 +269,9 @@ def create_investigation_router(
         include_compatibility_cases=include_compatibility_cases,
     )
     selectable_cases_by_id = {case.case_id: case for case in selectable_cases}
+    launchable_case_ids = _launchable_case_ids(
+        selectable_cases, include_deferred_cases=include_deferred_cases,
+    )
     scoring_repository = PrivateScoringRepository(default_private_scoring_directory(project_root))
     solution_repository = PrivateSolutionRepository(default_private_solution_directory(project_root))
 
@@ -313,6 +341,7 @@ def create_investigation_router(
                 capabilities=capabilities,
                 case_catalog=case_catalog,
                 include_compatibility_cases=include_compatibility_cases,
+                include_deferred_cases=include_deferred_cases,
                 **context,
             ),
             status_code=status_code,
@@ -455,6 +484,14 @@ def create_investigation_router(
                     page_title="Case not found",
                     heading="Case not found",
                     message="The selected local case is not available.",
+                )
+            if case_id not in launchable_case_ids:
+                return render_error(
+                    request,
+                    status_code=409,
+                    page_title="Case unavailable",
+                    heading="Case unavailable",
+                    message="This case is integrated but is not currently available to start.",
                 )
         else:
             selected_case = None

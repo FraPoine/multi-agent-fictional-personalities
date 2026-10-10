@@ -16,7 +16,7 @@ DEMO1 = "demo-1-vanishing-from-hyde-park"
 
 @pytest.fixture
 def authored_web(tmp_path: Path):
-    app = create_app(project_root=ROOT, output_root=tmp_path / "outputs")
+    app = create_app(project_root=ROOT, output_root=tmp_path / "outputs", include_deferred_cases=True)
     with ASGITestClient(app) as client:
         yield client, app.state.investigation_registry
 
@@ -27,7 +27,7 @@ def create_demo(client: ASGITestClient, case_id: str = DEMO1) -> str:
     return response.headers["location"].rsplit("/", 1)[-1]
 
 
-def test_normal_lobby_lists_authored_cases_not_compatibility_fixtures(authored_web) -> None:
+def test_development_lobby_lists_authored_cases_not_compatibility_fixtures(authored_web) -> None:
     client, _registry = authored_web
     page = client.get("/investigations")
     assert page.status_code == 200

@@ -273,6 +273,7 @@ def create_app(
     public_conclusion_catalog: PublicConclusionCatalog | None = None,
     resource_text_catalog: ResourceTextCatalog | None = None,
     include_compatibility_cases: bool = False,
+    include_deferred_cases: bool = False,
 ) -> FastAPI:
     """Create the local web application without starting a server."""
     resolved_project_root = (
@@ -510,6 +511,7 @@ def create_app(
             case_catalog=resolved_case_catalog,
             templates=templates,
             include_compatibility_cases=include_compatibility_cases,
+            include_deferred_cases=include_deferred_cases,
         )
     )
 
