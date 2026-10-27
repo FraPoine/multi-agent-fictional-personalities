@@ -500,6 +500,28 @@ body {
     font-size: 0.75rem;
 }
 
+.provider-card .field-error {
+    color: var(--color-failure);
+}
+
+.provider-input {
+    min-width: 140px;
+}
+
+.provider-model-group {
+    margin-top: var(--spacing-sm);
+}
+
+.provider-model-group .field-label,
+.provider-model-group .form-control {
+    display: block;
+}
+
+.model-input {
+    width: 100%;
+    margin-top: var(--spacing-xs);
+}
+
 .primary-action {
     width: 100%;
     min-height: 44px;

@@ -107,7 +107,7 @@
                         required
                     >{{ topic_value }}</textarea>
                     <p class="field-note" id="topic-help">
-                        The topic begins the local mock investigation.
+                        The topic begins the selected conversation.
                     </p>
                     {% if field_errors.get("topic") %}
                         <p class="field-error" id="topic-error">
@@ -143,12 +143,53 @@
 
                 <div class="section-rule" aria-hidden="true"></div>
 
-                <section class="provider-card" aria-label="Provider status">
+                <section class="provider-card" aria-label="Provider configuration">
                     <div class="provider-row">
-                        <span>Provider</span>
-                        <strong>Local {{ provider_name }}</strong>
+                        <label class="field-label" for="provider">Provider</label>
+                        <select
+                            class="form-control provider-input"
+                            id="provider"
+                            name="provider"
+                            aria-describedby="provider-help{% if field_errors.get('provider') %} provider-error{% endif %}"
+                            {% if field_errors.get("provider") %}aria-invalid="true"{% endif %}
+                        >
+                            <option value="mock"{% if provider_value == "mock" %} selected{% endif %}>Mock</option>
+                            <option value="copilot"{% if provider_value == "copilot" %} selected{% endif %}>Copilot</option>
+                        </select>
                     </div>
-                    <p>No external API calls are made.</p>
+                    <p id="provider-help">
+                        Mock runs offline. Copilot uses your existing GitHub authentication.
+                    </p>
+                    {% if field_errors.get("provider") %}
+                        <p class="field-error" id="provider-error">
+                            {{ field_errors.get("provider") }}
+                        </p>
+                    {% endif %}
+
+                    <div class="provider-model-group">
+                        <label class="field-label" for="copilot-model">
+                            Copilot model <span class="optional-label">Optional</span>
+                        </label>
+                        <input
+                            class="form-control model-input"
+                            id="copilot-model"
+                            name="copilot_model"
+                            type="text"
+                            maxlength="100"
+                            value="{{ copilot_model_value }}"
+                            placeholder="Use SDK default"
+                            aria-describedby="copilot-model-help{% if field_errors.get('copilot_model') %} copilot-model-error{% endif %}"
+                            {% if field_errors.get("copilot_model") %}aria-invalid="true"{% endif %}
+                        >
+                        <p id="copilot-model-help">
+                            Leave empty to use the Copilot SDK default model.
+                        </p>
+                        {% if field_errors.get("copilot_model") %}
+                            <p class="field-error" id="copilot-model-error">
+                                {{ field_errors.get("copilot_model") }}
+                            </p>
+                        {% endif %}
+                    </div>
                 </section>
 
                 <button
@@ -159,7 +200,7 @@
                     <span data-submit-label>Start conversation</span>
                 </button>
                 <p class="form-status-note">
-                    Runs locally with deterministic mock responses.
+                    Mock is offline; Copilot waits for a complete non-streamed response.
                 </p>
             </form>
         </section>
@@ -230,8 +271,8 @@
                         <span class="empty-state-rule" aria-hidden="true"></span>
                         <h3>No conversation yet</h3>
                         <p>
-                            Configure the investigation to prepare a deterministic
-                            mock conversation between the selected characters.
+                            Configure the investigation to prepare a conversation
+                            between the selected characters.
                         </p>
                     </div>
                 {% endif %}
@@ -285,9 +326,9 @@
     </main>
 
     <footer class="app-footer">
-        <p>Local deterministic mock execution</p>
+        <p>Provider-backed conversation execution</p>
         <span aria-hidden="true">•</span>
-        <p>No API key required</p>
+        <p>Mock or existing GitHub authentication</p>
     </footer>
     <script
         src="{{ url_for('static', path='conversation.js') }}"

@@ -1,8 +1,10 @@
-"""Minimal FastAPI application for the local Sprint 4 interface."""
+"""FastAPI delivery layer for conversations and investigations."""
 
+import asyncio
 import logging
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 from typing import Annotated
 
@@ -17,7 +19,7 @@ from multi_agent_personalities.case_catalog import (
 )
 from multi_agent_personalities.application import (
     ConversationResult,
-    run_mock_conversation,
+    run_conversation,
 )
 from multi_agent_personalities.models import Message
 from multi_agent_personalities.pipeline import CharacterConfig, character_registry
@@ -40,6 +42,8 @@ STATIC_DIRECTORY = WEB_DIRECTORY / "static"
 templates = Jinja2Templates(directory=TEMPLATE_DIRECTORY)
 logger = logging.getLogger(__name__)
 _PALETTE_SIZE = 4
+_SUPPORTED_CONVERSATION_PROVIDERS = ("mock", "copilot")
+_MAX_MODEL_LENGTH = 100
 _ARTIFACT_DESCRIPTIONS = {
     "run.json": "Complete structured run metadata and messages.",
     "messages.jsonl": "One serialized message per line.",
@@ -137,8 +141,12 @@ def _validate_conversation_form(
     characters: list[str] | None,
     topic: str | None,
     turn_count: str | None,
+    provider: str | None,
+    copilot_model: str | None,
     supported_characters: Sequence[str],
-) -> tuple[list[str], str, int | None, dict[str, str], str, str]:
+) -> tuple[
+    list[str], str, int | None, str, str | None, dict[str, str], str, str, str
+]:
     """Validate form values and retain safe display values for re-rendering."""
     submitted_characters = list(characters or [])
     supported = set(supported_characters)
@@ -148,6 +156,10 @@ def _validate_conversation_form(
     raw_topic = topic or ""
     normalized_topic = raw_topic.strip()
     raw_turn_count = turn_count or ""
+    raw_provider = provider or "mock"
+    normalized_provider = raw_provider.strip().lower()
+    raw_copilot_model = copilot_model or ""
+    normalized_copilot_model = raw_copilot_model.strip() or None
     field_errors: dict[str, str] = {}
 
     if len(submitted_characters) != len(set(submitted_characters)):
@@ -172,13 +184,34 @@ def _validate_conversation_form(
             "Enter a whole number between 2 and 12."
         )
 
+    if normalized_provider not in _SUPPORTED_CONVERSATION_PROVIDERS:
+        field_errors["provider"] = "Select Mock or Copilot."
+
+    if normalized_copilot_model is not None and (
+        len(normalized_copilot_model) > _MAX_MODEL_LENGTH
+        or not normalized_copilot_model.isprintable()
+    ):
+        field_errors["copilot_model"] = (
+            "Enter a model identifier of at most 100 printable characters."
+        )
+    elif (
+        normalized_provider != "copilot"
+        and normalized_copilot_model is not None
+    ):
+        field_errors["copilot_model"] = (
+            "A Copilot model can only be set when Copilot is selected."
+        )
+
     return (
         selected_characters,
         normalized_topic,
         parsed_turn_count,
+        normalized_provider,
+        normalized_copilot_model,
         field_errors,
         raw_topic,
         raw_turn_count,
+        raw_copilot_model,
     )
 
 
@@ -189,6 +222,8 @@ def _page_context(
     selected_characters: Sequence[str] | None = None,
     topic: str = "",
     turn_count: int | str = 6,
+    provider: str = "mock",
+    copilot_model: str = "",
     conversation_result: ConversationResult | None = None,
     field_errors: Mapping[str, str] | None = None,
     error_message: str | None = None,
@@ -221,7 +256,13 @@ def _page_context(
 
     return {
         "page_title": "Multi-Agent Fictional Personalities",
-        "provider_name": "mock",
+        "provider_name": (
+            conversation_result.run.provider
+            if conversation_result is not None
+            else provider
+        ),
+        "provider_value": provider,
+        "copilot_model_value": copilot_model,
         "available_characters": available_characters,
         "topic_value": topic,
         "turn_count_value": turn_count,
@@ -347,7 +388,7 @@ def create_app(
     application = FastAPI(
         title="Multi-Agent Fictional Personalities",
         description=(
-            "Local mock conversation interface for fictional detective agents."
+            "Conversation interface for fictional detective agents."
         ),
         version="0.1.0",
     )
@@ -400,19 +441,26 @@ def create_app(
         characters: Annotated[list[str] | None, Form()] = None,
         topic: Annotated[str | None, Form()] = None,
         turn_count: Annotated[str | None, Form()] = None,
+        provider: Annotated[str | None, Form()] = None,
+        copilot_model: Annotated[str | None, Form()] = None,
     ) -> HTMLResponse:
-        """Run and persist a deterministic mock conversation."""
+        """Run and persist a provider-backed conversation off the event loop."""
         (
             selected_characters,
             normalized_topic,
             parsed_turn_count,
+            normalized_provider,
+            normalized_copilot_model,
             field_errors,
             topic_value,
             turn_count_value,
+            copilot_model_value,
         ) = _validate_conversation_form(
             characters=characters,
             topic=topic,
             turn_count=turn_count,
+            provider=provider,
+            copilot_model=copilot_model,
             supported_characters=supported_characters,
         )
         if field_errors:
@@ -424,6 +472,8 @@ def create_app(
                 selected_characters=selected_characters,
                 topic=topic_value,
                 turn_count=turn_count_value,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
                 field_errors=field_errors,
                 error_message=(
                     "Please correct the highlighted fields and submit again."
@@ -434,13 +484,18 @@ def create_app(
             raise RuntimeError("validated turn count is unexpectedly missing")
 
         try:
-            result = run_mock_conversation(
-                character_slugs=selected_characters,
-                topic=normalized_topic,
-                turn_count=parsed_turn_count,
-                seed=42,
-                output_root=resolved_output_root,
-                project_root=resolved_project_root,
+            result = await asyncio.to_thread(
+                partial(
+                    run_conversation,
+                    character_slugs=selected_characters,
+                    topic=normalized_topic,
+                    turn_count=parsed_turn_count,
+                    provider=normalized_provider,
+                    copilot_model=normalized_copilot_model,
+                    seed=42,
+                    output_root=resolved_output_root,
+                    project_root=resolved_project_root,
+                ),
             )
         except FileExistsError:
             logger.exception("Conversation run identifier collision")
@@ -452,9 +507,30 @@ def create_app(
                 selected_characters=selected_characters,
                 topic=normalized_topic,
                 turn_count=parsed_turn_count,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
                 error_message=(
                     "A run with the generated identifier already exists. "
                     "Submit the conversation again."
+                ),
+            )
+        except TimeoutError:
+            logger.exception("Conversation provider timed out")
+            return _render_page(
+                request,
+                registry=registry,
+                display_root=display_root,
+                status_code=504,
+                selected_characters=selected_characters,
+                topic=normalized_topic,
+                turn_count=parsed_turn_count,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
+                error_message=(
+                    "Copilot did not finish in time. Check your connection and "
+                    "GitHub Copilot access, then try again."
+                    if normalized_provider == "copilot"
+                    else "The conversation did not finish in time. Try again."
                 ),
             )
         except OSError:
@@ -467,13 +543,21 @@ def create_app(
                 selected_characters=selected_characters,
                 topic=normalized_topic,
                 turn_count=parsed_turn_count,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
                 error_message=(
                     "The conversation could not be saved. Check that the "
                     "outputs directory is writable and try again."
+                    if normalized_provider == "mock"
+                    else (
+                        "The Copilot conversation could not be completed or "
+                        "saved. Check GitHub Copilot access and confirm that the "
+                        "outputs directory is writable, then try again."
+                    )
                 ),
             )
         except ValueError:
-            logger.exception("Local mock conversation generation failed")
+            logger.exception("Conversation generation validation failed")
             return _render_page(
                 request,
                 registry=registry,
@@ -482,9 +566,37 @@ def create_app(
                 selected_characters=selected_characters,
                 topic=normalized_topic,
                 turn_count=parsed_turn_count,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
                 error_message=(
                     "The local mock conversation could not be generated. "
                     "Check the project fixtures and try again."
+                    if normalized_provider == "mock"
+                    else (
+                        "The Copilot conversation could not be generated with "
+                        "the selected model. Check the configuration and try "
+                        "again."
+                    )
+                ),
+            )
+        except Exception:
+            if normalized_provider != "copilot":
+                raise
+            logger.exception("Conversation provider failed")
+            return _render_page(
+                request,
+                registry=registry,
+                display_root=display_root,
+                status_code=502,
+                selected_characters=selected_characters,
+                topic=normalized_topic,
+                turn_count=parsed_turn_count,
+                provider=normalized_provider,
+                copilot_model=copilot_model_value,
+                error_message=(
+                    "Copilot could not start or complete the conversation. "
+                    "Confirm that GitHub CLI authentication and Copilot access "
+                    "are available, then try again."
                 ),
             )
 
@@ -495,6 +607,8 @@ def create_app(
             selected_characters=selected_characters,
             topic=normalized_topic,
             turn_count=parsed_turn_count,
+            provider=normalized_provider,
+            copilot_model=copilot_model_value,
             conversation_result=result,
         )
 

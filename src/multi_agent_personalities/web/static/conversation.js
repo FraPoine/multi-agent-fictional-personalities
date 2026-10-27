@@ -58,7 +58,7 @@ function initializeConversationLoading() {
 
         const description = document.createElement("p");
         description.textContent = (
-            "The selected characters are investigating the case locally."
+            "The selected characters are generating the conversation."
         );
 
         loadingState.append(spinner, heading, description);

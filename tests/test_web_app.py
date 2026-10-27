@@ -5,6 +5,7 @@ import json
 import re
 import socket
 from collections.abc import Iterator
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +14,13 @@ import yaml
 from fastapi import APIRouter
 from tests.asgi_client import ASGITestClient
 
-from multi_agent_personalities.models import Persona
+from multi_agent_personalities.application import ConversationResult
+from multi_agent_personalities.models import (
+    ConversationRun,
+    GenerationMetadata,
+    Message,
+    Persona,
+)
 from multi_agent_personalities.case_catalog import (
     default_case_catalog_directory,
     load_case_catalog,
@@ -62,11 +69,27 @@ VALID_FORM_DATA = {
 def reject_network(monkeypatch: pytest.MonkeyPatch) -> None:
     """Fail immediately if conversation execution attempts a network call."""
 
+    original_connect = socket.socket.connect
+
     def fail(*args: object, **kwargs: object) -> None:
         raise AssertionError("network access attempted")
 
+    def reject_internet_connect(
+        connection: socket.socket,
+        address: object,
+    ) -> None:
+        if connection.family in (socket.AF_INET, socket.AF_INET6):
+            raise AssertionError("network access attempted")
+        original_connect(connection, address)  # type: ignore[arg-type]
+
     monkeypatch.setattr(socket, "create_connection", fail)
-    monkeypatch.setattr(socket.socket, "connect", fail)
+    monkeypatch.setattr(socket.socket, "connect", reject_internet_connect)
+
+    async def run_inline(function, *args, **kwargs):
+        """Keep ordinary route tests compatible with the sandbox's socket ban."""
+        return function(*args, **kwargs)
+
+    monkeypatch.setattr(web_module.asyncio, "to_thread", run_inline)
 
 
 @pytest.fixture
@@ -220,6 +243,56 @@ def post_valid_conversation(client: ASGITestClient) -> Any:
     return client.post("/conversations", data=VALID_FORM_DATA)
 
 
+def fake_conversation_result(
+    output_root: Path,
+    *,
+    provider: str,
+    model: str | None,
+) -> ConversationResult:
+    created_at = datetime(2026, 10, 27, 12, 0, tzinfo=timezone.utc)
+    messages = tuple(
+        Message(
+            message_id=f"web_fake_message_{turn_index}",
+            run_id="web_fake_run",
+            turn_index=turn_index,
+            speaker_character_id=character_id,
+            speaker_name=display_name,
+            text=f"Offline response {turn_index + 1}.",
+            provider=provider,
+            model=model,
+            generation_metadata=GenerationMetadata(
+                provider=provider,
+                model=model,
+            ),
+            timestamp=created_at,
+        )
+        for turn_index, (character_id, display_name) in enumerate(
+            (
+                ("sherlock_holmes", "Sherlock Holmes"),
+                ("hercule_poirot", "Hercule Poirot"),
+            )
+        )
+    )
+    run = ConversationRun(
+        run_id="web_fake_run",
+        topic=TOPIC,
+        character_ids=("sherlock_holmes", "hercule_poirot"),
+        turn_count=2,
+        seed=42,
+        provider=provider,
+        model=model,
+        created_at=created_at,
+        status="completed",
+        messages=messages,
+    )
+    return ConversationResult(
+        run=run,
+        artifact_directory=(
+            output_root / "conversations" / "runs" / run.run_id
+        ),
+    )
+
+
 def assert_failed_without_result(response: Any, status_code: int) -> None:
     assert_html_response(response, status_code)
     assert "status-label--failed" in response.text
@@ -263,6 +336,27 @@ def test_main_page_renders_without_creating_output(
     assert "Run ID" not in response.text
     assert "outputs/conversations/runs/" not in response.text
     assert_no_completed_run(output_root)
+
+
+def test_mock_provider_is_selected_by_default(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = web_client
+    response = client.get("/")
+
+    provider_select = re.search(
+        r'<select[^>]*id="provider"[^>]*>(.*?)</select>',
+        response.text,
+        re.DOTALL,
+    )
+    assert provider_select is not None
+    assert re.search(
+        r'<option value="mock" selected>Mock</option>',
+        provider_select.group(1),
+    )
+    assert '<option value="copilot">Copilot</option>' in provider_select.group(1)
+    assert 'name="copilot_model"' in response.text
+    assert 'value=""' in response.text
 
 
 def test_default_catalog_controls_are_accessible_and_selected(
@@ -526,6 +620,201 @@ def test_valid_submission_creates_and_displays_artifacts(
     assert "Hercule Poirot" in transcript
 
 
+@pytest.mark.parametrize(
+    ("submitted_model", "expected_model"),
+    (("", None), ("  gpt-test  ", "gpt-test")),
+)
+def test_copilot_selection_reaches_service_with_normalized_arguments(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    submitted_model: str,
+    expected_model: str | None,
+) -> None:
+    client, output_root = web_client
+    captured: dict[str, object] = {}
+
+    def fake_service(**kwargs: object) -> ConversationResult:
+        captured.update(kwargs)
+        return fake_conversation_result(
+            output_root,
+            provider="copilot",
+            model=expected_model or "sdk-default-model",
+        )
+
+    monkeypatch.setattr(web_module, "run_conversation", fake_service)
+    response = client.post(
+        "/conversations",
+        data={
+            **VALID_FORM_DATA,
+            "turn_count": "2",
+            "provider": "copilot",
+            "copilot_model": submitted_model,
+        },
+    )
+
+    assert_html_response(response, 200)
+    assert captured == {
+        "character_slugs": ["sherlock", "poirot"],
+        "topic": TOPIC,
+        "turn_count": 2,
+        "provider": "copilot",
+        "copilot_model": expected_model,
+        "seed": 42,
+        "output_root": output_root,
+        "project_root": REPOSITORY_ROOT,
+    }
+    assert "copilot provider" in response.text
+    assert 'value="copilot" selected' in response.text
+    assert f'value="{submitted_model}"' in response.text
+    assert 'class="message-card' in response.text
+    assert 'class="run-details"' in response.text
+
+
+def test_conversation_generation_is_delegated_to_threadpool(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client, output_root = web_client
+    offloaded: list[object] = []
+
+    async def capture_offload(function, *args, **kwargs):
+        offloaded.append(function)
+        return function(*args, **kwargs)
+
+    monkeypatch.setattr(web_module.asyncio, "to_thread", capture_offload)
+    monkeypatch.setattr(
+        web_module,
+        "run_conversation",
+        lambda **_: fake_conversation_result(
+            output_root, provider="mock", model="mock-round-robin"
+        ),
+    )
+
+    response = post_valid_conversation(client)
+
+    assert response.status_code == 200
+    assert len(offloaded) == 1
+    assert callable(offloaded[0])
+
+
+@pytest.mark.parametrize(
+    ("form_data", "field_error"),
+    (
+        (
+            {**VALID_FORM_DATA, "provider": "unknown"},
+            "Select Mock or Copilot.",
+        ),
+        (
+            {
+                **VALID_FORM_DATA,
+                "provider": "copilot",
+                "copilot_model": "x" * 101,
+            },
+            "Enter a model identifier of at most 100 printable characters.",
+        ),
+        (
+            {
+                **VALID_FORM_DATA,
+                "provider": "mock",
+                "copilot_model": "gpt-test",
+            },
+            "A Copilot model can only be set when Copilot is selected.",
+        ),
+    ),
+)
+def test_invalid_provider_configuration_is_rejected_before_service(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    form_data: dict[str, object],
+    field_error: str,
+) -> None:
+    client, output_root = web_client
+    monkeypatch.setattr(
+        web_module,
+        "run_conversation",
+        lambda **_: pytest.fail("service called for invalid provider form"),
+    )
+
+    response = client.post("/conversations", data=form_data)
+
+    assert_failed_without_result(response, 400)
+    assert field_error in response.text
+    assert_no_completed_run(output_root)
+
+
+def test_copilot_values_survive_unrelated_validation_error(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = web_client
+    response = client.post(
+        "/conversations",
+        data={
+            "characters": ["sherlock"],
+            "topic": TOPIC,
+            "turn_count": "2",
+            "provider": "copilot",
+            "copilot_model": "gpt-test",
+        },
+    )
+
+    assert_failed_without_result(response, 400)
+    assert 'value="copilot" selected' in response.text
+    assert 'value="gpt-test"' in response.text
+    assert "copilot provider" in response.text
+
+
+@pytest.mark.parametrize(
+    ("error", "status_code", "safe_message"),
+    (
+        (
+            RuntimeError("token secret from /private/sdk/auth"),
+            502,
+            "Confirm that GitHub CLI authentication and Copilot access",
+        ),
+        (
+            TimeoutError("request timed out at /private/sdk/session"),
+            504,
+            "Copilot did not finish in time.",
+        ),
+        (
+            ValueError("reported model mismatch: private-model"),
+            500,
+            "could not be generated with the selected model",
+        ),
+    ),
+)
+def test_copilot_failures_render_safe_provider_specific_errors(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    error: Exception,
+    status_code: int,
+    safe_message: str,
+) -> None:
+    client, output_root = web_client
+
+    def fail_service(**kwargs: object) -> None:
+        raise error
+
+    monkeypatch.setattr(web_module, "run_conversation", fail_service)
+    response = client.post(
+        "/conversations",
+        data={
+            **VALID_FORM_DATA,
+            "provider": "copilot",
+            "copilot_model": "gpt-test",
+        },
+    )
+
+    assert_failed_without_result(response, status_code)
+    assert safe_message in response.text
+    assert str(error) not in response.text
+    assert "/private/" not in response.text
+    assert "copilot provider" in response.text
+    assert 'value="copilot" selected' in response.text
+    assert 'value="gpt-test"' in response.text
+    assert_no_completed_run(output_root)
+
+
 def test_read_only_routes_create_no_conversation_output(
     web_client: tuple[ASGITestClient, Path],
 ) -> None:
@@ -628,7 +917,7 @@ def test_invalid_submissions_render_field_errors_without_calling_service(
 
     monkeypatch.setattr(
         web_module,
-        "run_mock_conversation",
+        "run_conversation",
         unexpected_service_call,
     )
 
@@ -653,7 +942,7 @@ def test_invalid_submission_preserves_safe_values(
 
     monkeypatch.setattr(
         web_module,
-        "run_mock_conversation",
+        "run_conversation",
         unexpected_service_call,
     )
     response = client.post(
@@ -717,7 +1006,7 @@ def test_service_errors_render_safe_failed_state(
     def fail_service(**kwargs: object) -> None:
         raise error
 
-    monkeypatch.setattr(web_module, "run_mock_conversation", fail_service)
+    monkeypatch.setattr(web_module, "run_conversation", fail_service)
 
     response = post_valid_conversation(client)
 
