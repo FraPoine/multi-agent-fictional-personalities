@@ -2,6 +2,7 @@
 
 from multi_agent_personalities.application.conversation_service import (
     ConversationResult,
+    run_conversation,
     run_mock_conversation,
 )
 
@@ -157,7 +158,7 @@ __all__ = [
     "LockedGameplayNodeError", "ClosedGameplayNodeError",
     "GameplayBudgetError", "ManualRevealForbiddenError",
     "build_lead_discussion_context", "visit_lead",
-    "run_mock_conversation",
+    "run_conversation", "run_mock_conversation",
     "AnswerDraftProvider", "ConclusionConflictError",
     "DeterministicAnswerDraftProvider", "DraftGenerationResult",
     "build_safe_answer_context", "confirm_official_score",
