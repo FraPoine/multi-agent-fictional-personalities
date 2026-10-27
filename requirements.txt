@@ -1,5 +1,6 @@
 # Existing project runtime
 openai
+github-copilot-sdk==1.0.26
 python-dotenv
 jinja2
 pydantic
