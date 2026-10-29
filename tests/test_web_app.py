@@ -857,14 +857,6 @@ INVALID_SUBMISSIONS = (
         "Select only currently available characters.",
     ),
     (
-        {
-            "characters": ["sherlock", "poirot"],
-            "topic": "   ",
-            "turn_count": "4",
-        },
-        "Enter an investigation topic.",
-    ),
-    (
         {"characters": ["sherlock", "poirot"], "topic": TOPIC},
         "Enter a whole number between 2 and 12.",
     ),
@@ -1039,3 +1031,50 @@ def test_topic_is_html_escaped(
     assert "&lt;/script&gt;" in response.text
     assert response.text.count("<script") == 1
     assert "/static/conversation.js" in response.text
+
+
+def test_initial_topic_is_editable_default(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = web_client
+    response = client.get("/")
+    textarea = re.search(r'<textarea\b[^>]*name="topic"[^>]*>(.*?)</textarea>', response.text, re.S)
+    assert textarea is not None
+    assert textarea.group(1) == web_module.DEFAULT_CONVERSATION_TOPIC
+    assert "required" not in textarea.group(0)
+
+
+@pytest.mark.parametrize("provider", ("mock", "copilot"))
+@pytest.mark.parametrize("topic", (None, "", " \t\n ", "A custom mystery", "  A custom mystery  "))
+def test_topic_resolution_reaches_generated_run(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    provider: str,
+    topic: str | None,
+) -> None:
+    client, output_root = web_client
+    real_service = web_module.run_conversation
+    generated_runs: list[ConversationRun] = []
+
+    def offline_service(**kwargs: Any) -> ConversationResult:
+        assert kwargs["provider"] == provider
+        # Exercise real generation and persistence offline for either form selection.
+        kwargs["provider"] = "mock"
+        result = real_service(**kwargs)
+        generated_runs.append(result.run)
+        return result
+
+    monkeypatch.setattr(web_module, "run_conversation", offline_service)
+    data = {**VALID_FORM_DATA, "provider": provider, "turn_count": "2"}
+    if topic is None:
+        data.pop("topic")
+    else:
+        data["topic"] = topic
+    response = client.post("/conversations", data=data)
+
+    assert_html_response(response, 200)
+    expected = (topic or "").strip() or web_module.DEFAULT_CONVERSATION_TOPIC
+    assert len(generated_runs) == 1
+    assert generated_runs[0].topic == expected
+    run_path = output_root / "conversations" / "runs" / extract_run_id(response.text) / "run.json"
+    assert json.loads(run_path.read_text(encoding="utf-8"))["topic"] == expected

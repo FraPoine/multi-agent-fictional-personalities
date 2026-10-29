@@ -43,6 +43,7 @@ templates = Jinja2Templates(directory=TEMPLATE_DIRECTORY)
 logger = logging.getLogger(__name__)
 _PALETTE_SIZE = 4
 _SUPPORTED_CONVERSATION_PROVIDERS = ("mock", "copilot")
+DEFAULT_CONVERSATION_TOPIC = "A valuable document disappeared from a locked room."
 _MAX_MODEL_LENGTH = 100
 _ARTIFACT_DESCRIPTIONS = {
     "run.json": "Complete structured run metadata and messages.",
@@ -154,7 +155,7 @@ def _validate_conversation_form(
         character for character in submitted_characters if character in supported
     ]
     raw_topic = topic or ""
-    normalized_topic = raw_topic.strip()
+    normalized_topic = raw_topic.strip() or DEFAULT_CONVERSATION_TOPIC
     raw_turn_count = turn_count or ""
     raw_provider = provider or "mock"
     normalized_provider = raw_provider.strip().lower()
@@ -168,9 +169,6 @@ def _validate_conversation_form(
         field_errors["characters"] = "Select only currently available characters."
     elif len(submitted_characters) < 2:
         field_errors["characters"] = "Select at least two characters."
-
-    if not normalized_topic:
-        field_errors["topic"] = "Enter an investigation topic."
 
     parsed_turn_count: int | None = None
     normalized_turn_count = raw_turn_count.strip()
@@ -220,7 +218,7 @@ def _page_context(
     registry: Mapping[str, CharacterConfig],
     display_root: Path,
     selected_characters: Sequence[str] | None = None,
-    topic: str = "",
+    topic: str = DEFAULT_CONVERSATION_TOPIC,
     turn_count: int | str = 6,
     provider: str = "mock",
     copilot_model: str = "",

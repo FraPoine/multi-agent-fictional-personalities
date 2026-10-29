@@ -101,10 +101,8 @@
                         id="topic"
                         name="topic"
                         rows="4"
-                        placeholder="A valuable document disappeared from a locked room."
                         aria-describedby="topic-help{% if field_errors.get('topic') %} topic-error{% endif %}"
                         {% if field_errors.get("topic") %}aria-invalid="true"{% endif %}
-                        required
                     >{{ topic_value }}</textarea>
                     <p class="field-note" id="topic-help">
                         The topic begins the selected conversation.
