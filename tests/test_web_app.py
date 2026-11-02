@@ -6,6 +6,7 @@ import re
 import socket
 from collections.abc import Iterator
 from datetime import datetime, timezone
+from html import unescape
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ from fastapi import APIRouter
 from tests.asgi_client import ASGITestClient
 
 from multi_agent_personalities.application import ConversationResult
+from multi_agent_personalities.character_catalog import load_character_catalog
 from multi_agent_personalities.models import (
     ConversationRun,
     GenerationMetadata,
@@ -386,8 +388,18 @@ def test_default_catalog_controls_are_accessible_and_selected(
         assert f'for="{control_id}"' in response.text
     assert ">SH</span>" in response.text
     assert ">HP</span>" in response.text
-    assert "participant-tone-1" in response.text
-    assert "participant-tone-2" in response.text
+    assert ">PL</span>" in response.text
+    catalog = load_character_catalog(REPOSITORY_ROOT / "configs/characters.yaml")
+    for index, entry in enumerate(catalog.characters, start=1):
+        card = re.search(
+            rf'<label\s+for="character-{entry.slug}"[^>]*>(.*?)</label>',
+            response.text,
+            re.DOTALL,
+        )
+        assert card is not None
+        assert f"participant-tone-{index}" in card.group()
+        assert entry.display_name in card.group(1)
+        assert entry.description in " ".join(unescape(card.group(1)).split())
 
 
 def test_three_character_catalog_renders_in_order_with_generic_metadata(
@@ -1079,3 +1091,169 @@ def test_topic_resolution_reaches_generated_run(
     assert generated_runs[0].topic == expected
     run_path = output_root / "conversations" / "runs" / extract_run_id(response.text) / "run.json"
     assert json.loads(run_path.read_text(encoding="utf-8"))["topic"] == expected
+
+
+@pytest.mark.parametrize(
+    "slugs",
+    [
+        ["sherlock", "poirot"],
+        ["sherlock", "layton"],
+        ["poirot", "layton"],
+        ["sherlock", "poirot", "layton"],
+    ],
+)
+def test_catalog_combinations_preserve_transcript_identity_and_artifacts(
+    web_client: tuple[ASGITestClient, Path],
+    slugs: list[str],
+) -> None:
+    """Exercise the actual web POST with every supported pair and the trio."""
+    client, output_root = web_client
+    response = client.post(
+        "/conversations",
+        data={"characters": slugs, "topic": TOPIC, "turn_count": "6"},
+    )
+    assert_html_response(response, 200)
+    assert "status-label--completed" in response.text
+    catalog = load_character_catalog(REPOSITORY_ROOT / "configs/characters.yaml")
+    entries = {entry.slug: entry for entry in catalog.characters}
+    visual_identity = {
+        "sherlock": ("SH", "participant-tone-1"),
+        "poirot": ("HP", "participant-tone-2"),
+        "layton": ("PL", "participant-tone-3"),
+    }
+    run_id = extract_run_id(response.text)
+    run_directory = output_root / "conversations/runs" / run_id
+    run = ConversationRun.model_validate_json(
+        (run_directory / "run.json").read_text(encoding="utf-8")
+    )
+    expected_slugs = [slugs[index % len(slugs)] for index in range(6)]
+    assert list(run.character_ids) == [entries[slug].character_id for slug in slugs]
+    assert [message.speaker_character_id for message in run.messages] == [
+        entries[slug].character_id for slug in expected_slugs
+    ]
+    articles = re.findall(
+        r'<article class="message-card ([^"]+)">(.*?)</article>',
+        response.text,
+        re.DOTALL,
+    )
+    assert len(articles) == 6
+    for index, ((tone, article), slug) in enumerate(zip(articles, expected_slugs)):
+        initials, expected_tone = visual_identity[slug]
+        assert tone == expected_tone
+        assert re.search(
+            rf'class="message-avatar" aria-hidden="true">\s*{initials}\s*</span>',
+            article,
+        )
+        assert f'<h3 class="message-speaker">{entries[slug].display_name}</h3>' in article
+        assert f"Turn {index + 1}" in article
+        assert run.messages[index].text.strip() in unescape(article)
+        # Identity comes from the full catalogue, even when another card is off.
+        assert re.search(
+            rf'for="character-{slug}"\s+class="character-card {tone}"',
+            response.text,
+        )
+    for slug in entries:
+        control = re.search(
+            rf'<input\s+[^>]*id="character-{slug}"[^>]*>', response.text,
+        )
+        assert control is not None
+        assert ("checked" in control.group()) == (slug in slugs)
+    assert run.provider == "mock" and run.model == "mock-round-robin"
+    assert run.topic == TOPIC and run.turn_count == 6
+    assert {path.name for path in run_directory.iterdir()} == set(EXPECTED_ARTIFACTS)
+    assert [
+        Message.model_validate_json(line)
+        for line in (run_directory / "messages.jsonl").read_text().splitlines()
+    ] == list(run.messages)
+    markdown = (run_directory / "transcript.md").read_text(encoding="utf-8")
+    for slug in slugs:
+        assert entries[slug].display_name in markdown
+    for filename in EXPECTED_ARTIFACTS:
+        assert f"outputs/conversations/runs/{run_id}/{filename}" in response.text
+
+
+@pytest.mark.parametrize(
+    ("slugs", "error"),
+    [
+        ([], "Select at least two characters."),
+        (["layton"], "Select at least two characters."),
+        (["layton", "layton"], "Select each available character only once."),
+        (["layton", "unknown"], "Select only currently available characters."),
+    ],
+)
+def test_invalid_layton_selection_keeps_accessible_error_and_safe_selection(
+    web_client: tuple[ASGITestClient, Path],
+    slugs: list[str],
+    error: str,
+) -> None:
+    client, output_root = web_client
+    response = client.post(
+        "/conversations",
+        data={"characters": slugs, "topic": TOPIC, "turn_count": "6"},
+    )
+    assert_failed_without_result(response, 400)
+    assert error in response.text
+    assert 'id="characters-error"' in response.text
+    assert 'role="alert"' in response.text
+    control = re.search(
+        r'<input\s+[^>]*id="character-layton"[^>]*>', response.text,
+    )
+    assert control is not None
+    assert ("checked" in control.group()) == ("layton" in slugs)
+    assert 'aria-invalid="true"' in control.group()
+    assert 'aria-describedby="characters-help characters-error"' in control.group()
+    assert_no_completed_run(output_root)
+
+
+def test_character_keyboard_accessibility_contract(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    """Check native focusable controls and their visible-card focus affordance."""
+    client, _ = web_client
+    page = client.get("/").text
+    for slug in ("sherlock", "poirot", "layton"):
+        control = re.search(
+            rf'<input\s+[^>]*id="character-{slug}"[^>]*>', page,
+        )
+        assert control is not None
+        assert 'type="checkbox"' in control.group()
+        assert "disabled" not in control.group()
+        assert "tabindex" not in control.group()  # Native Tab/Space interaction.
+        assert 'aria-describedby="characters-help"' in control.group()
+        assert re.search(
+            rf'id="character-{slug}"[^>]*>\s*<label\s+for="character-{slug}"',
+            page,
+        )
+    css = client.get("/static/styles.css").text
+    focus = re.search(
+        r'\.character-option input:focus-visible \+ \.character-card\s*\{([^}]+)\}',
+        css,
+    )
+    assert focus is not None
+    assert "outline:" in focus.group(1) and "outline-offset:" in focus.group(1)
+    hidden_input = re.search(r'\.character-option input\s*\{([^}]+)\}', css)
+    assert hidden_input is not None
+    assert "display: none" not in hidden_input.group(1)
+    assert "visibility: hidden" not in hidden_input.group(1)
+
+
+def test_conversation_responsive_styles_contract(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    """Static regression checks; these do not replace browser viewport tests."""
+    client, _ = web_client
+    page = client.get("/").text
+    css = client.get("/static/styles.css").text
+    assert '<meta name="viewport" content="width=device-width, initial-scale=1">' in page
+    cards = re.search(r'\.character-list\s*\{([^}]+)\}', css)
+    assert cards is not None and "flex-direction: column" in cards.group(1)
+    tablet = css.split("@media (max-width: 900px)", 1)[1].split("@media", 1)[0]
+    assert ".workspace" in tablet
+    assert "grid-template-columns: minmax(0, 1fr)" in tablet
+    mobile = css.split("@media (max-width: 560px)", 1)[1].split("@media", 1)[0]
+    assert re.search(r'\.workspace\s*\{[^}]*padding: 16px', mobile)
+    assert re.search(r'\.message-card,[^{]*\{[^}]*padding: 14px', mobile)
+    assert re.search(
+        r'\.message-content p,\s*\.message-error p\s*\{[^}]*overflow-wrap: anywhere',
+        css,
+    )
