@@ -10,6 +10,7 @@ PyYAML
 fastapi
 uvicorn
 python-multipart
+markdown-it-py==3.0.0
 
 # Testing
 pytest

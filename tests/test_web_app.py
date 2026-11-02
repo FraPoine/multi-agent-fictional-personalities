@@ -305,6 +305,75 @@ def assert_failed_without_result(response: Any, status_code: int) -> None:
     assert "outputs/conversations/runs/" not in response.text
 
 
+@pytest.mark.parametrize("provider", ("mock", "copilot"))
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("**Observed:** *clue* and __bold__ _italic_",
+         "<p><strong>Observed:</strong> <em>clue</em> and <strong>bold</strong> <em>italic</em></p>"),
+        ("Plain & ordinary < text\nNext line\n\nNew paragraph",
+         "<p>Plain &amp; ordinary &lt; text<br>\nNext line</p>\n<p>New paragraph</p>"),
+        ("Hard break  \nNext line", "<p>Hard break<br>\nNext line</p>"),
+        ('<script>alert(1)</script><img src=x onerror="alert(2)">',
+         '<p>&lt;script&gt;alert(1)&lt;/script&gt;&lt;img src=x onerror=&quot;alert(2)&quot;&gt;</p>'),
+        ('[click](javascript:alert(1)) ![image](https://example.com/x) <https://example.com>',
+         '<p>[click](javascript:alert(1)) ![image](https://example.com/x) &lt;https://example.com&gt;</p>'),
+        ('&lt;script&gt;alert(1)&lt;/script&gt;',
+         '<p>&amp;lt;script&amp;gt;alert(1)&amp;lt;/script&amp;gt;</p>'),
+    ],
+)
+def test_conversation_message_markdown_is_safe_and_provider_independent(
+    web_client: tuple[ASGITestClient, Path],
+    monkeypatch: pytest.MonkeyPatch,
+    provider: str,
+    raw: str,
+    expected: str,
+) -> None:
+    client, output_root = web_client
+    result = fake_conversation_result(output_root, provider=provider, model=None)
+    messages = tuple(message.model_copy(update={"text": raw}) for message in result.run.messages)
+    run = result.run.model_copy(update={"messages": messages})
+    monkeypatch.setattr(
+        web_module, "run_conversation",
+        lambda **_: ConversationResult(run=run, artifact_directory=result.artifact_directory),
+    )
+
+    response = client.post("/conversations", data={**VALID_FORM_DATA, "provider": provider})
+
+    assert_html_response(response, 200)
+    bodies = re.findall(
+        r'<div class="message-content message-content--markdown">\s*(.*?)\s*</div>',
+        response.text, re.DOTALL,
+    )
+    assert bodies == [expected, expected]
+    assert all(message.text == raw for message in run.messages)
+
+
+def test_conversation_markdown_preserves_raw_saved_artifacts(
+    synthetic_web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, output_root = synthetic_web_client
+    raw = '**Observed:** *clue*\nNext line\n\n<script>alert("x")</script>'
+    for slug in ("alpha", "beta"):
+        (output_root.parent / "assets" / slug / "response.txt").write_text(raw, encoding="utf-8")
+
+    response = client.post(
+        "/conversations",
+        data={"characters": ["alpha", "beta"], "topic": TOPIC, "turn_count": "2"},
+    )
+
+    assert_html_response(response, 200)
+    assert "<strong>Observed:</strong> <em>clue</em><br>" in response.text
+    run_directory = output_root / "conversations/runs" / extract_run_id(response.text)
+    saved_run = json.loads((run_directory / "run.json").read_text(encoding="utf-8"))
+    saved_messages = [json.loads(line) for line in (run_directory / "messages.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert [message["text"] for message in saved_run["messages"]] == [raw, raw]
+    assert [message["text"] for message in saved_messages] == [raw, raw]
+    transcript = (run_directory / "transcript.md").read_text(encoding="utf-8")
+    assert transcript.count(raw) == 2
+    assert "<strong>Observed:</strong>" not in transcript
+
+
 def test_main_page_renders_without_creating_output(
     web_client: tuple[ASGITestClient, Path],
 ) -> None:

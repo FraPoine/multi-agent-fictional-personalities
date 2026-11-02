@@ -11,6 +11,8 @@ from typing import Annotated
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, Response
 from fastapi.templating import Jinja2Templates
+from markdown_it import MarkdownIt
+from markupsafe import Markup
 
 from multi_agent_personalities.case_catalog import (
     CaseCatalog,
@@ -45,6 +47,10 @@ _PALETTE_SIZE = 4
 _SUPPORTED_CONVERSATION_PROVIDERS = ("mock", "copilot")
 DEFAULT_CONVERSATION_TOPIC = "A valuable document disappeared from a locked room."
 _MAX_MODEL_LENGTH = 100
+# Allow only paragraphs, emphasis and breaks. HTML, links and images stay text.
+_MESSAGE_MARKDOWN = MarkdownIt("zero", {"html": False, "breaks": True}).enable(
+    ["emphasis", "newline", "escape"]
+)
 _ARTIFACT_DESCRIPTIONS = {
     "run.json": "Complete structured run metadata and messages.",
     "messages.jsonl": "One serialized message per line.",
@@ -72,6 +78,7 @@ class MessagePresentation:
     message: Message
     initials: str
     presentation_class: str
+    body_html: Markup
 
 
 def _display_initials(display_name: str) -> str:
@@ -117,6 +124,8 @@ def _message_presentations(
         presented.append(
             MessagePresentation(
                 message=message,
+                # Only the restricted parser's escaped output is trusted HTML.
+                body_html=Markup(_MESSAGE_MARKDOWN.render(message.text)),
                 initials=(
                     character.initials
                     if character is not None

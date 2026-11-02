@@ -795,6 +795,14 @@ body {
     line-height: 1.7;
 }
 
+.message-content--markdown p {
+    white-space: normal;
+}
+
+.message-content--markdown p + p {
+    margin-top: 1em;
+}
+
 .message-error {
     margin-top: var(--spacing-md);
     padding: var(--spacing-md);

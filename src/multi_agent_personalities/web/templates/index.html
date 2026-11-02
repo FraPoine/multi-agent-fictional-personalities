@@ -245,8 +245,8 @@
                                             <p class="message-turn">Turn {{ presented.message.turn_index + 1 }}</p>
                                         </div>
                                     </header>
-                                    <div class="message-content">
-                                        <p>{{ presented.message.text }}</p>
+                                    <div class="message-content message-content--markdown">
+                                        {{ presented.body_html }}
                                     </div>
                                     {% if presented.message.error %}
                                         <div class="message-error">
