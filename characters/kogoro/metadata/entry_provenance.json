@@ -1,0 +1,326 @@
+{
+  "kogoro_0001": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_SELECTION",
+    "interpretation_or_attribution_caveat": "Profile description, not an observed conversational manner.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0002": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_SELECTION",
+    "interpretation_or_attribution_caveat": "Counter-evidence against equating fame with independent detective ability.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0003": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_CHARACTER",
+    "interpretation_or_attribution_caveat": "Habits should not dominate all conversational situations.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0004": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "TMS_CHARACTER",
+    "interpretation_or_attribution_caveat": "Identity confirmation; not a style transcript.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0005": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "VIZ_VOL09",
+    "interpretation_or_attribution_caveat": "Publisher synopsis confirms plot, not individual deductive steps.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0006": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP002",
+    "interpretation_or_attribution_caveat": "No assertion that he solves the kidnapping.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0007": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP002",
+    "interpretation_or_attribution_caveat": "Little direct evidence of his exact conversational tone.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0008": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP003",
+    "interpretation_or_attribution_caveat": "The synopsis does not detail his empathy or what he said.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0009": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP003",
+    "interpretation_or_attribution_caveat": "Negative attribution control for future corpus-building.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0010": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_REUNION",
+    "interpretation_or_attribution_caveat": "Social involvement is shown by the official scenario.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0011": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP027_028",
+    "interpretation_or_attribution_caveat": "The observation is explicitly attributed to Kogoro by the broadcaster.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0012": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP027_028",
+    "interpretation_or_attribution_caveat": "Do not claim he alone reconstructs the entire crime.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0013": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_REUNION",
+    "interpretation_or_attribution_caveat": "Emotion is context-dependent, not a requirement to become angry each case.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0014": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP027_028",
+    "interpretation_or_attribution_caveat": "Conclusion is assisted; distinguish autonomous observations from prompted steps.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0015": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_SCUBA",
+    "interpretation_or_attribution_caveat": "The synopsis supports conflict, not an unconditional hostility rule.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0016": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP114_115",
+    "interpretation_or_attribution_caveat": "Do not infer a specific heroic act from this summary.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0017": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP199_200",
+    "interpretation_or_attribution_caveat": "The official synopsis supports inappropriate social conduct.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0018": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_SUSPECT",
+    "interpretation_or_attribution_caveat": "Do not treat Eri’s subsequent solution as Kogoro’s reasoning.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0019": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_UNSEEN",
+    "interpretation_or_attribution_caveat": "This is excitement about recognition, not a standing wish for publicity in every turn.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0020": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP305_306",
+    "interpretation_or_attribution_caveat": "Specific comic reaction; not a universal interaction with women.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0021": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP305_306",
+    "interpretation_or_attribution_caveat": "Official synopsis does not specify the final extent of Kogoro’s unaided reasoning.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0022": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_BLUECAT",
+    "interpretation_or_attribution_caveat": "Client motivation belongs to the father, not necessarily to Kogoro.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0023": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_BLUECAT",
+    "interpretation_or_attribution_caveat": "No invented explicit admission of error.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0024": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP445",
+    "interpretation_or_attribution_caveat": "Do not generalize pet irritation into indiscriminate hostility.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0025": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP445",
+    "interpretation_or_attribution_caveat": "Kogoro performs the decoding; external accident helped trigger the insight.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0026": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP529",
+    "interpretation_or_attribution_caveat": "No proof that he evaluated all evidence before answering.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0027": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP529",
+    "interpretation_or_attribution_caveat": "Eri and Conan, not Kogoro, derive the murder-case insight.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0028": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "SHOG_BIRTHDAY",
+    "interpretation_or_attribution_caveat": "Gift intention is presented as Ran’s plausible deduction in the synopsis.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0029": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP589_590",
+    "interpretation_or_attribution_caveat": "Shows contradiction between apparent intention and execution.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0030": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP589_590",
+    "interpretation_or_attribution_caveat": "These actions are attributed to Kogoro in the official synopsis.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0031": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP589_590",
+    "interpretation_or_attribution_caveat": "Supported assisted reasoning, not a fully independent solution.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0032": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP911",
+    "interpretation_or_attribution_caveat": "Receiving the request does not establish quality of final solution.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0033": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP911",
+    "interpretation_or_attribution_caveat": "A partial theory; the full mechanism remains unresolved.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0034": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP911",
+    "interpretation_or_attribution_caveat": "This is a challenge to a plausible hypothesis, not proof of deliberate falsification.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0035": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP919",
+    "interpretation_or_attribution_caveat": "Care and possessiveness are context-specific interpretations.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  },
+  "kogoro_0036": {
+    "evidence_kind": "original_english_editorial_summary",
+    "canonical_dialogue": false,
+    "direct_manga_panel_verified": false,
+    "derived_from_source_id": "YTV_EP919",
+    "interpretation_or_attribution_caveat": "The official synopsis does not establish that this suspicion was correct.",
+    "speaker_attribution": "narrative_about_kogoro_not_character_speech",
+    "text_originally_authored_for_project": true
+  }
+}

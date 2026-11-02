@@ -211,11 +211,13 @@ def test_default_catalog_contains_only_current_characters_in_order() -> None:
         "sherlock",
         "poirot",
         "layton",
+        "kogoro",
     ]
     assert [entry.character_id for entry in catalog.characters] == [
         "sherlock_holmes",
         "hercule_poirot",
         "professor_layton",
+        "kogoro_mouri",
     ]
     assert all(
         path.is_file()

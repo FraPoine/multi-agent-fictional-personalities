@@ -1,0 +1,10 @@
+character:
+  id: kogoro_mouri
+  name: Kogoro Mori
+  stage: conversation_candidate
+  corpus_status: editorial_summaries_only
+  notes: >-
+    Sprint 8.4 manually curated Persona candidate for conversations only.
+    The 36 English editorial summaries are not canonical dialogue.
+    Persona examples and the separate deterministic mock reply are synthetic.
+    No investigation integration or scientific recognizability validation.

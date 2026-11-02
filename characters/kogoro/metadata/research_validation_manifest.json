@@ -1,0 +1,35 @@
+{
+  "reviewed_repository_head": "c96cfdb8a1c326c79358c0c58e75b9c6ded74b45",
+  "character_id": "kogoro_mouri",
+  "display_name": "Kogoro Mori",
+  "corpus_entries": 36,
+  "corpus_entry_type": "english_editorial_summaries_only",
+  "canonical_dialogue_quote_count": 0,
+  "unique_referenced_sources": 21,
+  "direct_manga_panels_verified": false,
+  "schema_validation": "passed_against_local_mirror_of_repository_pydantic_schema",
+  "tests": {
+    "all_json_valid": true,
+    "required_7_fields": true,
+    "persona_8_fields": true,
+    "all_ids_unique": true,
+    "no_normalized_exact_duplicates": true,
+    "minimum_confidence_0_85": true,
+    "all_examples_provenance_tagged": true,
+    "all_source_ids_resolvable": true,
+    "four_agent_runtime_test": "not_performed"
+  },
+  "sha256": {
+    "CODEX_TASK_KOGORO_SPRINT_8_4.md": "929133b93f1090ecc36dceb444faecd11feafa31a0f9a9e5e8f813193e886e00",
+    "README.md": "2a1bde94bc520496a9b5319d907a1fa21092f519f6c2190a49aa5e99783467b4",
+    "SHA256SUMS": "029122722b6eb55fb336cccb121dc0b10bd23af03d1b959f77a2f77d78a6228a",
+    "entry_provenance.json": "ea8907ff566b4618a28c2335a3382fa088897a323993f551434c17fc8efa010d",
+    "example_message_provenance.json": "f4d4eac434d0cb81cf07dd06ccfaceffa93bba4464fcabead457413553869198",
+    "integration_handoff.md": "e84033debf35167fdbe4ad81266f9563306ade154aefbaf9c1dc630c0094ff77",
+    "kogoro_mori_corpus.jsonl": "acb0ba6bf7513fe4c146d797d75c90fb3b8eefd5c53990e98be95000d0ea50ec",
+    "kogoro_mori_persona_candidate.json": "657a970d01063db5a553f5064fa1f48c74c58b26aa8c5c80f8d32ba50c40c7e8",
+    "methodology_and_qa.md": "98ef5ae54e84367aee4998d42105a09325be3749dd3a5059dea101d4d696df4a",
+    "source_inventory.json": "1326c83b7376401140b5f789d7aba7e002d80ea7c29fdd1a1e4ab5ece585c3e8",
+    "validation_manifest.json": "bc2c7968a3023b18ef46cda69e95d5784b22c2b563c02bb4187f85808b742c36"
+  }
+}

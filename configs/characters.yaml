@@ -35,3 +35,15 @@ characters:
     # extraction fixture. Both conversation providers load this exact file.
     persona_fixture_path: ../characters/layton/layton_persona_curated_candidate.json
     mock_response_fixture_path: ../tests/fixtures/layton_agent_response.txt
+
+  - slug: kogoro
+    character_id: kogoro_mouri
+    display_name: Kogoro Mori
+    description: >-
+      A fictional private investigator and former police officer, proud and
+      expressive, with practical instincts and sometimes hasty working theories.
+    corpus_path: ../characters/kogoro/corpus/persona_corpus.jsonl
+    # Manually curated candidate, not an LLM extraction fixture.
+    # Both conversation providers load this exact file.
+    persona_fixture_path: ../characters/kogoro/kogoro_persona_curated_candidate.json
+    mock_response_fixture_path: ../tests/fixtures/kogoro_agent_response.txt

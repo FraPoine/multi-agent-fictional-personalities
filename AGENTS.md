@@ -23,12 +23,14 @@ later, and run experiments and investigation sessions afterward.
 
 ## Scope and schedule
 
-- Conversation runtime characters: Sherlock Holmes, Hercule Poirot, and Professor
-  Layton (Sprint 8.3 manually curated candidate; see `characters/layton/README.md`).
+- Conversation runtime characters: Sherlock Holmes, Hercule Poirot, Professor
+  Layton, and Kogoro Mori (`kogoro_mouri`; Sprint 8.4). Layton and Kogoro are
+  manually curated candidates; see their `characters/` README files.
 - Investigation runtime characters remain Sherlock Holmes and Hercule Poirot.
-- Final evaluation target: four characters; the fourth is not yet finalized.
-  Layton has no scientific recognizability validation, and his summary-based
-  evidence differs methodologically from the literary-dialogue corpora.
+- Final evaluation target: four characters. Kogoro is integrated for conversations;
+  scientific evaluation remains pending. Layton and Kogoro have no scientific
+  recognizability validation, and their summary-based evidence differs
+  methodologically from the literary-dialogue corpora.
 - Future participant configuration must support two or more agents; Sprint 5
   does not add a character.
 - Basic working-version target: August 7, 2026.

@@ -75,9 +75,10 @@ they do not demonstrate real LLM persona quality or validate character
 recognizability. OpenAI-backed conversation execution is not implemented or
 verified. A two-character technical mock pilot now exercises blind trial
 generation, local rating, response persistence, and analysis. It verifies the
-pipeline only. The final study targets four characters, but characters three
-and four are not finalized or implemented; L and Professor Layton are previous
-candidates. A scientifically interpretable evaluation remains future work.
+pipeline only. The final study targets four characters. Professor Layton and
+Kogoro Mori are integrated conversation candidates with manually curated Personas
+and summary-based evidence. A scientifically interpretable evaluation remains
+future work.
 
 Sprint 5 completed the generic offline foundation. It remains network-free and
 requires no API key, genuine rater responses, or live-provider measurements.
@@ -301,12 +302,15 @@ The required options are `--characters` (two or more unique supported slugs)
 and `--topic`. Optional arguments are `--turn-count` (default `6`),
 `--provider` (default and currently only `mock`), `--seed` (default `42`),
 `--output-root` (default `outputs`), and `--run-id` (otherwise generated). The
-supported conversation character slugs are `sherlock`, `poirot`, and `layton`.
-Layton is a manually curated candidate with a summary-only corpus, available
+supported conversation character slugs are `sherlock`, `poirot`, `layton`, and
+`kogoro`, in that order. Layton and Kogoro are manually curated candidates with
+summary-only corpora, available
 through the existing mock CLI and mock/Copilot conversation service. See
 [Layton provenance and limitations](characters/layton/README.md) and the
 [Sprint 8.3 verification report](docs/sprint_8_3_completion.md). Investigation
-support remains limited to Sherlock and Poirot.
+support remains limited to Sherlock and Poirot. See also
+[Kogoro provenance and limitations](characters/kogoro/README.md) and the
+[Sprint 8.4 verification report](docs/sprint_8_4_completion.md).
 
 ## Generated artifacts
 
@@ -377,8 +381,9 @@ critical-path tests reject attempted network access.
 - Conversation execution currently supports only the local `mock` provider.
 - Synthetic fixtures do not establish persona quality or recognizability.
 - OpenAI-backed conversation execution is not implemented or verified.
-- Only Sherlock Holmes and Hercule Poirot are supported by the working runtime;
-  the third and fourth final characters remain undecided.
+- Conversations support Sherlock Holmes, Hercule Poirot, Professor Layton and
+  Kogoro Mori. Investigations remain restricted to Sherlock and Poirot; the two
+  manually curated conversation candidates have no recognizability validation.
 - The technical mock pilot cannot establish persona recognizability or support
   scientific conclusions; real-provider outputs and responses from the
   pre-registered rater methodology are required before making persona-quality

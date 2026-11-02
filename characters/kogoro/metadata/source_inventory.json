@@ -1,0 +1,345 @@
+{
+  "project": "Multi-Agent Fictional Personalities",
+  "character_id": "kogoro_mouri",
+  "display_name": "Kogoro Mori",
+  "japanese_name": "毛利小五郎",
+  "romanization": "Kogorō Mōri / Kogoro Mouri",
+  "aliases": {
+    "TMS_english": "Kogoro Mori",
+    "VIZ_english": "Richard Moore",
+    "requested_display": "Kogoro Mori"
+  },
+  "retrieved_date": "2026-11-02",
+  "repository_head_at_review": "c96cfdb8a1c326c79358c0c58e75b9c6ded74b45",
+  "primary_manga_pages_directly_reviewed": false,
+  "primary_manga_review_limitation": "Manga is prioritized as the canonical continuity. Original panels and dialogue were not independently read. Several records use the official Shonen Sunday original-manga case database with verified volume/file metadata; others use official Yomiuri TV anime synopses. All records are summaries, never direct manga speech.",
+  "source_entries": [
+    {
+      "source_id": "YTV_CHARACTER",
+      "title": "Kogoro Mouri — official character profile",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_character_profile",
+      "urls": [
+        "https://www.ytv.co.jp/conan/character/kogoro/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Primary official TV characterization; not dialogue or a manga text.",
+      "manga_reference": "none",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "TMS_CHARACTER",
+      "title": "Detective Conan — Characters",
+      "publisher": "TMS Entertainment",
+      "source_type": "official_anime_character_profile",
+      "urls": [
+        "https://tmsanime.com/detective-conan"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Official English identity and Conan-assistance summary; not a speech sample.",
+      "manga_reference": "none",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "VIZ_VOL09",
+      "title": "Case Closed, Volume 9",
+      "publisher": "VIZ Media / Gosho Aoyama",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://www.viz.com/manga-books/manga/case-closed-volume-9-0/product/394"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Publisher confirms the college reunion story and Richard Moore alias; public synopsis only, not manga pages.",
+      "manga_reference": "Vol. 9; direct page reading not completed",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP002",
+      "title": "Company President’s Daughter Kidnapping — episode 2",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k19960115.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Early private-detective assignment; summary has minimal direct Kogoro behavior.",
+      "manga_reference": "Manga early chapters; mapping not verified here",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP003",
+      "title": "Idol Locked Room Murder — episode 3",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k19960122.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Conan incapacitates Kogoro and supplies the explanation using his voice.",
+      "manga_reference": "Early manga story; exact chapter not verified",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP027_028",
+      "title": "Kogoro’s Class Reunion Murder — episodes 27–28",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20140816.html",
+        "https://www.ytv.co.jp/conan/archive/k20140823.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Remaster synopses detail Kogoro noticing physical evidence and Conan supplying later hints.",
+      "manga_reference": "Vol. 9 Files 4–6 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP114_115",
+      "title": "Scuba Diving Murder — episodes 114–115",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k19980824.html",
+        "https://www.ytv.co.jp/conan/archive/k19980831.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Family holiday and conflict with separated wife; do not infer ring-return specifics from YTV synopses.",
+      "manga_reference": "Vol. 17 Files 3–5 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP199_200",
+      "title": "Suspect: Kogoro Mouri — episodes 199–200",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20180414.html",
+        "https://www.ytv.co.jp/conan/archive/k20180421.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Remaster synopses detail drunken conduct, suspicion, and Eri independently defending him.",
+      "manga_reference": "Vol. 27 Files 1–3 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP305_306",
+      "title": "The Unseen Suspect — episodes 305–306",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20030113.html",
+        "https://www.ytv.co.jp/conan/archive/k20030120.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Celebrity vanity and a case in which Conan must supply Kogoro with hints.",
+      "manga_reference": "Vol. 37 Files 2–4 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP445",
+      "title": "Secret of the Russian Blue — episode 445",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20060710.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Kogoro struggles with a message, becomes irritated, but develops a method from a dictionary clue.",
+      "manga_reference": "Vol. 51 Files 7–8 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP529",
+      "title": "Might Over Mystery — episode 529",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20090316.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Kogoro makes a dismissive phone response; his recorded mahjong noise is recognized as a ruse and informs others’ reasoning.",
+      "manga_reference": "Vol. 62 Files 2–4 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP589_590",
+      "title": "The Worst Birthday — episodes 589–590",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20100925.html",
+        "https://www.ytv.co.jp/conan/archive/k20101002.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Purchases a gift for Eri, antagonistic conversation, questions witnesses, then completes a deduction with Conan hints.",
+      "manga_reference": "Vol. 68 Files 2–4 confirmed by Shonen Sunday; original panels not read",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP911",
+      "title": "A Request from Inspector Megure — episode 911",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20180901.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Police seek Kogoro’s help; he proposes and tests a theory that proves incomplete.",
+      "manga_reference": "Manga mapping not independently checked",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "YTV_EP919",
+      "title": "The JK Trio Secret Café — episode 919",
+      "publisher": "Yomiuri Telecasting Corporation",
+      "source_type": "official_anime_episode_synopsis",
+      "urls": [
+        "https://www.ytv.co.jp/conan/archive/k20181103.html"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Protective suspicions toward Ran and a physical-strength inference challenged by a suspect’s injury.",
+      "manga_reference": "Manga mapping not independently checked",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "DCW_CASE_MAP",
+      "title": "Cases solved by Kogoro Mouri (secondary chapter index)",
+      "publisher": "Detective Conan Wiki contributors",
+      "source_type": "unofficial_secondary_index",
+      "urls": [
+        "https://www.detectiveconanworld.com/wiki/List_of_cases_solved_by_Kogoro_Mouri"
+      ],
+      "assessment": "medium_for_chapter_discovery_only",
+      "notes": "Used only to locate candidate manga volumes/files; not authoritative character evidence, scripts, or direct manga verification.",
+      "manga_reference": "secondary only",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_SELECTION",
+      "title": "Detective Conan: Kogoro Mouri Selection",
+      "publisher": "Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://www.shogakukan.co.jp/books/09854263"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "2025 publisher retrospective identifies independent solved cases, police/judo background, concealed Conan contributions, and family tensions.",
+      "manga_reference": "Curated manga compilation; not direct dialogue",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_REUNION",
+      "title": "Kogoro Class Reunion Murder",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/11927/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official manga case synopsis; explicitly identifies vol. 9 Files 4–6.",
+      "manga_reference": "Vol. 9 Files 4–6",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_SCUBA",
+      "title": "Scuba Diving Murder",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/11950/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; family tensions and beach incident.",
+      "manga_reference": "Vol. 17 Files 3–5",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_SUSPECT",
+      "title": "Suspect: Kogoro Mouri",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/11979/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; Kogoro accused and Eri investigates.",
+      "manga_reference": "Vol. 27 Files 1–3",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_UNSEEN",
+      "title": "The Unseen Suspect",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/12012/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; Kogoro at a television drama shoot and independently investigates.",
+      "manga_reference": "Vol. 37 Files 2–4",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_BLUECAT",
+      "title": "The Secret of the Russian Blue",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/12055/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; Kogoro struggles with a code then gets hints from the cat.",
+      "manga_reference": "Vol. 51 Files 7–8",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_BIRTHDAY",
+      "title": "The Worst Birthday",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/12111/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; apparent gift and argumentative manner toward Eri.",
+      "manga_reference": "Vol. 68 Files 2–4",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    },
+    {
+      "source_id": "SHOG_JUDO",
+      "title": "Might Over Mystery",
+      "publisher": "Shonen Sunday / Shogakukan",
+      "source_type": "official_manga_publisher_synopsis",
+      "urls": [
+        "https://websunday.net/episode/12091/"
+      ],
+      "assessment": "high_for_official_publisher_summary",
+      "notes": "Original-series official case synopsis; Eri and Conan investigate, not Kogoro direct.",
+      "manga_reference": "Vol. 62 Files 2–4",
+      "verified_original_manga_dialogue": false,
+      "has_direct_character_dialogue": false
+    }
+  ]
+}

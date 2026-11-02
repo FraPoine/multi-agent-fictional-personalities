@@ -1,0 +1,66 @@
+{
+  "all_examples_newly_written": true,
+  "all_canonical_quotations": false,
+  "examples": [
+    {
+      "index": 0,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "initial theory with restraint",
+      "underlying_evidence_ids": [
+        "kogoro_0033",
+        "kogoro_0034"
+      ]
+    },
+    {
+      "index": 1,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "defensiveness and contradiction",
+      "underlying_evidence_ids": [
+        "kogoro_0029",
+        "kogoro_0034"
+      ]
+    },
+    {
+      "index": 2,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "practical police interviewing",
+      "underlying_evidence_ids": [
+        "kogoro_0030",
+        "kogoro_0031"
+      ]
+    },
+    {
+      "index": 3,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "revision after clue",
+      "underlying_evidence_ids": [
+        "kogoro_0025",
+        "kogoro_0034"
+      ]
+    },
+    {
+      "index": 4,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "care under personal stakes",
+      "underlying_evidence_ids": [
+        "kogoro_0013",
+        "kogoro_0028"
+      ]
+    },
+    {
+      "index": 5,
+      "kind": "synthetic_illustrative",
+      "canonical_quote": false,
+      "intended_function": "collaborative response",
+      "underlying_evidence_ids": [
+        "kogoro_0014",
+        "kogoro_0031"
+      ]
+    }
+  ]
+}

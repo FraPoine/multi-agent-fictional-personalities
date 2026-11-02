@@ -446,6 +446,7 @@ def test_default_catalog_controls_are_accessible_and_selected(
         ("character-sherlock", "sherlock"),
         ("character-poirot", "poirot"),
         ("character-layton", "layton"),
+        ("character-kogoro", "kogoro"),
     ]
     assert len({control_id for control_id, _ in controls}) == len(controls)
     for control_id, _ in controls:
@@ -458,6 +459,7 @@ def test_default_catalog_controls_are_accessible_and_selected(
     assert ">SH</span>" in response.text
     assert ">HP</span>" in response.text
     assert ">PL</span>" in response.text
+    assert ">KM</span>" in response.text
     catalog = load_character_catalog(REPOSITORY_ROOT / "configs/characters.yaml")
     for index, entry in enumerate(catalog.characters, start=1):
         card = re.search(
@@ -1169,13 +1171,20 @@ def test_topic_resolution_reaches_generated_run(
         ["sherlock", "layton"],
         ["poirot", "layton"],
         ["sherlock", "poirot", "layton"],
+        ["sherlock", "kogoro"],
+        ["poirot", "kogoro"],
+        ["layton", "kogoro"],
+        ["sherlock", "poirot", "kogoro"],
+        ["sherlock", "layton", "kogoro"],
+        ["poirot", "layton", "kogoro"],
+        ["sherlock", "poirot", "layton", "kogoro"],
     ],
 )
 def test_catalog_combinations_preserve_transcript_identity_and_artifacts(
     web_client: tuple[ASGITestClient, Path],
     slugs: list[str],
 ) -> None:
-    """Exercise the actual web POST with every supported pair and the trio."""
+    """Exercise the web POST with every supported pair, trio and all four."""
     client, output_root = web_client
     response = client.post(
         "/conversations",
@@ -1189,6 +1198,7 @@ def test_catalog_combinations_preserve_transcript_identity_and_artifacts(
         "sherlock": ("SH", "participant-tone-1"),
         "poirot": ("HP", "participant-tone-2"),
         "layton": ("PL", "participant-tone-3"),
+        "kogoro": ("KM", "participant-tone-4"),
     }
     run_id = extract_run_id(response.text)
     run_directory = output_root / "conversations/runs" / run_id
@@ -1280,7 +1290,7 @@ def test_character_keyboard_accessibility_contract(
     """Check native focusable controls and their visible-card focus affordance."""
     client, _ = web_client
     page = client.get("/").text
-    for slug in ("sherlock", "poirot", "layton"):
+    for slug in ("sherlock", "poirot", "layton", "kogoro"):
         control = re.search(
             rf'<input\s+[^>]*id="character-{slug}"[^>]*>', page,
         )
@@ -1304,6 +1314,25 @@ def test_character_keyboard_accessibility_contract(
     assert hidden_input is not None
     assert "display: none" not in hidden_input.group(1)
     assert "visibility: hidden" not in hidden_input.group(1)
+
+
+def test_kogoro_is_disabled_and_rejected_in_investigation_lobby(
+    web_client: tuple[ASGITestClient, Path],
+) -> None:
+    client, _ = web_client
+    response = client.get("/investigations")
+    assert_html_response(response, 200)
+    control = re.search(r'<input\b[^>]*id="investigator-kogoro"[^>]*>', response.text)
+    assert control is not None and "disabled" in control.group()
+    response = client.post(
+        "/investigations",
+        data={
+            "characters": ["sherlock", "poirot", "kogoro"],
+            "case_id": "demo-1-vanishing-from-hyde-park",
+        },
+    )
+    assert_html_response(response, 400)
+    assert "Select only investigators supported by the current mock scenario." in response.text
 
 
 def test_conversation_responsive_styles_contract(

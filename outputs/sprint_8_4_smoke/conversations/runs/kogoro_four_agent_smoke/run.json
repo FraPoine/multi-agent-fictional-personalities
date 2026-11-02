@@ -1,0 +1,186 @@
+{
+  "run_id": "kogoro_four_agent_smoke",
+  "topic": "How should we verify an uncertain witness timeline?",
+  "character_ids": [
+    "sherlock_holmes",
+    "hercule_poirot",
+    "professor_layton",
+    "kogoro_mouri"
+  ],
+  "turn_count": 8,
+  "seed": 42,
+  "provider": "mock",
+  "model": "mock-round-robin",
+  "created_at": "2026-11-02T17:34:18.066213Z",
+  "status": "completed",
+  "messages": [
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0000",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 0,
+      "speaker_character_id": "sherlock_holmes",
+      "speaker_name": "Sherlock Holmes",
+      "text": "Begin with the facts that seem too ordinary to deserve attention. A scuff, an absence, or an inconsistency in timing often says more than an elaborate clue. Observe first; theorize only when the evidence permits it.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0001",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 1,
+      "speaker_character_id": "hercule_poirot",
+      "speaker_name": "Hercule Poirot",
+      "text": "Let us proceed with method and order, mon ami. First, we must separate what we know from what we merely suppose. Every detail may matter, but only the little grey cells will reveal how those details fit together.",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0002",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 2,
+      "speaker_character_id": "professor_layton",
+      "speaker_name": "Professor Layton",
+      "text": "Let us begin with the facts we have been given. Which observation would help us distinguish the possible explanations? We should allow each other time to examine it before reaching a conclusion.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0003",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 3,
+      "speaker_character_id": "kogoro_mouri",
+      "speaker_name": "Kogoro Mori",
+      "text": "The person with the key is where I'd start. That's a working theory, so let's check who actually used it and when. If the timing doesn't fit, we'll have to look again.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0004",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 4,
+      "speaker_character_id": "sherlock_holmes",
+      "speaker_name": "Sherlock Holmes",
+      "text": "Begin with the facts that seem too ordinary to deserve attention. A scuff, an absence, or an inconsistency in timing often says more than an elaborate clue. Observe first; theorize only when the evidence permits it.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0005",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 5,
+      "speaker_character_id": "hercule_poirot",
+      "speaker_name": "Hercule Poirot",
+      "text": "Let us proceed with method and order, mon ami. First, we must separate what we know from what we merely suppose. Every detail may matter, but only the little grey cells will reveal how those details fit together.",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0006",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 6,
+      "speaker_character_id": "professor_layton",
+      "speaker_name": "Professor Layton",
+      "text": "Let us begin with the facts we have been given. Which observation would help us distinguish the possible explanations? We should allow each other time to examine it before reaching a conclusion.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    },
+    {
+      "message_id": "kogoro_four_agent_smoke_message_0007",
+      "run_id": "kogoro_four_agent_smoke",
+      "turn_index": 7,
+      "speaker_character_id": "kogoro_mouri",
+      "speaker_name": "Kogoro Mori",
+      "text": "The person with the key is where I'd start. That's a working theory, so let's check who actually used it and when. If the timing doesn't fit, we'll have to look again.\n",
+      "provider": "mock",
+      "model": "mock-round-robin",
+      "generation_metadata": {
+        "provider": "mock",
+        "model": null,
+        "usage": null,
+        "finish_reason": "completed",
+        "request_id": null,
+        "latency_ms": null,
+        "retry_count": 0
+      },
+      "timestamp": "2026-11-02T17:34:18.066213Z",
+      "error": null
+    }
+  ]
+}
