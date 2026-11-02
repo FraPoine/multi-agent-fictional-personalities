@@ -23,9 +23,12 @@ later, and run experiments and investigation sessions afterward.
 
 ## Scope and schedule
 
-- Currently supported runtime characters: Sherlock Holmes and Hercule Poirot.
-- Final evaluation target: four characters, with characters three and four not
-  yet finalized or implemented. L and Professor Layton were earlier candidates.
+- Conversation runtime characters: Sherlock Holmes, Hercule Poirot, and Professor
+  Layton (Sprint 8.3 manually curated candidate; see `characters/layton/README.md`).
+- Investigation runtime characters remain Sherlock Holmes and Hercule Poirot.
+- Final evaluation target: four characters; the fourth is not yet finalized.
+  Layton has no scientific recognizability validation, and his summary-based
+  evidence differs methodologically from the literary-dialogue corpora.
 - Future participant configuration must support two or more agents; Sprint 5
   does not add a character.
 - Basic working-version target: August 7, 2026.

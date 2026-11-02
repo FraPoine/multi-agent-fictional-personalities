@@ -301,7 +301,12 @@ The required options are `--characters` (two or more unique supported slugs)
 and `--topic`. Optional arguments are `--turn-count` (default `6`),
 `--provider` (default and currently only `mock`), `--seed` (default `42`),
 `--output-root` (default `outputs`), and `--run-id` (otherwise generated). The
-supported MVB character slugs are `sherlock` and `poirot`.
+supported conversation character slugs are `sherlock`, `poirot`, and `layton`.
+Layton is a manually curated candidate with a summary-only corpus, available
+through the existing mock CLI and mock/Copilot conversation service. See
+[Layton provenance and limitations](characters/layton/README.md) and the
+[Sprint 8.3 verification report](docs/sprint_8_3_completion.md). Investigation
+support remains limited to Sherlock and Poirot.
 
 ## Generated artifacts
 

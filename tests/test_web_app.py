@@ -374,6 +374,7 @@ def test_default_catalog_controls_are_accessible_and_selected(
     assert controls == [
         ("character-sherlock", "sherlock"),
         ("character-poirot", "poirot"),
+        ("character-layton", "layton"),
     ]
     assert len({control_id for control_id, _ in controls}) == len(controls)
     for control_id, _ in controls:

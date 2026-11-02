@@ -71,7 +71,7 @@ def test_cli_creates_complete_six_turn_round_robin_run(
             ["--characters", "sherlock", "sherlock"],
             "must not contain duplicates",
         ),
-        (["--characters", "sherlock", "layton"], "unsupported character"),
+        (["--characters", "sherlock", "unknown"], "unsupported character"),
         (
             ["--characters", "sherlock", "poirot", "--provider", "openai"],
             "unsupported provider",

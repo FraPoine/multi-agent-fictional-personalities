@@ -23,3 +23,15 @@ characters:
     corpus_path: ../characters/poirot/corpus/persona_corpus.jsonl
     persona_fixture_path: ../tests/fixtures/poirot_persona_response.json
     mock_response_fixture_path: ../tests/fixtures/poirot_agent_response.txt
+
+  - slug: layton
+    character_id: professor_layton
+    display_name: Professor Layton
+    description: >-
+      A fictional archaeology professor and puzzle enthusiast known for patient
+      observation, courteous questioning, collaborative teaching, and compassion.
+    corpus_path: ../characters/layton/corpus/persona_corpus.jsonl
+    # Historical field name: this is a manually curated candidate, not an LLM
+    # extraction fixture. Both conversation providers load this exact file.
+    persona_fixture_path: ../characters/layton/layton_persona_curated_candidate.json
+    mock_response_fixture_path: ../tests/fixtures/layton_agent_response.txt

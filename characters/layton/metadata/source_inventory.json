@@ -1,0 +1,193 @@
+{
+  "repository": "FraPoine/multi-agent-fictional-personalities",
+  "inspected_commit": "12b34cc6691cbfe1598037553dd7dc373ee6008a",
+  "source_entries": [
+    {
+      "source_id": "OFF_NINTENDO_GUIDE",
+      "title": "The Beginners Guide to the Professor Layton Games",
+      "publisher_or_transcriber": "Nintendo UK",
+      "url": "https://www.nintendo.com/en-gb/News/2011/The-Beginners-Guide-to-the-Professor-Layton-Games-253601.html",
+      "source_type": "official_summary",
+      "reliability": "high",
+      "localization": "English publisher copy",
+      "notes": "Publisher description of an archaeology professor, polite gentleman, fond of tea and puzzles; not verbatim gameplay.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "OFF_LEVEL5_CV",
+      "title": "Professor Layton and the Curious Village: HD for Mobile",
+      "publisher_or_transcriber": "LEVEL-5",
+      "url": "https://www.laytonseries.com/curiousvillage/uk/",
+      "source_type": "official_summary",
+      "reliability": "high",
+      "localization": "English publisher copy",
+      "notes": "Publisher description of observation, investigating, puzzle solving, and Luke as apprentice.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "OFF_NINTENDO_CV",
+      "title": "Professor Layton and the Curious Village (Nintendo DS)",
+      "publisher_or_transcriber": "Nintendo UK",
+      "url": "https://www.nintendo.com/en-gb/Games/Nintendo-DS/Professor-Layton-and-the-Curious-Village-272563.html",
+      "source_type": "official_summary",
+      "reliability": "high",
+      "localization": "English publisher copy",
+      "notes": "Original game presentation: inquiry, investigation, puzzles and a narrative beyond pure brainteasers.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "OFF_LEVEL5_FUTURE",
+      "title": "Professor Layton and the New World of Steam: character profile",
+      "publisher_or_transcriber": "LEVEL-5",
+      "url": "https://www.layton.jp/jouki/en/",
+      "source_type": "official_summary",
+      "reliability": "high",
+      "localization": "English publisher copy",
+      "notes": "Later continuity source for archaeology professor and relationship with Luke; excluded from original-trilogy character-style evidence.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "CV_PRO",
+      "title": "Curious Village — Prologue",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Opening journey, Luke, map puzzle and courteous approach to strangers.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "CV_CH5",
+      "title": "Curious Village — Chapter Five: The Hunt Begins",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Park-gate dust observation and respect for Luke’s knowledge about animals.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "CV_CH8",
+      "title": "Curious Village — Chapter Eight: The Shadowy Intruder",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Politeness, personal concern, defending against an accusation by testing contradictions.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "CV_PUZZLE",
+      "title": "Curious Village — Puzzle Quits & Returns",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/26/curious-village-puzzle-quits-returns/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Optional failure/return dialogue; observe that this is game-mechanics-dependent, not ordinary conversation.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "DB_PRO",
+      "title": "Diabolical Box — Prologue: The Elysian Box",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Manners in travel setting; unresolved threatening rumor and search for explanation.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "DB_CH1",
+      "title": "Diabolical Box — Chapter One: The Legendary Molentary Express",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Tidiness, planning, public-spirited behavior, tea, professional self-description.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "DB_CH6",
+      "title": "Diabolical Box — Chapter Six: The Road to Herzen Castle",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Photo distortion and missing evidence; questioning an investigator and witnesses.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "DB_CH7",
+      "title": "Diabolical Box — Chapter Seven: An Encounter at the End of the Line",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Respectful questioning, measured uncertainty, reassurance under danger, naturalistic hypothesis.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "UF_PRO",
+      "title": "Unwound Future — Prologue: The Clock Shop on Midland Road",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Future-letter hypothesis; candid uncertainty, conditional reasoning.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "UF_CH1",
+      "title": "Unwound Future — Chapter One: Is this the Future?",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Response to anomalous city; acknowledges lack of explanation and gathers more information.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "UF_CH12",
+      "title": "Unwound Future — Chapter Twelve: The Truth Revealed",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Tentative lead, cooperation with police and asking permission to examine evidence.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "UF_CH13",
+      "title": "Unwound Future — Chapter Thirteen: The Stronghold of Madness",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Protective duty to Flora despite danger; thanking rival who assists him.",
+      "firsthand_game_text_verified": false
+    },
+    {
+      "source_id": "UF_EPI",
+      "title": "Unwound Future — Epilogue",
+      "publisher_or_transcriber": "Fan transcription of US English game",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+      "source_type": "unofficial_game_transcript",
+      "reliability": "medium",
+      "localization": "US English (fan transcript)",
+      "notes": "Consequences of crime, moral complexity, personal shock and grief. MAJOR STORY SPOILERS.",
+      "firsthand_game_text_verified": false
+    }
+  ]
+}
