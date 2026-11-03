@@ -1,10 +1,71 @@
-# Professor Layton conversation candidate — Sprint 8.3
+# Professor Layton — historical candidate and evidence-grounded V2
 
 This directory contains a **manually curated Persona candidate**, not an
 LLM-extracted, canonically authenticated, or scientifically validated profile.
 The display name is Professor Layton; the stable ID is `professor_layton`.
 
-## Imported evidence and provenance
+## V2 evidence and live candidate
+
+V1's 35 scene summaries offered a useful starting point but limited middle-story
+coverage and no fresh source inspection during its integration. V2 adds a
+separate research condition: **71 original analytical paraphrases** across 18
+US-indexed original-trilogy transcript pages (23 Curious Village, 24 Diabolical
+Box, 24 Unwound Future). All 13 historical transcript pages were re-examined;
+five additional pages broaden ordinary interactions and counterexamples.
+The original corpus, Persona and all historical metadata/checksum files remain
+byte-for-byte preserved. The thirteen excluded game quotations remain absent.
+
+New assets:
+
+- `corpus/persona_corpus_v2.jsonl`: seven-field analytical evidence corpus,
+  **not spoken dialogue**. The existing loader accepts it and the selector
+  returns 50 examples; no extraction prompt was run.
+- `layton_persona_curated_v2.json`: manually curated eight-field live candidate.
+- `metadata/source_inventory_v2.json`: inspected sources, dates, selected scene
+  anchors, localization basis, source/reuse limits and controlled trait vocabulary.
+- `metadata/entry_provenance_v2.json`: one entry per evidence ID, with exact URL,
+  game/chapter, scene anchor, attribution basis, evidence kind and verification.
+- `metadata/persona_v2_evidence_map.json`: every description/style/trait/rule and
+  illustrative example maps to evidence IDs; example wording is newly authored,
+  **not canonical**, and interpretations are explicitly qualified.
+- `metadata/evidence_coverage_v2.md`: selection, counts, duplicate screening,
+  exclusions, counterexamples, source restrictions, methodology and remaining gaps.
+- `metadata/integration_manifest_v2.json` and `metadata/v2_SHA256SUMS`: V2
+  integrity records plus a separate snapshot of historical file hashes. These
+  supplement, never replace, the original research checksum manifest.
+
+| Aspect | Original Persona | V2 refinement and evidence |
+| --- | --- | --- |
+| Courtesy and mentoring | Broadly courteous collaborative teacher | Retained, with room for his own confident judgment; map exercise `0003`, encouragement `0022`, Luke's expertise `0011`. |
+| Disagreement | Polite but firm as a general rule | Concrete direct corrections and interruption of an arrest: `0020`, `0039`, `0054`. |
+| Reasoning | Observation and conditional hypotheses | Retained; adds checking whether a solved puzzle actually changes the situation and accepting a physical alternative: `0057`. |
+| Fallibility | Admits uncertainty | Adds mistaken identification and apology, not only unknown information: `0005`, `0026`, `0052`. |
+| Social tone | Warmth and understated humor | Replaces an unmeasured British-English style label with courteous English, small asides and playful exchanges: `0021`, `0029`, `0049`. No accent or lexical-frequency claim. |
+| Emotional range | Composure with possible grief | Retains compassion; allows limited exasperation, personal attachment, urgent directness and broken farewell speech: `0062`, `0058`, `0067`, `0070`. These are contextual, not mandatory emotions. |
+| Puzzles | Teaching, with anti-catchphrase restrictions | Includes both engagement and deferral; no rule that every problem is a puzzle: `0007`, `0047`, `0057`. |
+
+IDs in the table abbreviate the `layton_v2_` prefix. The map ties each exact
+Persona element to its supporting rows. V2 is slightly shorter in rule count
+(9 versus 10); expansion of evidence was not used to inflate the profile.
+Its six new example messages are hypothetical illustrations whose behavior/style
+is evidence-informed, not fabricated events passed off as observations.
+
+The [coverage report](metadata/evidence_coverage_v2.md) documents the gate for
+promoting V2 as a live **candidate**, not scientific approval. The unofficial
+transcripts were inspected through their US index; marked HD/mobile additions
+were excluded. Their original-DS wording and audio were not independently
+verified. No reuse license was found in the inspected transcript pages, and
+publisher pages do not grant permission to redistribute game text. Only short
+original analytical notes and source references are newly committed.
+
+Structural consistency means the same eight-field Persona schema. Evidence
+coverage means inspectable scenes support relevant behavior. **Methodological
+equivalence has not been established** with Sherlock/Poirot's literary-dialogue
+corpora. No LLM extraction, live Copilot comparison, or scientific fidelity/
+recognizability validation was performed. More independent primary-game checks,
+ordinary social contexts, and dialogue-level style evidence remain needed.
+
+## Historical V1 imported evidence and provenance
 
 The supplied archive contained 48 records. `corpus/persona_corpus.jsonl` retains
 only the 35 original English editorial summaries (`layton_0001`–`layton_0035`),
@@ -36,7 +97,8 @@ or new game quotations were imported.
 
 The original ZIP and full extracted research package remain outside the repo.
 Checksums establish artifact integrity, not authenticity or source reliability.
-No independent web/game verification was performed during implementation.
+No independent web/game verification was performed during V1 integration; V2
+source inspection is described above and is not primary-game verification.
 
 ## Critical review and methodological limits
 
@@ -70,22 +132,24 @@ equivalent to the existing characters. Fair confirmatory comparisons require a
 separate study-design decision, consistent evidence/extraction conditions, and
 appropriate source verification before recognition claims.
 
-## Runtime and fixtures
+## Current runtime and historical controls
 
-`configs/characters.yaml` registers `layton` third. The historical field
-`persona_fixture_path` points directly to
-`characters/layton/layton_persona_curated_candidate.json`. Both the mock loader
-and real Copilot conversation loader read that exact eight-field `Persona`.
-There is no generated-Persona lookup, silent extraction, or duplicate synthetic
-Persona file. A separate `tests/fixtures/layton_agent_response.txt` is original
-synthetic text used only as the deterministic mock reply. Mock orchestration's
-existing “synthetic persona fixture” error wording reflects the older fixtures;
-it does not describe the provenance of this candidate.
+`configs/characters.yaml` registers `layton` third. Its `live_persona_path`
+selects `layton_persona_curated_v2.json` for Copilot conversations. The historical
+`persona_fixture_path` still selects `layton_persona_curated_candidate.json`
+for mock conversations; `corpus_path` still selects the original 35-row corpus.
+The V2 evidence corpus is deliberately explicit research input, not silently
+substituted into the speech-oriented extraction workflow. The deterministic
+mock reply remains `tests/fixtures/layton_agent_response.txt`.
 
-Sherlock/Poirot data and their existing fixture-based loading remain unchanged.
-Their real conversation route still loads their catalogued synthetic Persona
-fixtures; it does not load their `outputs/` extraction artifacts. This preexisting
-limitation is outside the Layton-specific change.
+Both `baseline_v1` and `dialogue_v2` render the complete selected Persona through
+the unchanged runtime. The stable identity is still `professor_layton` /
+Professor Layton, validated by the existing model and catalog identity checks.
+There is no Layton-specific loader branch or additional LLM call.
+
+Sherlock/Poirot retain their generated live profiles and synthetic mock controls;
+Kogoro retains his existing curated candidate. No other character configuration,
+prompt template, provider, selector, or investigation behavior changed.
 
 No runtime or schema code changes were necessary. Conversations UI automatically
 renders and initially selects the third catalogue entry after restart; no UI
@@ -94,4 +158,6 @@ marks Layton unsupported. Existing investigation capabilities and runtime reject
 Layton; no investigation fixtures or agent support were added. The blind-rater
 interface and two-character pilot are unchanged.
 
-See [Sprint 8.3 completion](../../docs/sprint_8_3_completion.md) for verification.
+See [Sprint 8.3 completion](../../docs/sprint_8_3_completion.md) for historical
+V1 verification and the [V2 coverage report](metadata/evidence_coverage_v2.md)
+for the current source audit.

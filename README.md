@@ -56,8 +56,10 @@ persistence safely publishes each completed run.
 
 Copilot conversations use the complete generated Sherlock/Poirot profiles in
 `outputs/sherlock/` and `outputs/poirot/`; mock conversations retain their
-synthetic test Persona fixtures. Both providers use the unchanged manually
-curated Layton/Kogoro candidates. `configs/characters.yaml` declares explicit
+synthetic test Persona fixtures. Layton uses his evidence-grounded curated V2
+candidate for Copilot and retains the historical candidate for mock; see
+[Layton evidence and limitations](characters/layton/README.md). Kogoro retains
+his existing manually curated candidate. `configs/characters.yaml` declares explicit
 `live_persona_path` values, resolved and validated with the existing `Persona`
 model and catalog identity checks. Missing or invalid live configuration fails
 before provider construction, with no fallback to synthetic profiles. These

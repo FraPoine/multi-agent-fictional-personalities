@@ -286,6 +286,8 @@ def test_complete_selected_live_persona_reaches_provider(tmp_path: Path, slug: s
         if slug in {"sherlock", "poirot"}
         else config.persona_fixture
     )
+    if slug == "layton":
+        expected_path = REPOSITORY_ROOT / "characters/layton/layton_persona_curated_v2.json"
     assert config.live_persona_path == expected_path
     expected = Persona.model_validate_json(expected_path.read_text(encoding="utf-8"))
     calls = []

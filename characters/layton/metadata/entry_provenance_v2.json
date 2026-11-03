@@ -1,0 +1,1353 @@
+{
+  "layton_v2_0001": {
+    "evidence_id": "layton_v2_0001",
+    "source_id": "CV_PRO",
+    "scene_anchor": "Opening drive; Luke questions the inheritance request, before the map",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Prologue"
+  },
+  "layton_v2_0002": {
+    "evidence_id": "layton_v2_0002",
+    "source_id": "CV_PRO",
+    "scene_anchor": "Opening drive; Luke calls him a puzzle-solving detective",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Prologue"
+  },
+  "layton_v2_0003": {
+    "evidence_id": "layton_v2_0003",
+    "source_id": "CV_PRO",
+    "scene_anchor": "Envelope map, Puzzle 001; Luke solves it and asks whether Layton already knew",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Humor is an editorial reading of the exchange, not a measured linguistic property.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Prologue"
+  },
+  "layton_v2_0004": {
+    "evidence_id": "layton_v2_0004",
+    "source_id": "CV_PRO",
+    "scene_anchor": "Drawbridge; Franco refuses entry and Layton mentions Dahlia's invitation",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Prologue"
+  },
+  "layton_v2_0005": {
+    "evidence_id": "layton_v2_0005",
+    "source_id": "CV_CH3",
+    "scene_anchor": "Dahlia's Room to Manor Parlor; photograph of a woman holding a baby",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-three-the-missing-servant/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Three: The Missing Servant"
+  },
+  "layton_v2_0006": {
+    "evidence_id": "layton_v2_0006",
+    "source_id": "CV_CH3",
+    "scene_anchor": "Garden glasses taken to the inspector; Luke protests the inspector's treatment",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-three-the-missing-servant/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Three: The Missing Servant"
+  },
+  "layton_v2_0007": {
+    "evidence_id": "layton_v2_0007",
+    "source_id": "CV_CH3",
+    "scene_anchor": "Manor Border; Agnes offers Puzzle 030 during the missing-person search",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-three-the-missing-servant/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Three: The Missing Servant"
+  },
+  "layton_v2_0008": {
+    "evidence_id": "layton_v2_0008",
+    "source_id": "CV_CH3",
+    "scene_anchor": "Granny Riddleton's introduction; Luke asks what she means by clairvoyance",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-three-the-missing-servant/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Three: The Missing Servant"
+  },
+  "layton_v2_0009": {
+    "evidence_id": "layton_v2_0009",
+    "source_id": "CV_CH5",
+    "scene_anchor": "Manor Road; Ingrid misremembers Layton's name before discussing the baron",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Five: The Hunt Begins"
+  },
+  "layton_v2_0010": {
+    "evidence_id": "layton_v2_0010",
+    "source_id": "CV_CH5",
+    "scene_anchor": "Dahlia's Room; opening the baron's journal suggested by Matthew",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Five: The Hunt Begins"
+  },
+  "layton_v2_0011": {
+    "evidence_id": "layton_v2_0011",
+    "source_id": "CV_CH5",
+    "scene_anchor": "Clock Tower; Luke disagrees with Layton's reading of the cat and mouse",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Five: The Hunt Begins"
+  },
+  "layton_v2_0012": {
+    "evidence_id": "layton_v2_0012",
+    "source_id": "CV_CH5",
+    "scene_anchor": "Northern Path; Gerard says he needs to lie down before describing tower noise",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Five: The Hunt Begins"
+  },
+  "layton_v2_0013": {
+    "evidence_id": "layton_v2_0013",
+    "source_id": "CV_CH5",
+    "scene_anchor": "Fork in the Road; Zappone cannot identify the baron's close friend",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Five: The Hunt Begins"
+  },
+  "layton_v2_0014": {
+    "evidence_id": "layton_v2_0014",
+    "source_id": "CV_CH6",
+    "scene_anchor": "Archibald's; the elderly resident asks for help with Puzzle 109",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-six-the-elusive-tower/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Six: The Elusive Tower"
+  },
+  "layton_v2_0015": {
+    "evidence_id": "layton_v2_0015",
+    "source_id": "CV_CH6",
+    "scene_anchor": "Tower Road; journal scrap about a tribute to Lady Violet",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-six-the-elusive-tower/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Six: The Elusive Tower"
+  },
+  "layton_v2_0016": {
+    "evidence_id": "layton_v2_0016",
+    "source_id": "CV_CH6",
+    "scene_anchor": "Dead End; Luke concludes the only road to the tower ends here",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-six-the-elusive-tower/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Six: The Elusive Tower"
+  },
+  "layton_v2_0017": {
+    "evidence_id": "layton_v2_0017",
+    "source_id": "CV_CH6",
+    "scene_anchor": "Dead End; unidentified girl departs and leaves a Ferris-wheel ticket",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-six-the-elusive-tower/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Six: The Elusive Tower"
+  },
+  "layton_v2_0018": {
+    "evidence_id": "layton_v2_0018",
+    "source_id": "CV_CH8",
+    "scene_anchor": "Inn; Beatrice cannot find even the latest newspaper",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior",
+      "pressure"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Eight: The Shadowy Intruder"
+  },
+  "layton_v2_0019": {
+    "evidence_id": "layton_v2_0019",
+    "source_id": "CV_CH8",
+    "scene_anchor": "Manor Foyer; Matthew seems uneasy before directing them upstairs",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Eight: The Shadowy Intruder"
+  },
+  "layton_v2_0020": {
+    "evidence_id": "layton_v2_0020",
+    "source_id": "CV_CH8",
+    "scene_anchor": "Manor Parlor; accusation, newspaper biography, and closed-drawbridge chronology",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style",
+      "pressure",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Eight: The Shadowy Intruder"
+  },
+  "layton_v2_0021": {
+    "evidence_id": "layton_v2_0021",
+    "source_id": "CV_CH8",
+    "scene_anchor": "Manor Parlor; wrong food choices in the inspector's biography question",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Humor is an editorial reading of the exchange, not a measured linguistic property.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Chapter Eight: The Shadowy Intruder"
+  },
+  "layton_v2_0022": {
+    "evidence_id": "layton_v2_0022",
+    "source_id": "CV_PUZZLE",
+    "scene_anchor": "Puzzle 005 Digital Digits; optional quit response",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "optional_quit_response",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/26/curious-village-puzzle-quits-returns/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Puzzle Quits & Returns"
+  },
+  "layton_v2_0023": {
+    "evidence_id": "layton_v2_0023",
+    "source_id": "CV_PUZZLE",
+    "scene_anchor": "Puzzle 094 Get the Ball Out! 4; optional quit response",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "temperament_and_emotion",
+      "counterexamples"
+    ],
+    "branch_type": "optional_quit_response",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/02/26/curious-village-puzzle-quits-returns/",
+    "game": "Professor Layton and the Curious Village",
+    "chapter": "Puzzle Quits & Returns"
+  },
+  "layton_v2_0024": {
+    "evidence_id": "layton_v2_0024",
+    "source_id": "DB_PRO",
+    "scene_anchor": "Train opening; Luke sprawls on the luxurious sofa",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Prologue: The Elysian Box"
+  },
+  "layton_v2_0025": {
+    "evidence_id": "layton_v2_0025",
+    "source_id": "DB_PRO",
+    "scene_anchor": "Layton's study; Schrader's letter and its two-day-old postmark",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Prologue: The Elysian Box"
+  },
+  "layton_v2_0026": {
+    "evidence_id": "layton_v2_0026",
+    "source_id": "DB_PRO",
+    "scene_anchor": "Schrader's Home; unsure which flat belongs to the doctor, Puzzle 002",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Prologue: The Elysian Box"
+  },
+  "layton_v2_0027": {
+    "evidence_id": "layton_v2_0027",
+    "source_id": "DB_PRO",
+    "scene_anchor": "The Doctor's Hall; no reply from behind the locked door",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "pressure"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Prologue: The Elysian Box"
+  },
+  "layton_v2_0028": {
+    "evidence_id": "layton_v2_0028",
+    "source_id": "DB_CH1",
+    "scene_anchor": "Layton's Room; Luke's scattered belongings, Puzzle 005",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter One: The Legendary Molentary Express"
+  },
+  "layton_v2_0029": {
+    "evidence_id": "layton_v2_0029",
+    "source_id": "DB_CH1",
+    "scene_anchor": "Layton's Room; ants in sugar, after Puzzle 017",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Humor is an editorial reading of the exchange, not a measured linguistic property.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter One: The Legendary Molentary Express"
+  },
+  "layton_v2_0030": {
+    "evidence_id": "layton_v2_0030",
+    "source_id": "DB_CH1",
+    "scene_anchor": "Dining Room; Babette takes the waiting passengers' table",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter One: The Legendary Molentary Express"
+  },
+  "layton_v2_0031": {
+    "evidence_id": "layton_v2_0031",
+    "source_id": "DB_CH1",
+    "scene_anchor": "Kitchen; Macaroon's oversized hamster and request for temporary care",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter One: The Legendary Molentary Express"
+  },
+  "layton_v2_0032": {
+    "evidence_id": "layton_v2_0032",
+    "source_id": "DB_CH1",
+    "scene_anchor": "Observation Deck; discarded litter, Puzzle 022",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter One: The Legendary Molentary Express"
+  },
+  "layton_v2_0033": {
+    "evidence_id": "layton_v2_0033",
+    "source_id": "DB_CH2",
+    "scene_anchor": "Station Platform; Sammy announces a three-hour repair stop",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-two-the-country-village-of-dropstone/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Two: The Country Village of Dropstone"
+  },
+  "layton_v2_0034": {
+    "evidence_id": "layton_v2_0034",
+    "source_id": "DB_CH2",
+    "scene_anchor": "Station Plaza; conversation with Beluga about two fiftieth anniversaries",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-two-the-country-village-of-dropstone/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Two: The Country Village of Dropstone"
+  },
+  "layton_v2_0035": {
+    "evidence_id": "layton_v2_0035",
+    "source_id": "DB_CH2",
+    "scene_anchor": "Hill to Town Hall; Luke and Flora run toward festival stalls",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-two-the-country-village-of-dropstone/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Two: The Country Village of Dropstone"
+  },
+  "layton_v2_0036": {
+    "evidence_id": "layton_v2_0036",
+    "source_id": "DB_CH2",
+    "scene_anchor": "Tree-Lined Path; Laurel's bird trapped in a hole, Puzzle 036",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-two-the-country-village-of-dropstone/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Two: The Country Village of Dropstone"
+  },
+  "layton_v2_0037": {
+    "evidence_id": "layton_v2_0037",
+    "source_id": "DB_CH6",
+    "scene_anchor": "Suspect gathering; Chelmey introduces his theory about Sammy",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Six: The Road to Herzen Castle"
+  },
+  "layton_v2_0038": {
+    "evidence_id": "layton_v2_0038",
+    "source_id": "DB_CH6",
+    "scene_anchor": "Suspect gathering; apparent Flora calls the photograph's emblem a goat",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Six: The Road to Herzen Castle"
+  },
+  "layton_v2_0039": {
+    "evidence_id": "layton_v2_0039",
+    "source_id": "DB_CH6",
+    "scene_anchor": "Suspect gathering; Chelmey is about to take Sammy away",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Six: The Road to Herzen Castle"
+  },
+  "layton_v2_0040": {
+    "evidence_id": "layton_v2_0040",
+    "source_id": "DB_CH6",
+    "scene_anchor": "Torn photograph demonstration; missing goat eyes create a frog-like image",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Six: The Road to Herzen Castle"
+  },
+  "layton_v2_0041": {
+    "evidence_id": "layton_v2_0041",
+    "source_id": "DB_CH7",
+    "scene_anchor": "Castle welcome; Luke suspects Anton is withholding something",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Seven: An Encounter at the End of the Line"
+  },
+  "layton_v2_0042": {
+    "evidence_id": "layton_v2_0042",
+    "source_id": "DB_CH7",
+    "scene_anchor": "Guest room; Anton's apparent age compared with Beluga in an old photograph",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Seven: An Encounter at the End of the Line"
+  },
+  "layton_v2_0043": {
+    "evidence_id": "layton_v2_0043",
+    "source_id": "DB_CH7",
+    "scene_anchor": "Captivity; Anton leaves, Layton struggles, Luke fears being eaten",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "temperament_and_emotion",
+      "pressure",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Seven: An Encounter at the End of the Line"
+  },
+  "layton_v2_0044": {
+    "evidence_id": "layton_v2_0044",
+    "source_id": "DB_CH7",
+    "scene_anchor": "Under the Castle; door will not move although Luke sees no lock",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Seven: An Encounter at the End of the Line"
+  },
+  "layton_v2_0045": {
+    "evidence_id": "layton_v2_0045",
+    "source_id": "DB_CH7",
+    "scene_anchor": "After the castle escape; Luke asks whether the box was cursed",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Chapter Seven: An Encounter at the End of the Line"
+  },
+  "layton_v2_0046": {
+    "evidence_id": "layton_v2_0046",
+    "source_id": "DB_PUZZLE",
+    "scene_anchor": "Puzzle 005 Luke's Trunk; optional quit exchange",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "counterexamples"
+    ],
+    "branch_type": "optional_quit_response",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2024/07/30/diabolical-box-puzzle-quits-returns/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Puzzle Quits & Returns"
+  },
+  "layton_v2_0047": {
+    "evidence_id": "layton_v2_0047",
+    "source_id": "DB_PUZZLE",
+    "scene_anchor": "Puzzle 014 Red Caps; optional quit exchange about searching for Tom",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "optional_quit_response",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2024/07/30/diabolical-box-puzzle-quits-returns/",
+    "game": "Professor Layton and the Diabolical Box",
+    "chapter": "Puzzle Quits & Returns"
+  },
+  "layton_v2_0048": {
+    "evidence_id": "layton_v2_0048",
+    "source_id": "UF_PRO",
+    "scene_anchor": "Opening discussion; future-dated letter and its means of arrival",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Prologue: The Clock Shop on Midland Road"
+  },
+  "layton_v2_0049": {
+    "evidence_id": "layton_v2_0049",
+    "source_id": "UF_PRO",
+    "scene_anchor": "Opening discussion; Layton comments on future Luke still needing help",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Humor is an editorial reading of the exchange, not a measured linguistic property.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Prologue: The Clock Shop on Midland Road"
+  },
+  "layton_v2_0050": {
+    "evidence_id": "layton_v2_0050",
+    "source_id": "UF_PRO",
+    "scene_anchor": "City Square; Luke feels out of place near the prime minister",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Prologue: The Clock Shop on Midland Road"
+  },
+  "layton_v2_0051": {
+    "evidence_id": "layton_v2_0051",
+    "source_id": "UF_PRO",
+    "scene_anchor": "City Square; discussion before the time-machine demonstration",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Prologue: The Clock Shop on Midland Road"
+  },
+  "layton_v2_0052": {
+    "evidence_id": "layton_v2_0052",
+    "source_id": "UF_CH1",
+    "scene_anchor": "Clock Shop exit; door shuts behind them and surroundings have changed",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter One: Is this the Future?"
+  },
+  "layton_v2_0053": {
+    "evidence_id": "layton_v2_0053",
+    "source_id": "UF_CH1",
+    "scene_anchor": "Anita's Place; questions about the cafe's history and opening hours",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter One: Is this the Future?"
+  },
+  "layton_v2_0054": {
+    "evidence_id": "layton_v2_0054",
+    "source_id": "UF_CH1",
+    "scene_anchor": "Midland Road; Luke suggests they left by another clock-shop exit",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter One: Is this the Future?"
+  },
+  "layton_v2_0055": {
+    "evidence_id": "layton_v2_0055",
+    "source_id": "UF_CH1",
+    "scene_anchor": "Midland Road; Hazel sweats and flees after Layton offers calming tea",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter One: Is this the Future?"
+  },
+  "layton_v2_0056": {
+    "evidence_id": "layton_v2_0056",
+    "source_id": "UF_CH4",
+    "scene_anchor": "Riverside Hill; Future Luke explains the lighthouse's recent construction",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-four-back-to-the-present/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Four: Back to the Present"
+  },
+  "layton_v2_0057": {
+    "evidence_id": "layton_v2_0057",
+    "source_id": "UF_CH4",
+    "scene_anchor": "Park Gate; Puzzle 040 fails to open the door, then the group pushes",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-four-back-to-the-present/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Four: Back to the Present"
+  },
+  "layton_v2_0058": {
+    "evidence_id": "layton_v2_0058",
+    "source_id": "UF_CH4",
+    "scene_anchor": "Anita's Place; warning that his hat invites trouble",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "temperament_and_emotion",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-four-back-to-the-present/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Four: Back to the Present"
+  },
+  "layton_v2_0059": {
+    "evidence_id": "layton_v2_0059",
+    "source_id": "UF_CH4",
+    "scene_anchor": "Abandoned Shop; unfamiliar bee beside the puzzle-attracting flower",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-four-back-to-the-present/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Four: Back to the Present"
+  },
+  "layton_v2_0060": {
+    "evidence_id": "layton_v2_0060",
+    "source_id": "UF_CH12",
+    "scene_anchor": "South Bank; asking Chelmey to accompany him to the Thames Arms",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Twelve: The Truth Revealed"
+  },
+  "layton_v2_0061": {
+    "evidence_id": "layton_v2_0061",
+    "source_id": "UF_CH12",
+    "scene_anchor": "South Bank; inspector's letter, Puzzle 117",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "reasoning_style",
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Twelve: The Truth Revealed"
+  },
+  "layton_v2_0062": {
+    "evidence_id": "layton_v2_0062",
+    "source_id": "UF_CH12",
+    "scene_anchor": "Warehouse Area; Marzano repeatedly interrupts attempts to correct his claims",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "temperament_and_emotion",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Twelve: The Truth Revealed"
+  },
+  "layton_v2_0063": {
+    "evidence_id": "layton_v2_0063",
+    "source_id": "UF_CH12",
+    "scene_anchor": "Casino Floor; Mark objects to Luke calling him hypocritical",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Twelve: The Truth Revealed"
+  },
+  "layton_v2_0064": {
+    "evidence_id": "layton_v2_0064",
+    "source_id": "UF_CH13",
+    "scene_anchor": "Riverside Area; Celeste warns that rescuing Flora could be fatal",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "pressure",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Thirteen: The Stronghold of Madness"
+  },
+  "layton_v2_0065": {
+    "evidence_id": "layton_v2_0065",
+    "source_id": "UF_CH13",
+    "scene_anchor": "Riverside Area; Don Paolo offers his modified car",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "pressure"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Thirteen: The Stronghold of Madness"
+  },
+  "layton_v2_0066": {
+    "evidence_id": "layton_v2_0066",
+    "source_id": "UF_CH13",
+    "scene_anchor": "Riverside Hill; Don Paolo cannot identify the final screw, Puzzle 118",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "reasoning_style",
+      "social_behavior",
+      "pressure"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Thirteen: The Stronghold of Madness"
+  },
+  "layton_v2_0067": {
+    "evidence_id": "layton_v2_0067",
+    "source_id": "UF_CH13",
+    "scene_anchor": "Elevator Door; Lockjaw challenges the rescuers at the transport pod",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "pressure",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Chapter Thirteen: The Stronghold of Madness"
+  },
+  "layton_v2_0068": {
+    "evidence_id": "layton_v2_0068",
+    "source_id": "UF_EPI",
+    "scene_anchor": "Fortress escape; Celeste turns back and the passengers still need safety",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "pressure",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Epilogue"
+  },
+  "layton_v2_0069": {
+    "evidence_id": "layton_v2_0069",
+    "source_id": "UF_EPI",
+    "scene_anchor": "After evacuation; authorities demand Clive's immediate arrest",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Epilogue"
+  },
+  "layton_v2_0070": {
+    "evidence_id": "layton_v2_0070",
+    "source_id": "UF_EPI",
+    "scene_anchor": "Claire's final farewell; she must return to the time of the explosion",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "speaking_style",
+      "temperament_and_emotion",
+      "counterexamples"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Epilogue"
+  },
+  "layton_v2_0071": {
+    "evidence_id": "layton_v2_0071",
+    "source_id": "UF_EPI",
+    "scene_anchor": "Luke's departure; Luke protests that he is not yet a gentleman",
+    "speaker_attribution_basis": "LAYTON-labelled speech in the named scene; other speakers supply context only.",
+    "evidence_type": "original_analytical_paraphrase",
+    "verification_status": "transcript_scene_inspected_primary_game_unverified",
+    "primary_game_verification": "not_completed",
+    "inspected_on": "2026-11-03",
+    "behavioral_dimensions": [
+      "social_behavior",
+      "temperament_and_emotion"
+    ],
+    "branch_type": "chapter_scene_or_optional_interaction",
+    "interpretation_limits": "Scene-specific behavior, not a universal trait or independently authenticated game dialogue.",
+    "source_url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+    "game": "Professor Layton and the Unwound Future",
+    "chapter": "Epilogue"
+  }
+}

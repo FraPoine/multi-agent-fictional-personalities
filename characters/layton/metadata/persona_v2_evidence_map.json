@@ -1,0 +1,435 @@
+{
+  "persona_path": "layton_persona_curated_v2.json",
+  "method": "manual_evidence_grounded_curation",
+  "llm_extraction_performed": false,
+  "scientific_validation": false,
+  "identity": {
+    "character_id": "professor_layton",
+    "display_name": "Professor Layton",
+    "official_source_ids": [
+      "OFF_NINTENDO_GUIDE",
+      "OFF_LEVEL5_CV"
+    ]
+  },
+  "elements": [
+    {
+      "field": "description",
+      "index": null,
+      "value_sha256": "12d577a1afd994bd8051117a5e93fe2b66347fdd8fdfa52aa921343c28978ee2",
+      "supporting_evidence_ids": [
+        "layton_v2_0001",
+        "layton_v2_0002",
+        "layton_v2_0003",
+        "layton_v2_0020",
+        "layton_v2_0029",
+        "layton_v2_0062",
+        "layton_v2_0069",
+        "layton_v2_0070"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Publisher corroborates profession and broad role; the transcript supports self-presentation, not a ban on investigating. Frustration/exasperation is a limited interpretation of the interrupted reply in 0062, not a direct report of an internal state or a habitual temperament.",
+      "official_source_ids": [
+        "OFF_NINTENDO_GUIDE"
+      ]
+    },
+    {
+      "field": "speaking_style",
+      "index": 0,
+      "value_sha256": "1fcd1886a1134a37bb3e20fd8f45187ac191a3957aab3100bbf262fb734ecd9e",
+      "supporting_evidence_ids": [
+        "layton_v2_0004",
+        "layton_v2_0009",
+        "layton_v2_0020",
+        "layton_v2_0055",
+        "layton_v2_0061"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "speaking_style",
+      "index": 1,
+      "value_sha256": "d3bd87ac408ed822bdf11b57d501ce1d8fc800d10999cfe8f23dc53dbf100e66",
+      "supporting_evidence_ids": [
+        "layton_v2_0003",
+        "layton_v2_0022",
+        "layton_v2_0028"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Anti-caricature editorial generalization from both puzzle engagement and deferral; no canonical frequency rule is claimed."
+    },
+    {
+      "field": "speaking_style",
+      "index": 2,
+      "value_sha256": "acd29957f55ca849fac66b2a7ad065a0b37699936e9d9a8647e94acfb0e38d52",
+      "supporting_evidence_ids": [
+        "layton_v2_0020",
+        "layton_v2_0039",
+        "layton_v2_0054"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "speaking_style",
+      "index": 3,
+      "value_sha256": "25000a128076ded6f2f4d91576ab4cca7b3e8aded1a6c11e793b3b4439127dfd",
+      "supporting_evidence_ids": [
+        "layton_v2_0021",
+        "layton_v2_0029",
+        "layton_v2_0049"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "speaking_style",
+      "index": 4,
+      "value_sha256": "d7f665245d7e2718ecddf192ec3752486e769580dad9519560a53f7dedc5a6c9",
+      "supporting_evidence_ids": [
+        "layton_v2_0027",
+        "layton_v2_0043",
+        "layton_v2_0067",
+        "layton_v2_0070"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 0,
+      "value_sha256": "447245207cb6a3cda53c804df98297d95fd6adf5901871a3dadc57b9aefac46c",
+      "supporting_evidence_ids": [
+        "layton_v2_0013",
+        "layton_v2_0015",
+        "layton_v2_0017",
+        "layton_v2_0048"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 1,
+      "value_sha256": "4335b390bb72b6cf2ae65a8205bc4d208b2be9c008360979b95c479a28b77410",
+      "supporting_evidence_ids": [
+        "layton_v2_0020",
+        "layton_v2_0040",
+        "layton_v2_0054"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 2,
+      "value_sha256": "04f91c41cc0760fc4f6885b2d211b606c23b60f3762dd87bcddad512c4196a75",
+      "supporting_evidence_ids": [
+        "layton_v2_0057"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 3,
+      "value_sha256": "24cfdd89ed67565363469d363dad3531a484a27416667a29d85828b887dcd278",
+      "supporting_evidence_ids": [
+        "layton_v2_0005",
+        "layton_v2_0026",
+        "layton_v2_0052"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 4,
+      "value_sha256": "4156d6c2fd997cf787bf6f13e61b5d48b2c3c30efcd1c604026157a0cab9c8ff",
+      "supporting_evidence_ids": [
+        "layton_v2_0011",
+        "layton_v2_0038",
+        "layton_v2_0044",
+        "layton_v2_0059"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "reasoning_style",
+      "index": 5,
+      "value_sha256": "8dc9a70f53f69c53211eceaf36b0ccc10b7695a6b9f9264c1d9eb336192b6e74",
+      "supporting_evidence_ids": [
+        "layton_v2_0007",
+        "layton_v2_0028",
+        "layton_v2_0047"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 0,
+      "value_sha256": "690f5e939e86b703f9360a82461e1c9fd49701d3fcd17fa7395adc8f68ca4747",
+      "supporting_evidence_ids": [
+        "layton_v2_0001",
+        "layton_v2_0016",
+        "layton_v2_0033"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 1,
+      "value_sha256": "56f372d8c469f41820b27e9001473ffad3ee0472fcf4b9696505f668dbc3b7ef",
+      "supporting_evidence_ids": [
+        "layton_v2_0004",
+        "layton_v2_0020",
+        "layton_v2_0039"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 2,
+      "value_sha256": "274ec453a11f218d75d8f476f3c3518e60935d8fa9bcd48f45a18745f1a2886f",
+      "supporting_evidence_ids": [
+        "layton_v2_0003",
+        "layton_v2_0022",
+        "layton_v2_0028"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 3,
+      "value_sha256": "9bbb67478c2b248791bbac2e1dffbf72ad887abf43ead8fd009377cad035bab7",
+      "supporting_evidence_ids": [
+        "layton_v2_0005",
+        "layton_v2_0013",
+        "layton_v2_0026",
+        "layton_v2_0057"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 4,
+      "value_sha256": "2e24fa23b69623aebc77494a3fd7e8cf669f066b14a822317ad3e27b968ee74f",
+      "supporting_evidence_ids": [
+        "layton_v2_0027",
+        "layton_v2_0064",
+        "layton_v2_0068"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "personality_traits",
+      "index": 5,
+      "value_sha256": "26d1aaee9d73022d2e1f20612c959ed957462daf8d36658b7582a492ed2d38a8",
+      "supporting_evidence_ids": [
+        "layton_v2_0029",
+        "layton_v2_0035",
+        "layton_v2_0043",
+        "layton_v2_0062",
+        "layton_v2_0070",
+        "layton_v2_0071"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured. Frustration/exasperation is a limited interpretation of the interrupted reply in 0062, not a direct report of an internal state or a habitual temperament."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 0,
+      "value_sha256": "dcd8b5d6f46189fdfc7810471c8662d93dbf42bec82b63066580b532e5a11668",
+      "supporting_evidence_ids": [
+        "layton_v2_0002"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Publisher corroborates profession and broad role; the transcript supports self-presentation, not a ban on investigating.",
+      "official_source_ids": [
+        "OFF_NINTENDO_GUIDE"
+      ]
+    },
+    {
+      "field": "behavior_rules",
+      "index": 1,
+      "value_sha256": "a606675611e6e8cc8f0ed83b6042cb1de153065d02ceebd4f60e0822d859aa9d",
+      "supporting_evidence_ids": [
+        "layton_v2_0013",
+        "layton_v2_0015",
+        "layton_v2_0016",
+        "layton_v2_0053"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 2,
+      "value_sha256": "9d86217bdb78673fa927fd3e89a50ec93efd89db8b7bb10a1c3347170526ec24",
+      "supporting_evidence_ids": [
+        "layton_v2_0003",
+        "layton_v2_0011",
+        "layton_v2_0022",
+        "layton_v2_0059"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 3,
+      "value_sha256": "259fc3f5a1f728f29e3244ba7f384c3713f1f0f41acf040b924daf4654d745cd",
+      "supporting_evidence_ids": [
+        "layton_v2_0020",
+        "layton_v2_0039",
+        "layton_v2_0054",
+        "layton_v2_0062"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 4,
+      "value_sha256": "9be483b20ab1f2d4d275b70bf36c0e4802598dea52aa7eb106a906d8788c6522",
+      "supporting_evidence_ids": [
+        "layton_v2_0005"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 5,
+      "value_sha256": "bd9f44e09e01a00d99634eb4199a1e264f50c743adb6152cd63450d52128ef2e",
+      "supporting_evidence_ids": [
+        "layton_v2_0012",
+        "layton_v2_0027",
+        "layton_v2_0036",
+        "layton_v2_0043",
+        "layton_v2_0064",
+        "layton_v2_0068"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 6,
+      "value_sha256": "626936ed26d91199e6a6a9ff3312f6a35d156b674391c6d526e3e8efe048305b",
+      "supporting_evidence_ids": [
+        "layton_v2_0038",
+        "layton_v2_0065"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Selected scenes support this tendency; frequency and cross-situation generality are not measured."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 7,
+      "value_sha256": "0321112ee109b2a8a39114fcd77ea57d8028659d9e77071af8fc501663111715",
+      "supporting_evidence_ids": [
+        "layton_v2_0021",
+        "layton_v2_0029",
+        "layton_v2_0043",
+        "layton_v2_0049",
+        "layton_v2_0062",
+        "layton_v2_0070",
+        "layton_v2_0071"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Editorial balance across contrasting scenes, not a requirement to display an emotion in each response. Frustration/exasperation is a limited interpretation of the interrupted reply in 0062, not a direct report of an internal state or a habitual temperament."
+    },
+    {
+      "field": "behavior_rules",
+      "index": 8,
+      "value_sha256": "b3d73ecb31b3bb88753776ec4d3120f68cd676094a9cc21413b87b3ede542451",
+      "supporting_evidence_ids": [
+        "layton_v2_0007",
+        "layton_v2_0047",
+        "layton_v2_0057"
+      ],
+      "support_type": "editorial_synthesis_of_observed_behavior",
+      "interpretation_note": "Anti-caricature editorial generalization from both puzzle engagement and deferral; no canonical frequency rule is claimed."
+    },
+    {
+      "field": "example_messages",
+      "index": 0,
+      "value_sha256": "5055f3ebb44addbfcb57fffc65b222dcbf355664e2563a5a11a05e5e54f2e226",
+      "supporting_evidence_ids": [
+        "layton_v2_0054"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    },
+    {
+      "field": "example_messages",
+      "index": 1,
+      "value_sha256": "3f2a4faa02db07eaf9252255e38fb3614945aac9e67c8820aa5381d5e86dd1d2",
+      "supporting_evidence_ids": [
+        "layton_v2_0003",
+        "layton_v2_0022"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    },
+    {
+      "field": "example_messages",
+      "index": 2,
+      "value_sha256": "635cdebbb10ab3b560b7569815b6296cd8dac7df8158dfc8cdd5e128da818917",
+      "supporting_evidence_ids": [
+        "layton_v2_0005"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    },
+    {
+      "field": "example_messages",
+      "index": 3,
+      "value_sha256": "5a1d0e50a8bb3c17a2575b1db674011473fbea2beb717f47184738458f35a50e",
+      "supporting_evidence_ids": [
+        "layton_v2_0029",
+        "layton_v2_0057"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    },
+    {
+      "field": "example_messages",
+      "index": 4,
+      "value_sha256": "771f3c081ffdd894379f3c152b6d0f4fdec19a3ff2315d017197921ec2928401",
+      "supporting_evidence_ids": [
+        "layton_v2_0027",
+        "layton_v2_0064",
+        "layton_v2_0068"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    },
+    {
+      "field": "example_messages",
+      "index": 5,
+      "value_sha256": "1cbad7ce35acb78015f6b2cb4733f67b4a889eb40897db743955480a7a601714",
+      "supporting_evidence_ids": [
+        "layton_v2_0058",
+        "layton_v2_0070"
+      ],
+      "support_type": "newly_written_illustrative",
+      "interpretation_note": "New hypothetical message. Evidence supports the associated behavior/style, not these words or an actual event in this invented situation.",
+      "canonical_quote": false
+    }
+  ],
+  "caveat": "All examples are original illustrations. Evidence links concern behavior, not lexical imitation. Normative runtime rules are interpretive translations, not game instructions."
+}

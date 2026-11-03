@@ -1,0 +1,494 @@
+{
+  "version": 2,
+  "language": "en-US",
+  "inspected_repository_commit": "9b13cddc6349d823caf8430e9b2f5a46caf36489",
+  "inspected_on": "2026-11-03",
+  "source_entries": [
+    {
+      "source_id": "CV_PRO",
+      "title": "Curious Village — Prologue",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-prologue/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Prologue",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Opening drive; Luke questions the inheritance request, before the map",
+        "Opening drive; Luke calls him a puzzle-solving detective",
+        "Envelope map, Puzzle 001; Luke solves it and asks whether Layton already knew",
+        "Drawbridge; Franco refuses entry and Layton mentions Dahlia's invitation"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "CV_CH3",
+      "title": "Curious Village — Chapter Three: The Missing Servant",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-three-the-missing-servant/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Chapter Three: The Missing Servant",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Dahlia's Room to Manor Parlor; photograph of a woman holding a baby",
+        "Garden glasses taken to the inspector; Luke protests the inspector's treatment",
+        "Manor Border; Agnes offers Puzzle 030 during the missing-person search",
+        "Granny Riddleton's introduction; Luke asks what she means by clairvoyance"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "CV_CH5",
+      "title": "Curious Village — Chapter Five: The Hunt Begins",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-five-the-hunt-begins/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Chapter Five: The Hunt Begins",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Manor Road; Ingrid misremembers Layton's name before discussing the baron",
+        "Dahlia's Room; opening the baron's journal suggested by Matthew",
+        "Clock Tower; Luke disagrees with Layton's reading of the cat and mouse",
+        "Northern Path; Gerard says he needs to lie down before describing tower noise",
+        "Fork in the Road; Zappone cannot identify the baron's close friend"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "CV_CH6",
+      "title": "Curious Village — Chapter Six: The Elusive Tower",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-six-the-elusive-tower/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Chapter Six: The Elusive Tower",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Archibald's; the elderly resident asks for help with Puzzle 109",
+        "Tower Road; journal scrap about a tribute to Lady Violet",
+        "Dead End; Luke concludes the only road to the tower ends here",
+        "Dead End; unidentified girl departs and leaves a Ferris-wheel ticket"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "CV_CH8",
+      "title": "Curious Village — Chapter Eight: The Shadowy Intruder",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/25/curious-village-chapter-eight-the-shadowy-intruder/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Chapter Eight: The Shadowy Intruder",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Inn; Beatrice cannot find even the latest newspaper",
+        "Manor Foyer; Matthew seems uneasy before directing them upstairs",
+        "Manor Parlor; accusation, newspaper biography, and closed-drawbridge chronology",
+        "Manor Parlor; wrong food choices in the inspector's biography question"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "CV_PUZZLE",
+      "title": "Curious Village — Puzzle Quits & Returns",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/02/26/curious-village-puzzle-quits-returns/",
+      "game": "Professor Layton and the Curious Village",
+      "chapter": "Puzzle Quits & Returns",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Puzzle 005 Digital Digits; optional quit response",
+        "Puzzle 094 Get the Ball Out! 4; optional quit response"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_PRO",
+      "title": "Diabolical Box — Prologue: The Elysian Box",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-prologue-the-elysian-box/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Prologue: The Elysian Box",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Train opening; Luke sprawls on the luxurious sofa",
+        "Layton's study; Schrader's letter and its two-day-old postmark",
+        "Schrader's Home; unsure which flat belongs to the doctor, Puzzle 002",
+        "The Doctor's Hall; no reply from behind the locked door"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_CH1",
+      "title": "Diabolical Box — Chapter One: The Legendary Molentary Express",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/11/diabolical-box-chapter-one-the-legendary-molentary-express/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Chapter One: The Legendary Molentary Express",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Layton's Room; Luke's scattered belongings, Puzzle 005",
+        "Layton's Room; ants in sugar, after Puzzle 017",
+        "Dining Room; Babette takes the waiting passengers' table",
+        "Kitchen; Macaroon's oversized hamster and request for temporary care",
+        "Observation Deck; discarded litter, Puzzle 022"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_CH2",
+      "title": "Diabolical Box — Chapter Two: The Country Village of Dropstone",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-two-the-country-village-of-dropstone/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Chapter Two: The Country Village of Dropstone",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Station Platform; Sammy announces a three-hour repair stop",
+        "Station Plaza; conversation with Beluga about two fiftieth anniversaries",
+        "Hill to Town Hall; Luke and Flora run toward festival stalls",
+        "Tree-Lined Path; Laurel's bird trapped in a hole, Puzzle 036"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_CH6",
+      "title": "Diabolical Box — Chapter Six: The Road to Herzen Castle",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-six-the-road-to-herzen-castle/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Chapter Six: The Road to Herzen Castle",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Suspect gathering; Chelmey introduces his theory about Sammy",
+        "Suspect gathering; apparent Flora calls the photograph's emblem a goat",
+        "Suspect gathering; Chelmey is about to take Sammy away",
+        "Torn photograph demonstration; missing goat eyes create a frog-like image"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_CH7",
+      "title": "Diabolical Box — Chapter Seven: An Encounter at the End of the Line",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/05/10/diabolical-box-chapter-seven-an-encounter-at-the-end-of-the-line/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Chapter Seven: An Encounter at the End of the Line",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Castle welcome; Luke suspects Anton is withholding something",
+        "Guest room; Anton's apparent age compared with Beluga in an old photograph",
+        "Captivity; Anton leaves, Layton struggles, Luke fears being eaten",
+        "Under the Castle; door will not move although Luke sees no lock",
+        "After the castle escape; Luke asks whether the box was cursed"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "DB_PUZZLE",
+      "title": "Diabolical Box — Puzzle Quits & Returns",
+      "url": "https://professorlaytontranscripts.wordpress.com/2024/07/30/diabolical-box-puzzle-quits-returns/",
+      "game": "Professor Layton and the Diabolical Box",
+      "chapter": "Puzzle Quits & Returns",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Puzzle 005 Luke's Trunk; optional quit exchange",
+        "Puzzle 014 Red Caps; optional quit exchange about searching for Tom"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_PRO",
+      "title": "Unwound Future — Prologue: The Clock Shop on Midland Road",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-prologue-the-clock-shop-on-midland-road/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Prologue: The Clock Shop on Midland Road",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Opening discussion; future-dated letter and its means of arrival",
+        "Opening discussion; Layton comments on future Luke still needing help",
+        "City Square; Luke feels out of place near the prime minister",
+        "City Square; discussion before the time-machine demonstration"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_CH1",
+      "title": "Unwound Future — Chapter One: Is this the Future?",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-one-is-this-the-future/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Chapter One: Is this the Future?",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Clock Shop exit; door shuts behind them and surroundings have changed",
+        "Anita's Place; questions about the cafe's history and opening hours",
+        "Midland Road; Luke suggests they left by another clock-shop exit",
+        "Midland Road; Hazel sweats and flees after Layton offers calming tea"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_CH4",
+      "title": "Unwound Future — Chapter Four: Back to the Present",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-four-back-to-the-present/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Chapter Four: Back to the Present",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Riverside Hill; Future Luke explains the lighthouse's recent construction",
+        "Park Gate; Puzzle 040 fails to open the door, then the group pushes",
+        "Anita's Place; warning that his hat invites trouble",
+        "Abandoned Shop; unfamiliar bee beside the puzzle-attracting flower"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_CH12",
+      "title": "Unwound Future — Chapter Twelve: The Truth Revealed",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-twelve-the-truth-revealed/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Chapter Twelve: The Truth Revealed",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "South Bank; asking Chelmey to accompany him to the Thames Arms",
+        "South Bank; inspector's letter, Puzzle 117",
+        "Warehouse Area; Marzano repeatedly interrupts attempts to correct his claims",
+        "Casino Floor; Mark objects to Luke calling him hypocritical"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_CH13",
+      "title": "Unwound Future — Chapter Thirteen: The Stronghold of Madness",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-chapter-thirteen-the-stronghold-of-madness/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Chapter Thirteen: The Stronghold of Madness",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Riverside Area; Celeste warns that rescuing Flora could be fatal",
+        "Riverside Area; Don Paolo offers his modified car",
+        "Riverside Hill; Don Paolo cannot identify the final screw, Puzzle 118",
+        "Elevator Door; Lockjaw challenges the rescuers at the transport pod"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    },
+    {
+      "source_id": "UF_EPI",
+      "title": "Unwound Future — Epilogue",
+      "url": "https://professorlaytontranscripts.wordpress.com/2023/03/18/unwound-future-epilogue-the-unwound-future/",
+      "game": "Professor Layton and the Unwound Future",
+      "chapter": "Epilogue",
+      "source_type": "unofficial_game_transcript",
+      "localization": "US English (site index attribution)",
+      "inspected_on": "2026-11-03",
+      "accessibility": "public_rendered_text_accessible",
+      "inspection_scope": "Selected speaker-labelled scenes listed below, not a primary-game audit or full-script reproduction.",
+      "inspected_scene_anchors": [
+        "Fortress escape; Celeste turns back and the passengers still need safety",
+        "After evacuation; authorities demand Clive's immediate arrest",
+        "Claire's final farewell; she must return to the time of the explosion",
+        "Luke's departure; Luke protests that he is not yet a gentleman"
+      ],
+      "firsthand_game_text_verified": false,
+      "edition_limit": "Original-trilogy material as labelled by the index; marked HD/mobile additions excluded. Edition not independently authenticated.",
+      "reuse_status": "No explicit redistribution license found in inspected navigation, About, or post content; no permission inferred.",
+      "corpus_use": "Original short analytical observations only; no canonical quotations or script copies."
+    }
+  ],
+  "supporting_sources": [
+    {
+      "source_id": "OFF_NINTENDO_GUIDE",
+      "url": "https://www.nintendo.com/en-gb/News/2011/The-Beginners-Guide-to-the-Professor-Layton-Games-253601.html",
+      "source_type": "official_publisher_summary",
+      "inspected_on": "2026-11-03",
+      "accessibility": "accessible",
+      "corpus_use": "Identity and general role corroboration only; not dialogue evidence.",
+      "localization": "UK English publisher copy, not mixed into US dialogue evidence",
+      "reuse_notes": "Copyright notice present; no redistribution permission inferred."
+    },
+    {
+      "source_id": "OFF_LEVEL5_CV",
+      "url": "https://www.laytonseries.com/curiousvillage/uk/",
+      "source_type": "official_publisher_summary",
+      "inspected_on": "2026-11-03",
+      "accessibility": "accessible",
+      "corpus_use": "Identity and general role corroboration only; not dialogue evidence.",
+      "localization": "UK English publisher copy, not mixed into US dialogue evidence",
+      "reuse_notes": "Page forbids asset republishing and its terms restrict copying; only a reference is recorded."
+    },
+    {
+      "source_id": "OFF_NINTENDO_CV",
+      "url": "https://www.nintendo.com/en-gb/Games/Nintendo-DS/Professor-Layton-and-the-Curious-Village-272563.html",
+      "source_type": "official_publisher_summary",
+      "inspected_on": "2026-11-03",
+      "accessibility": "accessible",
+      "corpus_use": "Identity and general role corroboration only; not dialogue evidence.",
+      "localization": "UK English publisher copy, not mixed into US dialogue evidence",
+      "reuse_notes": "Copyright notice present; no redistribution permission inferred."
+    }
+  ],
+  "inspection_context_sources": [
+    {
+      "url": "https://professorlaytontranscripts.wordpress.com/",
+      "purpose": "US versus UK navigation and chapter URLs",
+      "inspected_on": "2026-11-03"
+    },
+    {
+      "url": "https://professorlaytontranscripts.wordpress.com/about/",
+      "purpose": "Speaker labels, scene breaks and interaction markers; no reuse license found",
+      "inspected_on": "2026-11-03"
+    }
+  ],
+  "methodology_sources": [
+    {
+      "title": "RoleLLM: Benchmarking, Eliciting, and Enhancing Role-Playing Abilities of Large Language Models",
+      "url": "https://aclanthology.org/2024.findings-acl.878/",
+      "scope": "Abstract and speaking-style/profile discussion; methodological context, not character evidence"
+    },
+    {
+      "title": "CoSER: Coordinating LLM-Based Persona Simulation of Established Roles",
+      "url": "https://arxiv.org/abs/2502.09082",
+      "scope": "Abstract: authentic dialogue, experiences and given circumstances; methodological context, not character evidence"
+    }
+  ],
+  "excluded_source_ids": [
+    "OFF_LEVEL5_FUTURE"
+  ],
+  "exclusions": "Later continuity is outside scope. Historical thirteen excluded quote texts remain absent; no new verbatim game dialogue included.",
+  "trait_vocabulary": [
+    "curiosity",
+    "decisiveness",
+    "emotional_expression",
+    "emotional_restraint",
+    "empathy",
+    "humility",
+    "humor",
+    "interaction_with_luke",
+    "moral_courage",
+    "observation",
+    "pedagogy",
+    "politeness",
+    "reasoning_style",
+    "social_behavior",
+    "speaking_style",
+    "uncertainty"
+  ],
+  "dimension_vocabulary": [
+    "speaking_style",
+    "reasoning_style",
+    "social_behavior",
+    "temperament_and_emotion",
+    "pressure",
+    "counterexamples"
+  ],
+  "confidence_rubric": {
+    "0.90": "Clear LAYTON attribution and explicit behavior in inspected context, conditional on the unofficial transcript.",
+    "0.88": "Clear attribution; modest tone/humor interpretation needs editorial judgment."
+  },
+  "confidence_limit": "Editorial attribution judgments, not calibrated probabilities, authenticity measures, or persona-quality scores. No values chosen to satisfy the loader threshold."
+}

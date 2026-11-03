@@ -2,10 +2,11 @@ character:
   id: professor_layton
   name: Professor Layton
   stage: conversation_candidate
-  corpus_status: editorial_summaries_only
+  corpus_status: versioned_editorial_paraphrases_only
   notes: >-
-    Sprint 8.3 registers a manually curated Persona candidate for conversations.
-    The corpus contains 35 editorial evidence summaries, not spoken dialogue.
-    All 13 unofficial transcript excerpts are excluded; source references remain
-    in metadata. Persona examples and the deterministic mock reply are original
-    illustrative text. No investigation integration or scientific validation.
+    Live Copilot conversations use the manually curated evidence-grounded V2
+    Persona. Mock conversations and the catalog corpus path retain the historical
+    candidate and 35-row corpus. The separate V2 corpus contains 71 original
+    analytical paraphrases from inspected US-indexed unofficial trilogy transcripts.
+    No canonical quotations, primary-game authentication, comparable LLM extraction,
+    investigation integration, or scientific fidelity validation is claimed.

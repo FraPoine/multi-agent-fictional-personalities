@@ -133,7 +133,8 @@ def test_mock_round_robin_and_all_persisted_artifacts(tmp_path: Path, slugs) -> 
             assert message.text == (ROOT / "tests/fixtures/layton_agent_response.txt").read_text()
 
 
-def test_copilot_route_receives_curated_persona_without_network(tmp_path: Path) -> None:
+@pytest.mark.parametrize("variant", ["baseline_v1", "dialogue_v2"])
+def test_copilot_route_receives_curated_persona_without_network(tmp_path: Path, variant: str) -> None:
     prompts = []
 
     class OfflineProvider:
@@ -148,10 +149,11 @@ def test_copilot_route_receives_curated_persona_without_network(tmp_path: Path) 
     result = run_conversation(
         character_slugs=["sherlock", "poirot", "layton"],
         topic="Discuss the limits of an uncertain explanation.", turn_count=3,
-        provider="copilot", output_root=tmp_path, project_root=ROOT,
+        provider="copilot", prompt_variant=variant, output_root=tmp_path, project_root=ROOT,
         _copilot_provider_factory=lambda model: OfflineProvider(),
     )
-    persona = Persona.model_validate_json(PERSONA.read_text())
+    persona = Persona.model_validate_json((LAYTON / "layton_persona_curated_v2.json").read_text())
+    assert len(prompts) == 3
     layton_prompt = prompts[2].split("## Conversation topic")[0]
     assert persona.description in layton_prompt
     for field in ("speaking_style", "reasoning_style", "personality_traits", "behavior_rules", "example_messages"):

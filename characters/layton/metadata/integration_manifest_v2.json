@@ -1,0 +1,138 @@
+{
+  "version": 2,
+  "inspected_commit": "9b13cddc6349d823caf8430e9b2f5a46caf36489",
+  "language": "en-US",
+  "inspected_on": "2026-11-03",
+  "persona_origin": "Manually curated from inspected scene-level analytical paraphrases; not LLM extraction.",
+  "corpus_origin": "New analytical notes; historical summaries were re-examined, not silently relabelled as dialogue.",
+  "original_record_count": 35,
+  "record_count": 71,
+  "counts_by_game": {
+    "Professor Layton and the Curious Village": 23,
+    "Professor Layton and the Diabolical Box": 24,
+    "Professor Layton and the Unwound Future": 24
+  },
+  "counts_by_source": {
+    "CV_PRO": 4,
+    "CV_CH3": 4,
+    "CV_CH5": 5,
+    "CV_CH6": 4,
+    "CV_CH8": 4,
+    "CV_PUZZLE": 2,
+    "DB_PRO": 4,
+    "DB_CH1": 5,
+    "DB_CH2": 4,
+    "DB_CH6": 4,
+    "DB_CH7": 5,
+    "DB_PUZZLE": 2,
+    "UF_PRO": 4,
+    "UF_CH1": 4,
+    "UF_CH4": 4,
+    "UF_CH12": 4,
+    "UF_CH13": 4,
+    "UF_EPI": 4
+  },
+  "counts_by_dimension": {
+    "speaking_style": 22,
+    "temperament_and_emotion": 23,
+    "social_behavior": 39,
+    "counterexamples": 21,
+    "reasoning_style": 30,
+    "pressure": 9
+  },
+  "optional_quit_record_count": 4,
+  "excluded_historical_quote_ids": [
+    "layton_0036",
+    "layton_0037",
+    "layton_0038",
+    "layton_0039",
+    "layton_0040",
+    "layton_0041",
+    "layton_0042",
+    "layton_0043",
+    "layton_0044",
+    "layton_0045",
+    "layton_0046",
+    "layton_0047",
+    "layton_0048"
+  ],
+  "historical_files_sha256": {
+    "corpus/persona_corpus.jsonl": "2d61768137cb2299df9107452bf8a8a0fc0ed36456d679c452e2f6ba27e0efdd",
+    "layton_persona_curated_candidate.json": "7cfd288d061b4d601e89af561f6735f8533dbbd4cc456650df5233086a8ee98b",
+    "metadata/entry_provenance.json": "de472d702b1108500f73a1d8cb76aca636ff4f0721eac0d5994b678ad21548d3",
+    "metadata/example_message_provenance.json": "06ee743ef996f3e5db83eb0dcd2d2cb6cde658b6e58f338daf428bf6aa317978",
+    "metadata/integration_manifest.json": "eda1db4ae32d2ed25083bdb767291f6e70fa8a8910d827f810484eed6a5ce804",
+    "metadata/methodology_and_qa.md": "225f082b8bffdcd6b82209606d63c87ee4648bd7d09152bf0d42c7068cfb4cf4",
+    "metadata/research_SHA256SUMS": "89eedded0bdd197ccdabd7369e8bdb1ae8cf12e1d8ba4d5cd9bb726e5b352ca0",
+    "metadata/source_inventory.json": "040ea3adbe14e58c5f1cb5c0b8677f3be866571ccb5cc17a0c923bb790f71945"
+  },
+  "preserved_character_configurations": [
+    {
+      "slug": "sherlock",
+      "character_id": "sherlock_holmes",
+      "display_name": "Sherlock Holmes",
+      "description": "A fictional consulting detective known for acute observation, deductive reasoning, scientific habits, confidence, emotional reserve, and concise explanations of seemingly hidden facts.",
+      "corpus_path": "../characters/sherlock/corpus/persona_corpus.jsonl",
+      "persona_fixture_path": "../tests/fixtures/sherlock_persona_response.json",
+      "live_persona_path": "../outputs/sherlock/sherlock_persona_generated.json",
+      "mock_response_fixture_path": "../tests/fixtures/sherlock_agent_response.txt"
+    },
+    {
+      "slug": "poirot",
+      "character_id": "hercule_poirot",
+      "display_name": "Hercule Poirot",
+      "description": "A fictional Belgian private detective known for psychological insight, method and order, attention to detail, politeness, confidence, vanity, and frequent French expressions.",
+      "corpus_path": "../characters/poirot/corpus/persona_corpus.jsonl",
+      "persona_fixture_path": "../tests/fixtures/poirot_persona_response.json",
+      "live_persona_path": "../outputs/poirot/poirot_persona_generated.json",
+      "mock_response_fixture_path": "../tests/fixtures/poirot_agent_response.txt"
+    },
+    {
+      "slug": "kogoro",
+      "character_id": "kogoro_mouri",
+      "display_name": "Kogoro Mori",
+      "description": "A fictional private investigator and former police officer, proud and expressive, with practical instincts and sometimes hasty working theories.",
+      "corpus_path": "../characters/kogoro/corpus/persona_corpus.jsonl",
+      "persona_fixture_path": "../characters/kogoro/kogoro_persona_curated_candidate.json",
+      "live_persona_path": "../characters/kogoro/kogoro_persona_curated_candidate.json",
+      "mock_response_fixture_path": "../tests/fixtures/kogoro_agent_response.txt"
+    }
+  ],
+  "original_layton_configuration": {
+    "slug": "layton",
+    "character_id": "professor_layton",
+    "display_name": "Professor Layton",
+    "description": "A fictional archaeology professor and puzzle enthusiast known for patient observation, courteous questioning, collaborative teaching, and compassion.",
+    "corpus_path": "../characters/layton/corpus/persona_corpus.jsonl",
+    "persona_fixture_path": "../characters/layton/layton_persona_curated_candidate.json",
+    "live_persona_path": "../characters/layton/layton_persona_curated_candidate.json",
+    "mock_response_fixture_path": "../tests/fixtures/layton_agent_response.txt"
+  },
+  "live_persona_path": "../characters/layton/layton_persona_curated_v2.json",
+  "quality_gate": {
+    "status": "passed_for_live_candidate",
+    "basis": [
+      "Selected source scenes inspected",
+      "Attribution and observation wording reviewed",
+      "Duplicate screening and overlap review completed",
+      "Every significant Persona element mapped",
+      "Original research artifacts preserved"
+    ],
+    "primary_game_authentication": false,
+    "independent_human_review": false,
+    "rights_clearance_claimed": false,
+    "llm_extraction_performed": false,
+    "scientific_fidelity_validation": false,
+    "limitation": "Gate supports a traceable experimental candidate; it does not validate canonical authenticity, redistribution rights for scripts, or behavioral improvement."
+  },
+  "files_sha256": {
+    "README.md": "3e4e4adbce8b91b9f48c23a4c13734b9a40511cfcdca851a7c0b71fe97d640d8",
+    "corpus/persona_corpus_v2.jsonl": "1d4c001686479763d1e72eb0be129d5911eb0278e50a264fb7a8a036171a756d",
+    "layton.yaml": "8e538cd7ca9d429848b325c8651252213ab18e4c70858680fcde391f8a183c49",
+    "layton_persona_curated_v2.json": "d027be4cc2fd31480f1ee140af4be996daf4b63f362950fca20cd5cded4a5f4e",
+    "metadata/entry_provenance_v2.json": "dc852d62edd6b183a1d44ff5cf9dbc5941d583395ed03b7d32d818d5990d9143",
+    "metadata/evidence_coverage_v2.md": "2b1084d35f498a20080431c0895bec507abe5011a8225fb1c6f8b4219c16c3f1",
+    "metadata/persona_v2_evidence_map.json": "d493a0cb59572bd3663c097290cebbc462d6d31ffe67535bd8d8d7564844d47e",
+    "metadata/source_inventory_v2.json": "d64ff99ef4b8310b23bd976080ab99777972b52fc37a374728e708189a2562ac"
+  }
+}

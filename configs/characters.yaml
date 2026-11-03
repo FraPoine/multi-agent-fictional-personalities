@@ -33,10 +33,9 @@ characters:
       A fictional archaeology professor and puzzle enthusiast known for patient
       observation, courteous questioning, collaborative teaching, and compassion.
     corpus_path: ../characters/layton/corpus/persona_corpus.jsonl
-    # Historical field name: this is a manually curated candidate, not an LLM
-    # extraction fixture. Both conversation providers load this exact file.
+    # Historical candidate remains the mock control; live uses evidence-grounded V2.
     persona_fixture_path: ../characters/layton/layton_persona_curated_candidate.json
-    live_persona_path: ../characters/layton/layton_persona_curated_candidate.json
+    live_persona_path: ../characters/layton/layton_persona_curated_v2.json
     mock_response_fixture_path: ../tests/fixtures/layton_agent_response.txt
 
   - slug: kogoro
