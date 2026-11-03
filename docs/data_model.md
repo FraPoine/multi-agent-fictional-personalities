@@ -356,6 +356,15 @@ used to construct new snapshots.
 - messages: `<output_root>/conversations/runs/{run_id}/messages.jsonl`
 - transcript: `<output_root>/conversations/runs/{run_id}/transcript.md`
 
+New standard conversation runs also contain `prompt_variant` (`baseline_v1` or
+`dialogue_v2`) and `prompt_template_sha256` (64 lowercase hexadecimal characters).
+Both must be supplied together or both be absent/`null`. Legacy artifacts load
+without inferring a variant or template hash. Metadata lives only on the run,
+not each message. The hash identifies ordered template sources, not rendered
+history or Persona JSON; see the [fingerprint specification](architecture.md#conversation-prompt-variants).
+Investigation/custom reply-generator runs leave these conversation-specific
+fields unrecorded.
+
 `run.json` is the canonical complete `ConversationRun` snapshot.
 `messages.jsonl` is the canonical ordered per-turn generation trace, with one
 complete `Message` per line. Both structured artifacts include identical

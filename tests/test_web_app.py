@@ -743,6 +743,7 @@ def test_copilot_selection_reaches_service_with_normalized_arguments(
         "turn_count": 2,
         "provider": "copilot",
         "copilot_model": expected_model,
+        "prompt_variant": "baseline_v1",
         "seed": 42,
         "output_root": output_root,
         "project_root": REPOSITORY_ROOT,
@@ -1355,3 +1356,68 @@ def test_conversation_responsive_styles_contract(
         r'\.message-content p,\s*\.message-error p\s*\{[^}]*overflow-wrap: anywhere',
         css,
     )
+
+
+def test_prompt_selector_defaults_to_baseline(web_client) -> None:
+    client, _ = web_client
+    response = client.get("/")
+    assert_html_response(response, 200)
+    selector = re.search(r'<select[^>]*name="prompt_variant"[^>]*>(.*?)</select>', response.text, re.S)
+    assert selector is not None
+    assert '<option value="baseline_v1" selected>baseline_v1</option>' in selector.group(1)
+    assert '<option value="dialogue_v2">dialogue_v2</option>' in selector.group(1)
+
+
+@pytest.mark.parametrize("variant", ["baseline_v1", "dialogue_v2"])
+@pytest.mark.parametrize("provider", ["mock", "copilot"])
+def test_web_prompt_selection_reaches_service_and_saved_metadata(web_client, monkeypatch, variant, provider) -> None:
+    from tests.test_live_conversation_service import RecordingProvider
+    from multi_agent_personalities.prompt_variants import prompt_template_sha256
+
+    client, output_root = web_client
+    real_service = web_module.run_conversation
+    captured = {}
+    calls = []
+
+    def offline_service(**kwargs):
+        captured.update(kwargs)
+        return real_service(**kwargs, _copilot_provider_factory=lambda model: RecordingProvider(model=model, calls=calls))
+
+    monkeypatch.setattr(web_module, "run_conversation", offline_service)
+    response = client.post("/conversations", data={
+        **VALID_FORM_DATA, "turn_count": "2", "provider": provider,
+        "prompt_variant": variant,
+    })
+    assert_html_response(response, 200)
+    assert captured["prompt_variant"] == variant
+    assert f'value="{variant}" selected' in response.text
+    assert f'<dd><code>{variant}</code></dd>' in response.text
+    files = list(output_root.glob("conversations/runs/*/run.json"))
+    assert len(files) == 1
+    payload = json.loads(files[0].read_text())
+    assert payload["prompt_variant"] == variant
+    assert payload["prompt_template_sha256"] == prompt_template_sha256(variant)
+    if provider == "copilot":
+        assert len(calls) == 2
+
+
+def test_web_rejects_unknown_prompt_before_service(web_client, monkeypatch) -> None:
+    client, output_root = web_client
+
+    def fail(**kwargs):
+        pytest.fail("invalid prompt variant reached service")
+
+    monkeypatch.setattr(web_module, "run_conversation", fail)
+    response = client.post("/conversations", data={**VALID_FORM_DATA, "prompt_variant": "unknown"})
+    assert_html_response(response, 400)
+    assert "Select baseline_v1 or dialogue_v2." in response.text
+    assert not (output_root / "conversations").exists()
+
+
+def test_prompt_selection_survives_unrelated_form_error(web_client) -> None:
+    client, _ = web_client
+    response = client.post("/conversations", data={
+        **VALID_FORM_DATA, "turn_count": "invalid", "prompt_variant": "dialogue_v2",
+    })
+    assert_html_response(response, 400)
+    assert 'value="dialogue_v2" selected' in response.text

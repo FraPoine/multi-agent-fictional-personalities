@@ -19,6 +19,7 @@ from multi_agent_personalities.case_catalog import (
     default_case_catalog_directory,
     load_case_catalog,
 )
+from multi_agent_personalities.prompt_variants import PROMPT_SOURCES
 from multi_agent_personalities.application import (
     ConversationResult,
     run_conversation,
@@ -231,6 +232,7 @@ def _page_context(
     turn_count: int | str = 6,
     provider: str = "mock",
     copilot_model: str = "",
+    prompt_variant: str = "baseline_v1",
     conversation_result: ConversationResult | None = None,
     field_errors: Mapping[str, str] | None = None,
     error_message: str | None = None,
@@ -270,6 +272,8 @@ def _page_context(
         ),
         "provider_value": provider,
         "copilot_model_value": copilot_model,
+        "prompt_variant_value": prompt_variant,
+        "prompt_variants": tuple(PROMPT_SOURCES),
         "available_characters": available_characters,
         "topic_value": topic,
         "turn_count_value": turn_count,
@@ -450,6 +454,7 @@ def create_app(
         turn_count: Annotated[str | None, Form()] = None,
         provider: Annotated[str | None, Form()] = None,
         copilot_model: Annotated[str | None, Form()] = None,
+        prompt_variant: Annotated[str, Form()] = "baseline_v1",
     ) -> HTMLResponse:
         """Run and persist a provider-backed conversation off the event loop."""
         (
@@ -470,6 +475,8 @@ def create_app(
             copilot_model=copilot_model,
             supported_characters=supported_characters,
         )
+        if prompt_variant not in PROMPT_SOURCES:
+            field_errors["prompt_variant"] = "Select baseline_v1 or dialogue_v2."
         if field_errors:
             return _render_page(
                 request,
@@ -481,6 +488,7 @@ def create_app(
                 turn_count=turn_count_value,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 field_errors=field_errors,
                 error_message=(
                     "Please correct the highlighted fields and submit again."
@@ -499,6 +507,7 @@ def create_app(
                     turn_count=parsed_turn_count,
                     provider=normalized_provider,
                     copilot_model=normalized_copilot_model,
+                    prompt_variant=prompt_variant,
                     seed=42,
                     output_root=resolved_output_root,
                     project_root=resolved_project_root,
@@ -516,6 +525,7 @@ def create_app(
                 turn_count=parsed_turn_count,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 error_message=(
                     "A run with the generated identifier already exists. "
                     "Submit the conversation again."
@@ -533,6 +543,7 @@ def create_app(
                 turn_count=parsed_turn_count,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 error_message=(
                     "Copilot did not finish in time. Check your connection and "
                     "GitHub Copilot access, then try again."
@@ -552,6 +563,7 @@ def create_app(
                 turn_count=parsed_turn_count,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 error_message=(
                     "The conversation could not be saved. Check that the "
                     "outputs directory is writable and try again."
@@ -575,6 +587,7 @@ def create_app(
                 turn_count=parsed_turn_count,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 error_message=(
                     "The local mock conversation could not be generated. "
                     "Check the project fixtures and try again."
@@ -600,6 +613,7 @@ def create_app(
                 turn_count=parsed_turn_count,
                 provider=normalized_provider,
                 copilot_model=copilot_model_value,
+                prompt_variant=prompt_variant,
                 error_message=(
                     "Copilot could not start or complete the conversation. "
                     "Confirm that GitHub CLI authentication and Copilot access "
@@ -616,6 +630,7 @@ def create_app(
             turn_count=parsed_turn_count,
             provider=normalized_provider,
             copilot_model=copilot_model_value,
+            prompt_variant=prompt_variant,
             conversation_result=result,
         )
 

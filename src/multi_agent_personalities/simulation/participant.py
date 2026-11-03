@@ -47,6 +47,7 @@ def generate_participant_reply(
     run_id: str,
     turn_index: int,
     timestamp: datetime,
+    prompt_variant: str = "baseline_v1",
 ) -> Message:
     """Delegate one reply using one participant's inseparable binding."""
 
@@ -60,4 +61,5 @@ def generate_participant_reply(
         provider_name=participant.provider_name,
         model_name=participant.model_name,
         timestamp=timestamp,
+        prompt_variant=prompt_variant,
     )

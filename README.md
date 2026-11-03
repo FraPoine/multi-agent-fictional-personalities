@@ -269,12 +269,14 @@ open page
 
 The form renders every character in the validated catalog and selects all
 currently available characters by default. A submission must contain at least
-two unique supported character slugs. Because the production catalog currently
-contains only Sherlock and Poirot, both are initially selected. The topic must
-not be blank, and the turn count must be a whole number from `2` through `12`.
-The provider is fixed to `mock`, the seed is fixed to `42`, and output is
-written beneath the repository's `outputs/` directory. There is no provider
-dropdown or API-key input.
+two unique supported character slugs. All four supported characters are initially
+selected. The turn count must be a whole number from `2` through `12`; a blank
+topic uses the default case. Choose Mock or Copilot and optionally specify a
+Copilot model. The prompt-variant selector defaults to `baseline_v1`; select
+`dialogue_v2` explicitly to run the experimental dialogue strategy. The result's
+run details display the selected variant. Output is written beneath the
+repository's `outputs/` directory. The existing seed value `42` is simulation
+configuration, not a Copilot sampling seed. No API-key input is provided.
 
 Start the interface with:
 
@@ -289,6 +291,45 @@ host `127.0.0.1`, port `8000`, and reload disabled. For example:
 python scripts/run_web.py --port 8080
 python scripts/run_web.py --reload
 ```
+
+## Conversation prompt variants
+
+`baseline_v1` is the default and preserves the pre-sprint rendered prompt
+byte-for-byte, including Persona rendering, placeholder substitution, history
+ordering, whitespace, and final newline. Committed golden prompts cover empty
+and multi-turn history.
+
+`dialogue_v2` reuses the same validated Persona renderer, adds a shared
+conversation policy, then renders topic and chronological history as turn data.
+It encourages independent judgment, useful contributions, and natural dialogue
+without forced disagreement or invented evidence. Character behavior continues
+to come from the selected Persona.
+
+**`dialogue_v2` is an experimental prompting strategy, not a scientifically
+validated improvement in character fidelity.** No live comparison is claimed.
+
+Programmatic selection uses the existing service:
+
+```python
+from multi_agent_personalities.application import run_conversation
+
+result = run_conversation(
+    character_slugs=["sherlock", "poirot"],
+    topic="A mysterious theft",
+    turn_count=6,
+    provider="copilot",
+    prompt_variant="dialogue_v2",
+)
+```
+
+Both providers accept both variants. The choice is fixed for all turns and each
+turn still makes exactly one provider call. The CLI retains the default baseline.
+`run.json` records `prompt_variant` and `prompt_template_sha256`, a fingerprint of
+ordered template source files rather than rendered turn content. Legacy runs
+without these fields remain readable with unrecorded (`null`) prompt metadata.
+See [prompt composition and fingerprint format](docs/architecture.md#conversation-prompt-variants)
+for the source manifest and hashing specification. Copilot system-message
+handling, Persona files, and investigation prompting are unchanged.
 
 ## Conversation CLI
 

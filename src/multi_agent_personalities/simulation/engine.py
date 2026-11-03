@@ -1,8 +1,14 @@
 """Selector-driven conversation simulation engine."""
 
 from datetime import datetime, timezone
+from functools import partial
 from typing import Sequence
 from uuid import uuid4
+
+from multi_agent_personalities.prompt_variants import (
+    prompt_template_sha256,
+    validate_prompt_variant,
+)
 
 from multi_agent_personalities.models.conversation import ConversationRun
 from multi_agent_personalities.models.identifiers import validate_run_id
@@ -35,6 +41,7 @@ def simulate_chat(
     run_id: str | None = None,
     timestamp: datetime | None = None,
     turn_reply_generator: TurnReplyGenerator | None = None,
+    prompt_variant: str = "baseline_v1",
 ) -> ConversationRun:
     """Generate a complete conversation using an injected speaker selector.
 
@@ -42,6 +49,18 @@ def simulate_chat(
     timestamp in this deterministic mock implementation; provider-specific
     timing can be introduced later without clock calls inside the turn loop.
     """
+    validate_prompt_variant(prompt_variant)
+    using_standard_reply_generator = (
+        turn_reply_generator is None
+        or turn_reply_generator is generate_participant_reply
+    )
+    if not using_standard_reply_generator and prompt_variant != "baseline_v1":
+        raise ValueError("prompt variants require the standard reply generator")
+    template_hash = (
+        prompt_template_sha256(prompt_variant)
+        if using_standard_reply_generator
+        else None
+    )
     if len(participants) < 2:
         raise ValueError("at least two participants are required")
     participant_ids = tuple(
@@ -73,8 +92,8 @@ def simulate_chat(
     resolved_run_id = validate_run_id(run_id or uuid4().hex)
     using_custom_reply_generator = turn_reply_generator is not None
     reply_generator = (
-        generate_participant_reply
-        if turn_reply_generator is None
+        partial(generate_participant_reply, prompt_variant=prompt_variant)
+        if using_standard_reply_generator
         else turn_reply_generator
     )
 
@@ -160,5 +179,7 @@ def simulate_chat(
         model=effective_model,
         created_at=created_at,
         status="completed",
+        prompt_variant=prompt_variant if template_hash is not None else None,
+        prompt_template_sha256=template_hash,
         messages=tuple(history),
     )

@@ -1161,6 +1161,70 @@ Each log should record:
 - prompt hash;
 - resolved prompt inputs.
 
+## Conversation prompt variants
+
+`prompt_variants.py` defines an immutable two-entry registry. `baseline_v1` is
+the default on `run_conversation()`, `run_mock_conversation()`, `simulate_chat()`,
+`generate_participant_reply()`, and `generate_reply()`. Unknown selections fail
+before generation (at the service boundary, before provider construction).
+The Conversations form validates the same registry and passes its selection to
+the service. The simulation binds the selected string to its standard reply
+generator once, then passes it explicitly to every turn. There is no mutable
+selection state and no variant field on individual participants or messages.
+
+The existing `agent_system_prompt.j2` renders the complete selected Persona.
+For `baseline_v1`, the existing `agent_reply.md` and its ordered placeholder
+substitution remain unchanged. Two committed golden fixtures were captured from
+checkpoint `7da8f97807fc902306aeb769bb21ad43eed0b8bb` before implementation,
+covering empty and two-turn history; tests compare provider prompt bytes against
+these fixed files for default and explicit baseline selection.
+
+For `dialogue_v2`, composition joins three sections with two newlines:
+
+1. The existing rendered identity, under `## Persona profile`.
+2. `conversation/dialogue_policy_v2.md`: shared interaction and epistemic rules,
+   with no character-specific scripts or mandatory social roles.
+3. `conversation/dialogue_turn_v2.md`: topic, complete chronological history,
+   and the request for exactly one next message.
+
+The dialogue turn template uses Jinja with strict undefined variables and no
+HTML escaping. Only repository-owned template source is compiled: runtime
+topic/history and the separately rendered identity are inserted as data, so
+embedded placeholder or Jinja syntax is preserved literally. Baseline keeps its
+historical substitution semantics for experimental compatibility. Identity
+instructions about distinguishing observations and hypotheses remain; the
+dialogue policy permits those distinctions in natural prose without mandatory
+analytical headings. Provider and SDK system-message handling are unchanged.
+
+`ConversationRun` stores optional paired fields `prompt_variant` and
+`prompt_template_sha256`, validated by Pydantic. New standard conversation runs
+record both; legacy runs omit both and load as `null`, without fabricating a
+historical hash. Custom turn generators (including investigation prompting)
+retain their existing contract, record neither field, and cannot select a
+non-baseline conversation variant. These fingerprints do not describe their
+prompts.
+
+The source manifest order is fixed:
+
+| Variant | Ordered paths relative to `prompts/` |
+| --- | --- |
+| `baseline_v1` | `agent_system_prompt.j2`, `agent_reply.md` |
+| `dialogue_v2` | `agent_system_prompt.j2`, `conversation/dialogue_policy_v2.md`, `conversation/dialogue_turn_v2.md` |
+
+The SHA-256 input concatenates, for each path in that order: its UTF-8 path
+length as an unsigned 8-byte big-endian integer, its UTF-8 path bytes, its raw
+file-byte length in the same integer format, then its raw file bytes. There
+are no additional separators or newline normalization. This identifies the
+selected template source configuration, including the identity template; it is
+not a per-turn rendered prompt hash, Persona-content hash, renderer-code hash,
+or model-version identifier. Keep source files fixed during a run. The existing
+run seed remains simulation configuration; it is not passed to Copilot as a
+sampling seed and does not make live output deterministic.
+
+`dialogue_v2` is an experimental prompting strategy, not a scientifically
+validated improvement in character fidelity. Offline tests verify technical
+contracts; later controlled live comparisons are needed to assess behavior.
+
 ## Logging policy
 
 Implemented conversation persistence writes each complete conversation beneath

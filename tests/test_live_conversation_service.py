@@ -362,3 +362,23 @@ def test_mock_keeps_original_personas_and_responses(tmp_path: Path) -> None:
     assert [m.text for m in result.run.messages] == [
         registry[s].agent_response_fixture.read_text() for s in slugs * 2
     ]
+
+
+def test_default_prompt_metadata_persists_and_legacy_runs_remain_readable(tmp_path: Path) -> None:
+    from multi_agent_personalities.prompt_variants import prompt_template_sha256
+
+    calls = []
+    result = run_live(tmp_path, factory=lambda model: RecordingProvider(model=model, calls=calls))
+    assert result.run.prompt_variant == "baseline_v1"
+    assert result.run.prompt_template_sha256 == prompt_template_sha256("baseline_v1")
+    payload = result.run.model_dump(mode="json")
+    persisted = ConversationRun.model_validate_json(
+        (result.artifact_directory / "run.json").read_text()
+    )
+    assert persisted == result.run
+    del payload["prompt_variant"]
+    del payload["prompt_template_sha256"]
+    legacy = ConversationRun.model_validate(payload)
+    assert legacy.prompt_variant is None
+    assert legacy.prompt_template_sha256 is None
+    assert legacy.messages == result.run.messages

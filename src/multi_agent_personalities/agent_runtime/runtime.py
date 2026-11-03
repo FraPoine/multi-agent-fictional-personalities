@@ -4,9 +4,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Sequence
 
+from jinja2 import Environment, StrictUndefined
+
 from multi_agent_personalities.agent_runtime.system_prompt import (
     build_system_prompt,
 )
+from multi_agent_personalities.prompt_variants import validate_prompt_variant
 from multi_agent_personalities.llm.base import LLMProvider
 from multi_agent_personalities.models.message import Message
 from multi_agent_personalities.models.persona import Persona
@@ -62,8 +65,27 @@ def _build_reply_prompt(
     persona: Persona,
     topic: str,
     history: Sequence[Message],
+    prompt_variant: str = "baseline_v1",
 ) -> str:
     """Resolve the versioned reply prompt using existing persona rendering."""
+    validate_prompt_variant(prompt_variant)
+    if prompt_variant == "dialogue_v2":
+        identity = build_system_prompt(persona, _PROMPT_DIRECTORY).strip()
+        policy = (
+            _PROMPT_DIRECTORY / "conversation/dialogue_policy_v2.md"
+        ).read_text(encoding="utf-8").strip()
+        source = (
+            _PROMPT_DIRECTORY / "conversation/dialogue_turn_v2.md"
+        ).read_text(encoding="utf-8")
+        # Only repository-owned source is compiled. Runtime content is data,
+        # so braces and template syntax in topic/history stay literal.
+        environment = Environment(undefined=StrictUndefined, autoescape=False)
+        turn = environment.from_string(source).render(
+            topic=topic, conversation_history=_format_history(history),
+        ).strip()
+        sections = ("## Persona profile\n\n" + identity, policy, turn)
+        return "\n\n".join(sections) + "\n"
+
     if not _REPLY_PROMPT_PATH.is_file():
         raise FileNotFoundError(
             f"Agent reply prompt file not found: {_REPLY_PROMPT_PATH}"
@@ -100,8 +122,10 @@ def generate_reply(
     model_name: str | None = None,
     timestamp: datetime | None = None,
     task_name: str = "agent_reply",
+    prompt_variant: str = "baseline_v1",
 ) -> Message:
     """Generate exactly one message for a caller-selected persona and turn."""
+    validate_prompt_variant(prompt_variant)
     _require_non_empty(topic, "topic")
     _require_non_empty(run_id, "run_id")
     _require_non_empty(provider_name, "provider_name")
@@ -118,6 +142,7 @@ def generate_reply(
         persona=persona,
         topic=topic,
         history=history,
+        prompt_variant=prompt_variant,
     )
     result = provider.generate(
         resolved_prompt,

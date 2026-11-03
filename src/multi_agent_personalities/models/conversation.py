@@ -13,6 +13,7 @@ from pydantic import (
     model_validator,
 )
 
+from multi_agent_personalities.prompt_variants import PromptVariant
 from multi_agent_personalities.models.message import Message
 
 
@@ -37,6 +38,10 @@ class ConversationRun(BaseModel):
     created_at: datetime
     status: Literal["running", "completed", "failed"]
     messages: tuple[Message, ...] = ()
+    prompt_variant: PromptVariant | None = None
+    prompt_template_sha256: Annotated[
+        str, StringConstraints(strict=True, pattern=r"^[0-9a-f]{64}$")
+    ] | None = None
 
     @field_validator("character_ids")
     @classmethod
@@ -68,6 +73,10 @@ class ConversationRun(BaseModel):
     @model_validator(mode="after")
     def validate_messages(self) -> "ConversationRun":
         """Ensure stored messages are consistent with their parent run."""
+        if (self.prompt_variant is None) != (self.prompt_template_sha256 is None):
+            raise ValueError(
+                "prompt variant and template hash must be supplied together"
+            )
         message_ids = [message.message_id for message in self.messages]
         if len(message_ids) != len(set(message_ids)):
             raise ValueError("message_id values must be unique")

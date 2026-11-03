@@ -424,3 +424,30 @@ def test_supplied_aware_timestamp_is_preserved(sherlock: Persona) -> None:
     message = call_runtime(sherlock, provider, timestamp=timestamp)
 
     assert message.timestamp is timestamp
+
+
+@pytest.mark.parametrize("count", [0, 2])
+@pytest.mark.parametrize("variant", [None, "baseline_v1"])
+def test_baseline_matches_pre_sprint_golden(sherlock: Persona, count: int, variant: str | None) -> None:
+    from pathlib import Path
+
+    history = [
+        make_message(
+            turn_index=i,
+            speaker_name="Hercule Poirot" if i == 0 else "Sherlock Holmes",
+            text="The latch was intact.\nNo key was found." if i == 0 else "Then examine the timing.",
+        ) for i in range(count)
+    ]
+    provider = SpyProvider()
+    overrides = {} if variant is None else {"prompt_variant": variant}
+    call_runtime(sherlock, provider, history=history, turn_index=count, **overrides)
+    golden = Path(__file__).parent / "fixtures" / f"baseline_v1_history_{count}.txt"
+    assert provider.calls[0][0].encode("utf-8") == golden.read_bytes()
+    assert len(provider.calls) == 1
+
+
+def test_unknown_prompt_variant_fails_before_generation(sherlock: Persona) -> None:
+    provider = SpyProvider()
+    with pytest.raises(ValueError, match="unsupported prompt_variant"):
+        call_runtime(sherlock, provider, prompt_variant="unknown")
+    assert provider.calls == []

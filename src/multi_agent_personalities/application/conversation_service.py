@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from multi_agent_personalities.prompt_variants import validate_prompt_variant
 from multi_agent_personalities.artifacts import save_conversation_run
 from multi_agent_personalities.llm import MockProvider
 from multi_agent_personalities.llm.base import LLMProvider
@@ -180,6 +181,7 @@ def run_conversation(
     character_slugs: Sequence[str],
     topic: str,
     turn_count: int,
+    prompt_variant: str = "baseline_v1",
     provider: str = "mock",
     copilot_model: str | None = None,
     speaker_selector: SpeakerSelector | None = None,
@@ -192,6 +194,7 @@ def run_conversation(
     _copilot_provider_factory: _CopilotProviderFactory = _create_copilot_provider,
 ) -> ConversationResult:
     """Run and atomically persist a mock or live Copilot conversation."""
+    validate_prompt_variant(prompt_variant)
     if provider not in _SUPPORTED_PROVIDERS:
         supported = ", ".join(_SUPPORTED_PROVIDERS)
         raise ValueError(
@@ -241,6 +244,7 @@ def run_conversation(
 
     run = simulate_chat(
         participants=participants,
+        prompt_variant=prompt_variant,
         speaker_selector=(
             RoundRobinSelector()
             if speaker_selector is None
@@ -261,6 +265,7 @@ def run_mock_conversation(
     character_slugs: Sequence[str],
     topic: str,
     turn_count: int,
+    prompt_variant: str = "baseline_v1",
     speaker_selector: SpeakerSelector | None = None,
     seed: int = 42,
     output_root: Path = Path("outputs"),
@@ -270,6 +275,7 @@ def run_mock_conversation(
     _save_run: _SaveConversationRun = save_conversation_run,
 ) -> ConversationResult:
     """Run and persist one deterministic local mock conversation."""
+    validate_prompt_variant(prompt_variant)
     if not isinstance(topic, str) or not topic.strip():
         raise ValueError("topic must not be empty")
     if isinstance(turn_count, bool) or not isinstance(turn_count, int):
@@ -293,6 +299,7 @@ def run_mock_conversation(
     )
     run = simulate_chat(
         participants=participants,
+        prompt_variant=prompt_variant,
         speaker_selector=resolved_selector,
         topic=topic,
         turn_count=turn_count,

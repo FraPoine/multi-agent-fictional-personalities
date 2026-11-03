@@ -141,6 +141,20 @@
 
                 <div class="section-rule" aria-hidden="true"></div>
 
+                <div class="form-group">
+                    <label class="field-label" for="prompt-variant">Prompt variant</label>
+                    <select class="form-control" id="prompt-variant" name="prompt_variant"
+                        {% if field_errors.get("prompt_variant") %}aria-invalid="true" aria-describedby="prompt-variant-error"{% endif %}>
+                        {% for variant in prompt_variants %}
+                        <option value="{{ variant }}"{% if prompt_variant_value == variant %} selected{% endif %}>{{ variant }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="field-note">dialogue_v2 is an experimental dialogue strategy.</p>
+                    {% if field_errors.get("prompt_variant") %}
+                    <p class="field-error" id="prompt-variant-error">{{ field_errors.get("prompt_variant") }}</p>
+                    {% endif %}
+                </div>
+
                 <section class="provider-card" aria-label="Provider configuration">
                     <div class="provider-row">
                         <label class="field-label" for="provider">Provider</label>
@@ -288,6 +302,10 @@
                             <div class="run-summary-row">
                                 <dt>Run ID</dt>
                                 <dd><code>{{ run_id }}</code></dd>
+                            </div>
+                            <div class="run-summary-row">
+                                <dt>Prompt variant</dt>
+                                <dd><code>{{ conversation_result.run.prompt_variant or "Unrecorded" }}</code></dd>
                             </div>
                             <div class="run-summary-row">
                                 <dt>Artifact directory</dt>
