@@ -273,3 +273,92 @@ def test_mock_rejects_copilot_model_before_generation(tmp_path: Path) -> None:
             output_root=tmp_path,
             project_root=REPOSITORY_ROOT,
         )
+
+
+@pytest.mark.parametrize("slug", ["sherlock", "poirot", "layton", "kogoro"])
+def test_complete_selected_live_persona_reaches_provider(tmp_path: Path, slug: str) -> None:
+    from multi_agent_personalities.pipeline import character_registry
+    from multi_agent_personalities.models import Persona
+
+    config = character_registry(REPOSITORY_ROOT)[slug]
+    expected_path = (
+        REPOSITORY_ROOT / "outputs" / slug / f"{slug}_persona_generated.json"
+        if slug in {"sherlock", "poirot"}
+        else config.persona_fixture
+    )
+    assert config.live_persona_path == expected_path
+    expected = Persona.model_validate_json(expected_path.read_text(encoding="utf-8"))
+    calls = []
+    other = "poirot" if slug == "sherlock" else "sherlock"
+    run_live(
+        tmp_path, character_slugs=[slug, other], turn_count=2,
+        factory=lambda model: RecordingProvider(model=model, calls=calls),
+    )
+    profile = calls[0][2].split("## Conversation topic")[0]
+    assert expected.description in profile
+    for field in ("speaking_style", "reasoning_style", "personality_traits",
+                  "behavior_rules", "example_messages"):
+        assert getattr(expected, field)
+        for value in getattr(expected, field):
+            assert value in profile
+    if slug in {"sherlock", "poirot"}:
+        assert expected != Persona.model_validate_json(
+            config.persona_fixture.read_text(encoding="utf-8")
+        )
+
+
+@pytest.mark.parametrize("failure", ["unconfigured", "missing", "invalid", "identity"])
+def test_invalid_live_persona_fails_before_provider_creation(tmp_path: Path, failure: str) -> None:
+    import yaml
+
+    from multi_agent_personalities.pipeline import character_registry
+
+    catalog = yaml.safe_load((REPOSITORY_ROOT / "configs/characters.yaml").read_text())
+    registry = character_registry(REPOSITORY_ROOT)
+    for entry in catalog["characters"]:
+        config = registry[entry["slug"]]
+        entry.update(
+            corpus_path=str(config.corpus_paths[0]),
+            persona_fixture_path=str(config.persona_fixture),
+            mock_response_fixture_path=str(config.agent_response_fixture),
+            live_persona_path=str(config.live_persona_path),
+        )
+    entry = catalog["characters"][0]
+    if failure == "unconfigured":
+        del entry["live_persona_path"]
+    elif failure == "identity":
+        entry["live_persona_path"] = str(registry["poirot"].live_persona_path)
+    else:
+        path = tmp_path / "invalid.json"
+        if failure == "invalid":
+            path.write_text('{"character_id": "sherlock_holmes"}')
+        entry["live_persona_path"] = str(path)
+    (tmp_path / "configs").mkdir()
+    (tmp_path / "configs/characters.yaml").write_text(yaml.safe_dump(catalog))
+
+    def factory(model):
+        pytest.fail("provider must not be constructed for invalid live personas")
+
+    with pytest.raises((ValueError, FileNotFoundError)):
+        run_live(tmp_path / "results", project_root=tmp_path, factory=factory)
+    assert not (tmp_path / "results").exists()
+
+
+def test_mock_keeps_original_personas_and_responses(tmp_path: Path) -> None:
+    from multi_agent_personalities.application.conversation_service import _load_mock_participants
+    from multi_agent_personalities.models import Persona
+    from multi_agent_personalities.pipeline import character_registry
+
+    slugs = ["sherlock", "poirot", "layton", "kogoro"]
+    registry = character_registry(REPOSITORY_ROOT)
+    participants = _load_mock_participants(slugs, REPOSITORY_ROOT)
+    assert [p.persona for p in participants] == [
+        Persona.model_validate_json(registry[s].persona_fixture.read_text()) for s in slugs
+    ]
+    result = run_conversation(
+        character_slugs=slugs, topic=TOPIC, turn_count=8,
+        output_root=tmp_path, project_root=REPOSITORY_ROOT,
+    )
+    assert [m.text for m in result.run.messages] == [
+        registry[s].agent_response_fixture.read_text() for s in slugs * 2
+    ]

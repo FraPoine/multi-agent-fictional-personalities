@@ -54,6 +54,15 @@ round-robin multi-agent simulation, and explicit per-run message history.
 Immutable `Message` and `ConversationRun` models validate results, and atomic
 persistence safely publishes each completed run.
 
+Copilot conversations use the complete generated Sherlock/Poirot profiles in
+`outputs/sherlock/` and `outputs/poirot/`; mock conversations retain their
+synthetic test Persona fixtures. Both providers use the unchanged manually
+curated Layton/Kogoro candidates. `configs/characters.yaml` declares explicit
+`live_persona_path` values, resolved and validated with the existing `Persona`
+model and catalog identity checks. Missing or invalid live configuration fails
+before provider construction, with no fallback to synthetic profiles. These
+profiles have not been scientifically validated for recognizability.
+
 Both delivery interfaces remain available:
 
 - a command-line conversation interface;

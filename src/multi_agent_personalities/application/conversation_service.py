@@ -152,13 +152,15 @@ def _load_personas(
     personas: list[Persona] = []
     for slug in character_slugs:
         config = registry[slug]
+        if config.live_persona_path is None:
+            raise ValueError(f"live_persona_path is required for {slug!r}")
         try:
             persona = Persona.model_validate_json(
-                config.persona_fixture.read_text(encoding="utf-8")
+                config.live_persona_path.read_text(encoding="utf-8")
             )
         except (OSError, ValidationError) as error:
             raise ValueError(
-                f"invalid persona fixture for {slug!r}: {error}"
+                f"invalid live persona for {slug!r}: {error}"
             ) from error
         if (persona.character_id, persona.display_name) != (
             config.character_id,

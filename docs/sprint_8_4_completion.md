@@ -75,8 +75,11 @@ character-fidelity evidence. The summaries are not canonical dialogue; English
 voice choices and confidence values are editorial. Original manga panels and
 source authenticity were not independently verified. Evidence modality and
 manual curation differ from Sherlock/Poirot's literary-dialogue approach.
-Sherlock/Poirot's pre-existing real-provider synthetic Persona loading remains
-unchanged. Live behavior and aligned human evaluation remain future work.
+At Sprint 8.4 completion, Sherlock/Poirot still used synthetic Personas with the
+real provider. The subsequent Persona-loading fix selects their complete
+generated profiles for Copilot conversations; mock fixtures and curated
+candidates remain unchanged. Live behavioral validation and aligned human
+evaluation remain future work.
 
 Suggested commit message for review:
 `feat(characters): integrate Kogoro Mori as fourth conversation agent`

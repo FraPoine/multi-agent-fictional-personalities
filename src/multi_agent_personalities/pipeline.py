@@ -31,6 +31,7 @@ class CharacterConfig:
     corpus_paths: tuple[Path, ...]
     persona_fixture: Path
     agent_response_fixture: Path
+    live_persona_path: Path | None = None
 
 
 def character_registry(project_root: Path) -> dict[str, CharacterConfig]:
@@ -45,6 +46,7 @@ def character_registry(project_root: Path) -> dict[str, CharacterConfig]:
             description=entry.description,
             corpus_paths=(entry.corpus_path,),
             persona_fixture=entry.persona_fixture_path,
+            live_persona_path=entry.live_persona_path,
             agent_response_fixture=entry.mock_response_fixture_path,
         )
         for entry in catalog.characters

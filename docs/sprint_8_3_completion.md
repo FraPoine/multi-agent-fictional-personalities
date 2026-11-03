@@ -40,11 +40,10 @@ that no schema, prompt, provider or runtime implementation changes were needed.
   Layton with `unknown` in an unsupported-character negative test.
 - `README.md`, `AGENTS.md`, this report: document current conversation scope.
 
-Sherlock/Poirot Persona data and loading are unchanged. The existing real-provider
-route reads their synthetic catalogue fixtures rather than their extracted
-`outputs/` artifacts; that preexisting issue was documented, not broadened into
-this task. Layton's intended curated file is already loaded correctly, so no
-Layton-specific loader branch is necessary.
+At Sprint 8.3 completion, the real-provider route still read Sherlock/Poirot's
+synthetic catalog fixtures. The subsequent Persona-loading fix selects their
+complete generated `outputs/` profiles through explicit `live_persona_path`
+configuration. Mock fixtures and Layton's curated candidate remain unchanged.
 
 The conversation web interface automatically displays/selects Layton through its
 catalogue after app restart. No web template, static asset, or human-evaluation

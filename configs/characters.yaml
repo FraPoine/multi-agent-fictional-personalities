@@ -11,6 +11,7 @@ characters:
       explanations of seemingly hidden facts.
     corpus_path: ../characters/sherlock/corpus/persona_corpus.jsonl
     persona_fixture_path: ../tests/fixtures/sherlock_persona_response.json
+    live_persona_path: ../outputs/sherlock/sherlock_persona_generated.json
     mock_response_fixture_path: ../tests/fixtures/sherlock_agent_response.txt
 
   - slug: poirot
@@ -22,6 +23,7 @@ characters:
       and frequent French expressions.
     corpus_path: ../characters/poirot/corpus/persona_corpus.jsonl
     persona_fixture_path: ../tests/fixtures/poirot_persona_response.json
+    live_persona_path: ../outputs/poirot/poirot_persona_generated.json
     mock_response_fixture_path: ../tests/fixtures/poirot_agent_response.txt
 
   - slug: layton
@@ -34,6 +36,7 @@ characters:
     # Historical field name: this is a manually curated candidate, not an LLM
     # extraction fixture. Both conversation providers load this exact file.
     persona_fixture_path: ../characters/layton/layton_persona_curated_candidate.json
+    live_persona_path: ../characters/layton/layton_persona_curated_candidate.json
     mock_response_fixture_path: ../tests/fixtures/layton_agent_response.txt
 
   - slug: kogoro
@@ -46,4 +49,5 @@ characters:
     # Manually curated candidate, not an LLM extraction fixture.
     # Both conversation providers load this exact file.
     persona_fixture_path: ../characters/kogoro/kogoro_persona_curated_candidate.json
+    live_persona_path: ../characters/kogoro/kogoro_persona_curated_candidate.json
     mock_response_fixture_path: ../tests/fixtures/kogoro_agent_response.txt

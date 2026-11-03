@@ -42,6 +42,7 @@ class CharacterCatalogEntry(BaseModel):
     description: NonEmptyStr
     corpus_path: Path
     persona_fixture_path: Path
+    live_persona_path: Path | None = None
     mock_response_fixture_path: Path
 
 
@@ -131,6 +132,8 @@ def load_character_catalog(catalog_path: Path) -> CharacterCatalog:
     for entry in catalog.characters:
         _validate_entry_files(entry)
         _validate_persona_identity(entry)
+        if entry.live_persona_path is not None:
+            _validate_persona_identity(entry, "live_persona_path")
     return catalog
 
 
@@ -147,6 +150,7 @@ def _resolve_declared_paths(
     path_fields = (
         "corpus_path",
         "persona_fixture_path",
+        "live_persona_path",
         "mock_response_fixture_path",
     )
     for raw_entry in characters:
@@ -171,9 +175,12 @@ def _validate_entry_files(entry: CharacterCatalogEntry) -> None:
     for field_name in (
         "corpus_path",
         "persona_fixture_path",
+        "live_persona_path",
         "mock_response_fixture_path",
     ):
         path = getattr(entry, field_name)
+        if path is None:
+            continue
         if not path.exists():
             raise FileNotFoundError(
                 f"{field_name} for character {entry.slug!r} does not exist: {path}"
@@ -184,14 +191,16 @@ def _validate_entry_files(entry: CharacterCatalogEntry) -> None:
             )
 
 
-def _validate_persona_identity(entry: CharacterCatalogEntry) -> None:
+def _validate_persona_identity(
+    entry: CharacterCatalogEntry, field_name: str = "persona_fixture_path"
+) -> None:
     try:
         persona = Persona.model_validate_json(
-            entry.persona_fixture_path.read_text(encoding="utf-8")
+            getattr(entry, field_name).read_text(encoding="utf-8")
         )
     except (OSError, ValidationError) as error:
         raise ValueError(
-            f"invalid persona_fixture_path for character {entry.slug!r}: {error}"
+            f"invalid {field_name} for character {entry.slug!r}: {error}"
         ) from error
 
     if (persona.character_id, persona.display_name) != (

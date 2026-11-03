@@ -75,7 +75,7 @@ CharacterCatalog
 `CharacterCatalog` is an immutable, validated, non-empty catalog loaded from
 YAML. It preserves declaration order and is the source of supported runtime-
 character declarations. The production catalog is `configs/characters.yaml`;
-Sherlock Holmes and Hercule Poirot are currently its only entries.
+its entries are Sherlock Holmes, Hercule Poirot, Professor Layton, and Kogoro Mori.
 
 Each immutable `CharacterCatalogEntry` contains:
 
@@ -86,6 +86,7 @@ display_name
 description
 corpus_path
 persona_fixture_path
+live_persona_path (optional for mock-only catalogs; required for live participants)
 mock_response_fixture_path
 ```
 
@@ -93,11 +94,14 @@ All string values are required and non-empty, and slugs use a validated
 lowercase alphanumeric format with optional hyphen or underscore separators.
 Slugs and `character_id` values must each be unique. Every declared path is
 resolved relative to the catalog file, must exist, and must be a regular file.
-The persona fixture's character ID and display name must match the catalog
-entry. Declaration order is preserved.
+Both configured Persona files are validated through `Persona`; their character
+IDs and display names must match the catalog entry. Declaration order is preserved.
 
-Persona and mock-response fixtures temporarily remain under `tests/fixtures/`.
-Moving runtime assets to a production-owned location is future cleanup.
+Sherlock/Poirot mock Personas and mock-response fixtures remain under
+`tests/fixtures/`. Their live paths select generated profiles under `outputs/`.
+Layton/Kogoro use their manually curated candidates under `characters/` for
+both providers. Mock-only catalogs may omit the live path; live loading requires
+it explicitly and never falls back to the mock Persona.
 
 The three implemented representation layers have separate responsibilities:
 
