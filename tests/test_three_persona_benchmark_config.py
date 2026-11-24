@@ -39,3 +39,20 @@ def test_invalid_benchmark_configuration_rejected(tmp_path, mutation):
     path.write_text(yaml.safe_dump(data))
     with pytest.raises(ValueError):
         load_three_persona_benchmark_config(path)
+
+
+@pytest.mark.parametrize('value', [None, '', '   '])
+def test_model_configuration_required(tmp_path, value):
+    data = yaml.safe_load(CONFIG.read_text())
+    if value is None:
+        del data['benchmark']['model']
+    else:
+        data['benchmark']['model'] = value
+    path = tmp_path / 'config.yaml'
+    path.write_text(yaml.safe_dump(data))
+    with pytest.raises(ValueError):
+        load_three_persona_benchmark_config(path)
+
+
+def test_model_is_frozen():
+    assert load_three_persona_benchmark_config(CONFIG).model == 'gpt-5.6-luna'

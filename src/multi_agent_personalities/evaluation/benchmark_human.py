@@ -13,6 +13,8 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from multi_agent_personalities.evaluation.analysis import _wilson_interval
 from multi_agent_personalities.evaluation.benchmark import IDS, PublicBenchmarkTrial
 from multi_agent_personalities.evaluation.persistence import _pilot_lock, _replace_text, load_jsonl
+from multi_agent_personalities.evaluation.config import load_three_persona_benchmark_config
+from multi_agent_personalities.models.identifiers import validate_run_id
 
 CHARACTERS = tuple(IDS.values())
 REVIEW_FILES = ('trials_public.jsonl', 'answer_key.jsonl', 'benchmark_manifest.json', 'leakage_review.json')
@@ -55,9 +57,94 @@ def _hashes(directory):
 
 def load_public(directory):
     trials = load_jsonl(directory / 'trials_public.jsonl', PublicBenchmarkTrial)
-    if len(trials) != 18 or len({t.trial_id for t in trials}) != 18 or any(set(t.candidate_character_ids) != set(CHARACTERS) for t in trials):
+    if len(trials) != 18 or len({t.trial_id for t in trials}) != 18 or any(set(t.candidate_character_ids) != set(CHARACTERS) or not t.display_text.strip() for t in trials):
         raise ValueError('invalid benchmark public trials')
     return trials
+
+
+def _validate_review_artifacts(directory):
+    """Check internal consistency before recording human review, not content safety."""
+    trials = {t.trial_id: t for t in load_public(directory)}
+    config_path = Path(__file__).resolve().parents[3] / 'configs/benchmark_three_personas_v1.yaml'
+    config = load_three_persona_benchmark_config(config_path)
+    try:
+        manifest = json.loads((directory / 'benchmark_manifest.json').read_text())
+        answers = [json.loads(line) for line in (directory / 'answer_key.jsonl').read_text().splitlines() if line.strip()]
+        review = json.loads((directory / 'leakage_review.json').read_text())
+        scenario_config = {s.id: s for s in config.scenarios}
+        scenarios = set(scenario_config)
+        sources = manifest['sources']
+        if (manifest['benchmark_id'] != config.id or manifest['trial_count'] != 18
+                or manifest['status'] != config.status or manifest['seed'] != config.seed
+                or manifest['provider'] != config.provider or manifest['model'] != config.model
+                or manifest['prompt_variant'] != config.prompt_variant
+                or manifest['prompt_template_sha256'] != config.prompt_template_sha256
+                or manifest['config_sha256'] != sha256(config_path.read_bytes()).hexdigest()
+                or manifest['personas'] != {k: v.model_dump() for k, v in config.personas.items()}
+                or not isinstance(sources, dict) or set(sources) != scenarios):
+            raise ValueError('manifest does not match frozen benchmark configuration')
+        run_ids = []
+        for source in sources.values():
+            if set(source) != {'run_id', 'sha256'} or set(source['sha256']) != {'run.json', 'messages.jsonl'}:
+                raise ValueError('invalid source provenance')
+            run_ids.append(validate_run_id(source['run_id']))
+            if any(not isinstance(v, str) or re.fullmatch(r'[0-9a-f]{64}', v) is None for v in source['sha256'].values()):
+                raise ValueError('invalid source artifact fingerprint')
+        if len(set(run_ids)) != 6:
+            raise ValueError('source runs must be distinct')
+        if len(answers) != 18:
+            raise ValueError('answer key must contain 18 records')
+        by_id = {}
+        refs = set()
+        counts, scenario_counts, scenario_characters = Counter(), Counter(), Counter()
+        for answer in answers:
+            if set(answer) != {'trial_id', 'correct_character_id', 'scenario_id', 'source_run_id', 'source_message_id', 'turn_index', 'original_text', 'mask_count'}:
+                raise ValueError('invalid private answer fields')
+            tid, character, scenario = answer['trial_id'], answer['correct_character_id'], answer['scenario_id']
+            if tid in by_id or tid not in trials or character not in trials[tid].candidate_character_ids or scenario not in scenarios:
+                raise ValueError('invalid or duplicate private answer')
+            if answer['source_run_id'] != sources[scenario]['run_id'] or not isinstance(answer['source_message_id'], str) or not answer['source_message_id'].strip():
+                raise ValueError('answer provenance does not match source mapping')
+            ref = (answer['source_run_id'], answer['source_message_id'])
+            if ref in refs or type(answer['turn_index']) is not int or not 0 <= answer['turn_index'] < 6 or type(answer['mask_count']) is not int or answer['mask_count'] < 0 or not isinstance(answer['original_text'], str) or not answer['original_text'].strip():
+                raise ValueError('invalid or duplicate answer provenance')
+            if character != IDS[scenario_config[scenario].speaker_order[answer['turn_index'] % 3]]:
+                raise ValueError('answer character does not match source turn')
+            refs.add(ref)
+            by_id[tid] = answer
+            counts[character] += 1
+            scenario_counts[scenario] += 1
+            scenario_characters[(scenario, character)] += 1
+        if set(by_id) != set(trials) or counts != Counter({c: 6 for c in CHARACTERS}) or scenario_counts != Counter({s: 3 for s in scenarios}) or scenario_characters != Counter({(s, c): 1 for s in scenarios for c in CHARACTERS}):
+            raise ValueError('answer set is not balanced')
+        if not isinstance(review, dict) or review.get('manual_review_required') is not True or not isinstance(review.get('decisions'), list):
+            raise ValueError('invalid leakage review')
+        selected, excluded = set(), set()
+        for decision in review['decisions']:
+            scenario, run_id, message_id = decision['scenario_id'], decision['run_id'], decision['message_id']
+            if scenario not in scenarios or run_id != sources[scenario]['run_id'] or not isinstance(message_id, str) or not message_id.strip():
+                raise ValueError('invalid review provenance')
+            ref = (run_id, message_id)
+            if decision['decision'] == 'selected':
+                if set(decision) != {'scenario_id', 'run_id', 'message_id', 'trial_id', 'decision', 'mask_count'}:
+                    raise ValueError('invalid selected review fields')
+                tid = decision['trial_id']
+                if tid in selected or tid not in by_id or ref in excluded:
+                    raise ValueError('duplicate or contradictory review decision')
+                a = by_id[tid]
+                if type(decision['mask_count']) is not int or (scenario, run_id, message_id, decision['mask_count']) != (a['scenario_id'], a['source_run_id'], a['source_message_id'], a['mask_count']):
+                    raise ValueError('review selection does not match answer')
+                selected.add(tid)
+            elif decision['decision'] == 'excluded':
+                if set(decision) != {'scenario_id', 'run_id', 'message_id', 'decision', 'reason'} or decision['reason'] not in {'generation_error', 'empty_text', 'self_identification', 'source_metadata', 'unsafe_name_reference', 'duplicate_text'} or ref in excluded or ref in refs:
+                    raise ValueError('invalid or contradictory exclusion')
+                excluded.add(ref)
+            else:
+                raise ValueError('invalid review decision')
+        if selected != set(trials):
+            raise ValueError('review does not cover every public trial')
+    except (OSError, KeyError, TypeError, json.JSONDecodeError) as error:
+        raise ValueError(f'invalid review artifacts: {error}') from error
 
 
 def approve_review(directory, reviewer):
@@ -65,7 +152,7 @@ def approve_review(directory, reviewer):
     if not RATER_ID.fullmatch(reviewer):
         raise ValueError('reviewer identifier must be 3–64 letters, digits, underscores or hyphens')
     with _pilot_lock(directory):
-        load_public(directory)
+        _validate_review_artifacts(directory)
         if (directory / 'review_approval.json').exists():
             raise ValueError('review already approved; rebuild to create a new reviewed set')
         if _records(directory, 'familiarity.jsonl', Familiarity) or _records(directory, 'responses.jsonl', BenchmarkResponse):
@@ -128,6 +215,13 @@ def submit_response(directory, rater_id, trial_id, selected, confidence):
         records = _records(directory, 'responses.jsonl', BenchmarkResponse)
         if any(x.rater_id == rater_id and x.trial_id == trial_id for x in records):
             raise ValueError('response already submitted')
+        ordered, _ = rater_order(list(trials.values()), manifest['seed'], rater_id)
+        answered = {x.trial_id for x in records if x.rater_id == rater_id}
+        expected = next((item.trial_id for item in ordered if item.trial_id not in answered), None)
+        if expected is None:
+            raise ValueError('evaluation is already complete')
+        if trial_id != expected:
+            raise ValueError('trial submitted out of order')
         record = BenchmarkResponse(benchmark_id=manifest['benchmark_id'], trial_id=trial_id, rater_id=rater_id, selected_character_id=selected, confidence=confidence, timestamp=datetime.now(timezone.utc))
         _append(directory, 'responses.jsonl', [*records, record])
     return record

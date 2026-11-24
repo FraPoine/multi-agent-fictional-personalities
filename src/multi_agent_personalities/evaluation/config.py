@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class PilotConfig(BaseModel):
@@ -60,6 +60,7 @@ class ThreePersonaBenchmarkConfig(BaseModel):
     status: Literal["development_pilot"]
     characters: tuple[Literal["sherlock"], Literal["poirot"], Literal["layton"]]
     provider: Literal["copilot"]
+    model: str = Field(strict=True, min_length=1)
     prompt_variant: Literal["dialogue_v2"]
     prompt_template_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     conversations_per_scenario: Literal[1]
@@ -73,6 +74,13 @@ class ThreePersonaBenchmarkConfig(BaseModel):
     primary_metric: Literal["blind_character_identification_accuracy"]
     personas: dict[str, BenchmarkPersona]
     scenarios: tuple[BenchmarkScenario, ...] = Field(min_length=6, max_length=6)
+
+    @field_validator("model")
+    @classmethod
+    def validate_model(cls, value: str) -> str:
+        if not value.strip() or value != value.strip():
+            raise ValueError("model must be an explicit nonempty identifier")
+        return value
 
 
 def load_three_persona_benchmark_config(path: Path) -> ThreePersonaBenchmarkConfig:

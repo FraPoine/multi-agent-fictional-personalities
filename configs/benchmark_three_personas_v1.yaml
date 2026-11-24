@@ -6,6 +6,7 @@ benchmark:
   - poirot
   - layton
   provider: copilot
+  model: gpt-5.6-luna
   prompt_variant: dialogue_v2
   prompt_template_sha256: 02f175181b1d27d2e3a7b562228a1598697334963fcccecac7b2f52c41185589
   conversations_per_scenario: 1

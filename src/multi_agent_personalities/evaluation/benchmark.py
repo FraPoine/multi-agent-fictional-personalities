@@ -90,8 +90,8 @@ def _validate_run(run, scenario, config):
             or run.prompt_variant != config.prompt_variant
             or run.prompt_template_sha256 != config.prompt_template_sha256):
         raise ValueError(f"source run {run.run_id} does not match scenario configuration")
-    if not run.model or not run.configured_model or run.model != run.configured_model:
-        raise ValueError(f"source run {run.run_id} lacks an explicit configured model")
+    if run.model != config.model or run.configured_model != config.model:
+        raise ValueError(f"source run {run.run_id} does not match the explicit configured model")
     if run.persona_sources is None:
         raise ValueError(f"source run {run.run_id} lacks generation-time persona provenance")
     for slug, source in zip(scenario.speaker_order, run.persona_sources):

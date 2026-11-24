@@ -28,10 +28,10 @@ def sources(tmp_path):
         messages = tuple(Message(message_id=f'{run_id}_msg_{i}', run_id=run_id, turn_index=i,
             speaker_character_id=order[i % 3], speaker_name='participant',
             text=f'Evidence for {scenario.id}, contribution {i}: uncertainty deserves careful thought.',
-            provider='copilot', model='test-model', timestamp=NOW) for i in range(6))
+            provider='copilot', model=config.model, timestamp=NOW) for i in range(6))
         provenance = tuple(PersonaSource(character_id=IDS[slug], **config.personas[slug].model_dump()) for slug in scenario.speaker_order)
         run = ConversationRun(run_id=run_id, topic=scenario.topic, character_ids=order,
-            turn_count=6, seed=42, provider='copilot', model='test-model', configured_model='test-model',
+            turn_count=6, seed=42, provider='copilot', model=config.model, configured_model=config.model,
             status='completed', created_at=NOW, prompt_variant=config.prompt_variant,
             prompt_template_sha256=config.prompt_template_sha256, persona_sources=provenance, messages=messages)
         save_conversation_run(output_root=tmp_path, run=run)
@@ -219,6 +219,9 @@ def test_complete_offline_human_workflow_and_review_gate(sources):
     ordered, candidates = rater_order(trials, 42, 'test_rater')
     assert (ordered, candidates) == rater_order(trials, 42, 'test_rater')
     assert [x.trial_id for x in ordered] != [x.trial_id for x in rater_order(trials, 42, 'another_rater')[0]]
+    premature = {'rater_id': 'test_rater', 'trial_id': ordered[1].trial_id, 'selected_character_id': 'sherlock_holmes', 'confidence': '4'}
+    assert client.post('/responses', data=premature).status_code == 400
+    assert not (target / 'responses.jsonl').exists()
     page = client.get('/?rater_id=test_rater').text
     assert all(name in page for name in ('Sherlock Holmes', 'Hercule Poirot', 'Professor Layton'))
     assert 'correct_character_id' not in page and 'source_message_id' not in page
@@ -250,8 +253,9 @@ def test_empty_and_incomplete_analysis(sources):
     assert empty['primary_familiar_complete']['accuracy'] is None
     assert empty['all_responses']['accuracy'] is None
     submit_familiarity(target, 'rater_one', {'sherlock_holmes': 2, 'hercule_poirot': 2, 'professor_layton': 1})
-    trial = read_jsonl(target / 'trials_public.jsonl')[0]
-    submit_response(target, 'rater_one', trial['trial_id'], 'sherlock_holmes', 3)
+    from multi_agent_personalities.evaluation.benchmark_human import load_public, rater_order
+    trial = rater_order(load_public(target), 42, 'rater_one')[0][0]
+    submit_response(target, 'rater_one', trial.trial_id, 'sherlock_holmes', 3)
     analysis = analyze_benchmark(target)
     assert analysis['incomplete_raters'] == 1
     assert analysis['primary_familiar_complete']['accuracy'] is None
@@ -265,9 +269,12 @@ def test_analysis_familiarity_filter_confusion_and_agreement(sources):
     submit_familiarity(target, 'eligible_rater', dict.fromkeys(IDS.values(), 2))
     submit_familiarity(target, 'unfamiliar_rater', dict.fromkeys(IDS.values(), 1))
     answers = read_jsonl(target / 'answer_key.jsonl')
-    for answer in answers:
-        submit_response(target, 'eligible_rater', answer['trial_id'], answer['correct_character_id'], 5)
-        submit_response(target, 'unfamiliar_rater', answer['trial_id'], 'sherlock_holmes', 1)
+    from multi_agent_personalities.evaluation.benchmark_human import load_public, rater_order
+    by_id = {a['trial_id']: a for a in answers}
+    for rater in ('eligible_rater', 'unfamiliar_rater'):
+        for trial in rater_order(load_public(target), 42, rater)[0]:
+            chosen = by_id[trial.trial_id]['correct_character_id'] if rater == 'eligible_rater' else 'sherlock_holmes'
+            submit_response(target, rater, trial.trial_id, chosen, 5 if rater == 'eligible_rater' else 1)
     result = analyze_benchmark(target)
     assert result['eligible_complete_raters'] == 1
     assert result['completed_raters'] == 2
@@ -280,3 +287,87 @@ def test_analysis_familiarity_filter_confusion_and_agreement(sources):
     assert result['agreement']['pairwise_percentage'] == 1 / 3
     assert result['mean_confidence_incorrect'] == 1
     assert sum(result['responses_per_scenario'].values()) == 36
+
+
+@pytest.mark.parametrize('where', ['single_run', 'all_runs', 'message_model'])
+def test_frozen_model_mismatch_rejected(sources, where):
+    root, _, runs = sources
+    selected = runs if where == 'all_runs' else runs[:1]
+    for run in selected:
+        if where == 'message_model':
+            messages = list(run.messages)
+            messages[0] = messages[0].model_copy(update={'model': 'other-model'})
+            run = run.model_copy(update={'messages': tuple(messages)})
+        else:
+            messages = tuple(message.model_copy(update={'model': 'other-model'}) for message in run.messages)
+            run = run.model_copy(update={'model': 'other-model', 'configured_model': 'other-model', 'messages': messages})
+        replace_run(root, run)
+    with pytest.raises(ValueError):
+        prepare(sources)
+    assert not (root / 'evaluation' / 'benchmarks' / 'three_personas_v1').exists()
+
+
+def test_order_enforced_under_lock(sources):
+    from multi_agent_personalities.evaluation.benchmark_human import approve_review, load_public, rater_order, submit_familiarity, submit_response
+    target = prepare(sources)
+    approve_review(target, 'reviewer_test')
+    trials = load_public(target)
+    for rater in ('alice_test', 'bob_test'):
+        submit_familiarity(target, rater, dict.fromkeys(IDS.values(), 2))
+    order_a = rater_order(trials, 42, 'alice_test')[0]
+    order_b = rater_order(trials, 42, 'bob_test')[0]
+    assert order_a == rater_order(trials, 42, 'alice_test')[0] and order_a != order_b
+    with pytest.raises(ValueError, match='out of order'):
+        submit_response(target, 'alice_test', order_a[1].trial_id, 'sherlock_holmes', 3)
+    assert not (target / 'responses.jsonl').exists()
+    submit_response(target, 'alice_test', order_a[0].trial_id, 'sherlock_holmes', 3)
+    before = (target / 'responses.jsonl').read_bytes()
+    with pytest.raises(ValueError, match='already submitted'):
+        submit_response(target, 'alice_test', order_a[0].trial_id, 'sherlock_holmes', 3)
+    with pytest.raises(ValueError, match='out of order'):
+        submit_response(target, 'alice_test', order_a[2].trial_id, 'sherlock_holmes', 3)
+    assert (target / 'responses.jsonl').read_bytes() == before
+    submit_response(target, 'alice_test', order_a[1].trial_id, 'sherlock_holmes', 3)
+    submit_response(target, 'bob_test', order_b[0].trial_id, 'sherlock_holmes', 3)
+    for item in order_a[2:]:
+        submit_response(target, 'alice_test', item.trial_id, 'sherlock_holmes', 3)
+    before = (target / 'responses.jsonl').read_bytes()
+    with pytest.raises(ValueError):
+        submit_response(target, 'alice_test', order_a[-1].trial_id, 'sherlock_holmes', 3)
+    assert (target / 'responses.jsonl').read_bytes() == before
+
+
+@pytest.mark.parametrize('mutation', ['answer_missing', 'answer_duplicate', 'answer_character', 'answer_scenario', 'answer_ref', 'manifest_model', 'manifest_source', 'manifest_hash', 'review_missing', 'review_mask', 'review_contradiction', 'public_metadata', 'public_blank'])
+def test_review_rejects_inconsistent_artifacts(sources, mutation):
+    from multi_agent_personalities.evaluation.benchmark_human import approve_review
+    target = prepare(sources)
+    public_path = target / 'trials_public.jsonl'
+    answer_path = target / 'answer_key.jsonl'
+    manifest_path = target / 'benchmark_manifest.json'
+    review_path = target / 'leakage_review.json'
+    answers = read_jsonl(answer_path)
+    public = read_jsonl(public_path)
+    manifest = json.loads(manifest_path.read_text())
+    review = json.loads(review_path.read_text())
+    if mutation == 'answer_missing': answers.pop()
+    elif mutation == 'answer_duplicate': answers[-1] = answers[0].copy()
+    elif mutation == 'answer_character': answers[0]['correct_character_id'] = 'unknown'
+    elif mutation == 'answer_scenario': answers[0]['scenario_id'] = 'scenario_06' if answers[0]['scenario_id'] != 'scenario_06' else 'scenario_01'
+    elif mutation == 'answer_ref': answers[0]['source_message_id'] = answers[1]['source_message_id']; answers[0]['source_run_id'] = answers[1]['source_run_id']
+    elif mutation == 'manifest_model': manifest['model'] = 'wrong-model'
+    elif mutation == 'manifest_source': manifest['sources'].pop('scenario_01')
+    elif mutation == 'manifest_hash': manifest['personas']['layton']['sha256'] = '0' * 64
+    elif mutation == 'review_missing': review['decisions'].pop()
+    elif mutation == 'review_mask': review['decisions'][0]['mask_count'] += 1
+    elif mutation == 'review_contradiction':
+        selected = review['decisions'][0]
+        review['decisions'].append({'scenario_id': selected['scenario_id'], 'run_id': selected['run_id'], 'message_id': selected['message_id'], 'decision': 'excluded', 'reason': 'duplicate_text'})
+    elif mutation == 'public_metadata': public[0]['correct_character_id'] = 'sherlock_holmes'
+    elif mutation == 'public_blank': public[0]['display_text'] = '   '
+    answer_path.write_text(''.join(json.dumps(a) + '\n' for a in answers))
+    public_path.write_text(''.join(json.dumps(p) + '\n' for p in public))
+    manifest_path.write_text(json.dumps(manifest))
+    review_path.write_text(json.dumps(review))
+    with pytest.raises(ValueError):
+        approve_review(target, 'reviewer_test')
+    assert not (target / 'review_approval.json').exists()
