@@ -4,6 +4,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+import hashlib
 
 from pydantic import ValidationError
 
@@ -17,6 +18,7 @@ from multi_agent_personalities.models import (
     Persona,
     validate_run_id,
 )
+from multi_agent_personalities.models.conversation import PersonaSource
 from multi_agent_personalities.pipeline import character_registry
 from multi_agent_personalities.simulation import (
     ConversationParticipant,
@@ -129,6 +131,7 @@ def _load_mock_participants(
 def _load_personas(
     character_slugs: Sequence[str],
     project_root: Path,
+    provenance: list[PersonaSource] | None = None,
 ) -> list[Persona]:
     """Resolve and validate selected catalog personas before generation."""
     if isinstance(character_slugs, (str, bytes)) or not isinstance(
@@ -156,9 +159,8 @@ def _load_personas(
         if config.live_persona_path is None:
             raise ValueError(f"live_persona_path is required for {slug!r}")
         try:
-            persona = Persona.model_validate_json(
-                config.live_persona_path.read_text(encoding="utf-8")
-            )
+            raw = config.live_persona_path.read_bytes()
+            persona = Persona.model_validate_json(raw)
         except (OSError, ValidationError) as error:
             raise ValueError(
                 f"invalid live persona for {slug!r}: {error}"
@@ -169,6 +171,12 @@ def _load_personas(
         ):
             raise ValueError(f"persona identity does not match {slug!r}")
         personas.append(persona)
+        if provenance is not None:
+            try:
+                source_path = config.live_persona_path.resolve().relative_to(project_root.resolve()).as_posix()
+            except ValueError:
+                source_path = str(config.live_persona_path.resolve())
+            provenance.append(PersonaSource(character_id=persona.character_id, path=source_path, sha256=hashlib.sha256(raw).hexdigest()))
     return personas
 
 
@@ -222,12 +230,13 @@ def run_conversation(
     resolved_project_root = (
         _PROJECT_ROOT if project_root is None else Path(project_root)
     )
+    provenance: list[PersonaSource] = []
     if provider == "mock":
         participants = _load_mock_participants(
             character_slugs, resolved_project_root
         )
     else:
-        personas = _load_personas(character_slugs, resolved_project_root)
+        personas = _load_personas(character_slugs, resolved_project_root, provenance)
         participants = [
             ConversationParticipant(
                 persona=persona,
@@ -256,6 +265,8 @@ def run_conversation(
         run_id=run_id,
         timestamp=timestamp,
     )
+    if provider == "copilot":
+        run = ConversationRun.model_validate({**run.model_dump(), "persona_sources": provenance, "configured_model": copilot_model})
     artifact_directory = _save_run(output_root=Path(output_root), run=run)
     return ConversationResult(run=run, artifact_directory=artifact_directory)
 

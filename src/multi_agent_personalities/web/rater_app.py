@@ -88,3 +88,65 @@ def create_rater_app(*, pilot_directory: Path, pilot_id: str) -> FastAPI:
         return {"status": "ok", "pilot_id": pilot_id}
 
     return app
+
+
+def create_three_persona_rater_app(*, benchmark_directory: Path) -> FastAPI:
+    """Serve an approved benchmark without loading its private answer key."""
+    from fastapi import HTTPException
+    from multi_agent_personalities.evaluation.benchmark_human import (
+        BenchmarkResponse, Familiarity, _manifest, _records, load_public,
+        rater_order, require_review, submit_familiarity, submit_response,
+    )
+
+    directory = Path(benchmark_directory)
+    require_review(directory)
+    manifest = _manifest(directory)
+    load_public(directory)
+    app = FastAPI(title='Three-persona blind identification')
+    names = {**NAMES, 'professor_layton': 'Professor Layton'}
+
+    def checked():
+        try:
+            require_review(directory)
+            return load_public(directory)
+        except (ValueError, OSError):
+            raise HTTPException(status_code=503, detail='Review approval is missing or invalid')
+
+    def display(request, rater_id='', error=None, status=200):
+        trials = checked()
+        familiarity = _records(directory, 'familiarity.jsonl', Familiarity)
+        responses = _records(directory, 'responses.jsonl', BenchmarkResponse)
+        screened = any(x.rater_id == rater_id for x in familiarity)
+        answered = {x.trial_id for x in responses if x.rater_id == rater_id}
+        order, choices = rater_order(trials, manifest['seed'], rater_id)
+        trial = next((x for x in order if x.trial_id not in answered), None) if screened else None
+        context = {'rater_id': rater_id, 'error': error, 'screened': screened, 'trial': trial,
+                   'complete': screened and trial is None, 'count': len(answered), 'total': len(trials),
+                   'names': names, 'candidates': [(key, names[key]) for key in choices[trial.trial_id]] if trial else []}
+        return templates.TemplateResponse(request=request, name='benchmark_rater.html', context=context, status_code=status)
+
+    @app.get('/', response_class=HTMLResponse)
+    async def home(request: Request, rater_id: str = ''):
+        if rater_id and not RATER_PATTERN.fullmatch(rater_id):
+            return display(request, error='Use a pseudonymous ID of 3–64 letters, numbers, underscores, or hyphens.', status=400)
+        return display(request, rater_id=rater_id)
+
+    @app.post('/familiarity', response_class=HTMLResponse)
+    async def familiarity(request: Request, rater_id: Annotated[str, Form()], sherlock_holmes: Annotated[str, Form()], hercule_poirot: Annotated[str, Form()], professor_layton: Annotated[str, Form()]):
+        checked()
+        try:
+            submit_familiarity(directory, rater_id, {'sherlock_holmes': int(sherlock_holmes), 'hercule_poirot': int(hercule_poirot), 'professor_layton': int(professor_layton)})
+        except (ValueError, OSError) as error:
+            return display(request, rater_id=rater_id if RATER_PATTERN.fullmatch(rater_id) else '', error=str(error), status=400)
+        return RedirectResponse(url=f'/?rater_id={rater_id}', status_code=303)
+
+    @app.post('/responses', response_class=HTMLResponse)
+    async def submit(request: Request, rater_id: Annotated[str, Form()], trial_id: Annotated[str, Form()], selected_character_id: Annotated[str, Form()], confidence: Annotated[str, Form()]):
+        checked()
+        try:
+            submit_response(directory, rater_id, trial_id, selected_character_id, int(confidence))
+        except (ValueError, OSError) as error:
+            return display(request, rater_id=rater_id if RATER_PATTERN.fullmatch(rater_id) else '', error=str(error), status=400)
+        return RedirectResponse(url=f'/?rater_id={rater_id}', status_code=303)
+
+    return app

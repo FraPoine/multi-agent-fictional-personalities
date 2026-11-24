@@ -547,3 +547,8 @@ pipeline remains unimplemented and unverified.
 
 - [Figma mockups](https://marker-oculus-50834570.figma.site/)
 - [Canva presentation](https://canva.link/em2uvuw22kubcak)
+
+
+### Three-persona development benchmark
+
+Import six provenance-complete Copilot runs, inspect and approve the leakage review, collect local blind ratings, and generate descriptive analysis using the commands in the [benchmark protocol](docs/benchmark_three_personas_v1.md). No genuine ratings or model outputs are included.

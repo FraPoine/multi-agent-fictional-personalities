@@ -1,0 +1,200 @@
+benchmark:
+  id: three_personas_v1
+  status: development_pilot
+  characters:
+  - sherlock
+  - poirot
+  - layton
+  provider: copilot
+  prompt_variant: dialogue_v2
+  prompt_template_sha256: 02f175181b1d27d2e3a7b562228a1598697334963fcccecac7b2f52c41185589
+  conversations_per_scenario: 1
+  turns_per_conversation: 6
+  selected_messages_per_character_per_scenario: 1
+  intended_raters: 3
+  confidence_min: 1
+  confidence_max: 5
+  chance_baseline: 0.3333333333333333
+  seed: 42
+  primary_metric: blind_character_identification_accuracy
+  personas:
+    sherlock:
+      path: outputs/sherlock/sherlock_persona_generated.json
+      sha256: a3e869cd13e2b17382b86a0cdf84ccd48a9499489c216c3531905a9b17a30ee1
+    poirot:
+      path: outputs/poirot/poirot_persona_generated.json
+      sha256: 380669eb3213fdfccc363a6c80ca78fce0636a62503de03aeaf8778470318d64
+    layton:
+      path: characters/layton/layton_persona_curated_v2.json
+      sha256: d027be4cc2fd31480f1ee140af4be996daf4b63f362950fca20cd5cded4a5f4e
+  scenarios:
+  - id: scenario_01
+    title: The Missing Museum Register
+    topic: 'A museum discovers that an important historical register has disappeared from a locked archive.
+
+
+      An employee claims the register was removed for conservation, but no authorization was recorded.
+
+
+      A senior curator insists the employee is lying. Another worker believes the register may have been
+      incorrectly catalogued.
+
+
+      The archive lock is intact, and the available records contain conflicting timestamps.
+
+
+      The museum director wants to accuse the employee immediately to reassure the public.
+
+
+      Discuss what can legitimately be inferred, which explanations deserve attention, and how the investigators
+      should respond to the proposed accusation.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - sherlock
+    - poirot
+    - layton
+  - id: scenario_02
+    title: The Dangerous Bridge
+    topic: 'A small town must decide whether to close an old pedestrian bridge before a major public celebration.
+
+
+      An engineer reports unusual structural measurements, but the inspection was performed using equipment
+      that may be improperly calibrated.
+
+
+      The mayor argues that closing the bridge without certainty would damage local businesses.
+
+
+      A resident reports hearing a loud metallic sound near the bridge, although nobody else confirms
+      it.
+
+
+      The celebration begins tomorrow.
+
+
+      Discuss the evidence, the competing explanations, the consequences of acting too quickly or too
+      slowly, and the most responsible decision.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - poirot
+    - layton
+    - sherlock
+  - id: scenario_03
+    title: The Apprentice's Mistake
+    topic: 'A young apprentice accidentally damages an important historical object while working under
+      the supervision of an experienced conservator.
+
+
+      The conservator publicly accuses the apprentice of negligence.
+
+
+      The apprentice admits making a mistake but argues that the instructions were ambiguous and that
+      the workshop equipment had been malfunctioning.
+
+
+      The object may be repairable, although no assessment has yet been completed.
+
+
+      The workshop director asks the investigators to determine responsibility and recommend what should
+      happen next.
+
+
+      Discuss the available evidence, how responsibility should be assessed, and how the people involved
+      should be treated.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - layton
+    - sherlock
+    - poirot
+  - id: scenario_04
+    title: The Impossible Mechanism
+    topic: 'During an exhibition, an elaborate mechanical automaton appears to perform a movement that
+      its visible gears should not permit.
+
+
+      The inventor claims the mechanism demonstrates a revolutionary engineering principle.
+
+
+      A skeptical engineer suspects a concealed component, while an enthusiastic student believes the
+      invention may be genuine.
+
+
+      A visitor suggests that an ordinary optical illusion could explain the demonstration.
+
+
+      The automaton is currently switched off, and its internal mechanism has not been examined.
+
+
+      Discuss possible explanations, how they could be tested, and whether the inventor''s extraordinary
+      claim deserves belief.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - sherlock
+    - poirot
+    - layton
+  - id: scenario_05
+    title: The Anonymous Confession
+    topic: 'A school receives an anonymous letter confessing to the destruction of a valuable collection
+      of historical documents.
+
+
+      The confession contains details that were never released publicly.
+
+
+      A teacher believes the author must be responsible.
+
+
+      Another teacher argues that the information could have been obtained from someone who witnessed
+      the event.
+
+
+      A student who recently argued with the school''s director has become the focus of suspicion.
+
+
+      The director wants to question the student immediately in front of the faculty.
+
+
+      Discuss the reliability of the confession, the competing explanations, and the ethical implications
+      of the proposed questioning.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - poirot
+    - layton
+    - sherlock
+  - id: scenario_06
+    title: The Disputed Rescue
+    topic: 'Two volunteers are searching for a missing traveler in a remote mountain village.
+
+
+      One volunteer proposes following the traveler''s planned route.
+
+
+      The other argues that a recently reported storm makes that route dangerous and suggests searching
+      nearby shelters first.
+
+
+      A worried family member insists the traveler would never abandon the planned route.
+
+
+      The weather is deteriorating, and the search team has limited time and resources.
+
+
+      Discuss the competing assumptions, how to prioritize the available information, and how the search
+      should proceed without unnecessary risk.
+
+
+      No additional evidence is available.'
+    speaker_order:
+    - layton
+    - sherlock
+    - poirot

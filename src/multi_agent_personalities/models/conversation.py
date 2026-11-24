@@ -23,6 +23,15 @@ NonEmptyStr = Annotated[
 ]
 
 
+class PersonaSource(BaseModel):
+    """Fingerprint of the exact bytes used to load a participant."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    character_id: NonEmptyStr
+    path: NonEmptyStr
+    sha256: Annotated[str, StringConstraints(strict=True, pattern=r"^[0-9a-f]{64}$")]
+
+
 class ConversationRun(BaseModel):
     """An immutable, validated snapshot of a multi-agent conversation."""
 
@@ -42,6 +51,8 @@ class ConversationRun(BaseModel):
     prompt_template_sha256: Annotated[
         str, StringConstraints(strict=True, pattern=r"^[0-9a-f]{64}$")
     ] | None = None
+    persona_sources: tuple[PersonaSource, ...] | None = None
+    configured_model: StrictStr | None = None
 
     @field_validator("character_ids")
     @classmethod
@@ -77,6 +88,11 @@ class ConversationRun(BaseModel):
             raise ValueError(
                 "prompt variant and template hash must be supplied together"
             )
+        if self.persona_sources is not None:
+            if tuple(item.character_id for item in self.persona_sources) != self.character_ids:
+                raise ValueError("persona sources must match participant order")
+        if self.configured_model is not None and (not self.configured_model.strip() or self.configured_model != self.model):
+            raise ValueError("configured model must match the run model")
         message_ids = [message.message_id for message in self.messages]
         if len(message_ids) != len(set(message_ids)):
             raise ValueError("message_id values must be unique")
